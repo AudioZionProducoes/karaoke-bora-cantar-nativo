@@ -83,7 +83,7 @@ function ScoreScreen({ score, musica, artista, onReplay, onBack }: {
   );
 }
 
-function SearchSidebar({ onClose }: { onClose: () => void }) {
+function SearchTopPanel({ onClose }: { onClose: () => void }) {
   const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -91,85 +91,84 @@ function SearchSidebar({ onClose }: { onClose: () => void }) {
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
-  const { data, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 10 });
+  const { data, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 8 });
 
   return (
-    <aside className="w-80 shrink-0 bg-black/80 backdrop-blur-xl border-l border-white/10 flex flex-col h-full z-20">
-      {/* Sidebar header */}
-      <div className="p-4 border-b border-white/10 flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            autoFocus
-            placeholder="Buscar próxima música..."
-            className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-muted-foreground focus-visible:ring-primary h-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <Button variant="ghost" size="icon" onClick={onClose} className="shrink-0 text-muted-foreground hover:text-white h-9 w-9">
+    <div className="absolute top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/10 animate-in slide-in-from-top duration-200">
+      {/* Search input row */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+        <Input
+          autoFocus
+          placeholder="Buscar próxima música por artista, título ou código..."
+          className="flex-1 bg-transparent border-0 text-white text-base placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-0"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && onClose()}
+        />
+        <Button variant="ghost" size="icon" onClick={onClose}
+          className="shrink-0 text-muted-foreground hover:text-white h-9 w-9 rounded-full">
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Results */}
-      <div className="flex-1 overflow-y-auto p-2">
-        {isLoading ? (
-          <div className="space-y-2 p-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex flex-col gap-1.5 p-3">
-                <Skeleton className="h-4 w-3/4 bg-white/10" />
-                <Skeleton className="h-3 w-1/2 bg-white/5" />
+      {/* Results grid */}
+      {(isLoading || (data && data.data.length > 0)) && (
+        <div className="border-t border-white/10 px-3 pb-3">
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-1.5 p-3 rounded-lg bg-white/5">
+                  <Skeleton className="h-4 w-3/4 bg-white/10" />
+                  <Skeleton className="h-3 w-1/2 bg-white/5" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
+                {data?.data.map((m) => (
+                  <button
+                    key={m.id}
+                    className="text-left px-3 py-2.5 rounded-lg bg-white/5 hover:bg-primary/20 border border-transparent hover:border-primary/30 transition-all group"
+                    onClick={() => { navigate(`/player/${m.id}`); onClose(); }}
+                  >
+                    <div className="flex items-start justify-between gap-1 mb-0.5">
+                      <div className="font-medium text-sm text-white line-clamp-1 group-hover:text-primary transition-colors flex-1">
+                        {m.musica}
+                      </div>
+                      <span className="text-[10px] font-mono text-primary/60 bg-primary/10 rounded px-1 py-0.5 shrink-0">#{m.id}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{m.artista}</div>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : data?.data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-            <Mic2 className="h-8 w-8 text-muted-foreground mb-3" />
-            <p className="text-sm text-muted-foreground">Nenhuma música encontrada</p>
-          </div>
-        ) : (
-          <ul className="space-y-0.5">
-            {data?.data.map((m) => (
-              <li key={m.id}>
-                <button
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors group flex items-center gap-3"
-                  onClick={() => { navigate(`/player/${m.id}`); onClose(); }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-white line-clamp-1 group-hover:text-primary transition-colors">
-                      {m.musica}
-                    </div>
-                    <div className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                      {m.artista}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] font-mono text-primary/60 bg-primary/10 rounded px-1 py-0.5">#{m.id}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all" />
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
-      {/* Pagination */}
-      {data && data.totalPages > 1 && (
-        <div className="p-3 border-t border-white/10 flex items-center justify-between">
-          <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}
-            className="text-xs text-muted-foreground hover:text-white h-7">
-            Anterior
-          </Button>
-          <span className="text-xs text-muted-foreground">{page} / {data.totalPages}</span>
-          <Button variant="ghost" size="sm" disabled={page === data.totalPages} onClick={() => setPage(p => p + 1)}
-            className="text-xs text-muted-foreground hover:text-white h-7">
-            Próxima
-          </Button>
+              {data && data.totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 pt-3">
+                  <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                    className="text-xs text-muted-foreground hover:text-white h-7">
+                    Anterior
+                  </Button>
+                  <span className="text-xs text-muted-foreground">{page} / {data.totalPages}</span>
+                  <Button variant="ghost" size="sm" disabled={page === data.totalPages} onClick={() => setPage(p => p + 1)}
+                    className="text-xs text-muted-foreground hover:text-white h-7">
+                    Próxima
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
-    </aside>
+
+      {debouncedSearch && !isLoading && data?.data.length === 0 && (
+        <div className="border-t border-white/10 flex items-center justify-center gap-2 py-5 text-muted-foreground text-sm">
+          <Mic2 className="h-4 w-4" />
+          Nenhuma música encontrada para "{debouncedSearch}"
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -261,9 +260,11 @@ export default function Player() {
         </div>
       </header>
 
-      {/* Main area: video + optional sidebar */}
+      {/* Search top panel */}
+      {sidebarOpen && <SearchTopPanel onClose={() => setSidebarOpen(false)} />}
+
+      {/* Main area: video */}
       <div className="flex h-screen pt-14">
-        {/* Video area */}
         <main className="flex-1 relative flex items-center justify-center bg-black min-w-0">
           {isLibraryConfigured ? (
             <iframe
@@ -314,8 +315,6 @@ export default function Player() {
           )}
         </main>
 
-        {/* Search sidebar */}
-        {sidebarOpen && <SearchSidebar onClose={() => setSidebarOpen(false)} />}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
