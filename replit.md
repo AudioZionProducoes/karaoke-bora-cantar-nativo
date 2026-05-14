@@ -1,6 +1,6 @@
-# [Project name]
+# Karaokê CT
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player integrado com Bunny Stream, painel admin e integração WooCommerce.
 
 ## Run & Operate
 
@@ -9,7 +9,9 @@ _Replace the heading above with the project's name, and this line with one sente
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/scripts run import-musicas -- --file /caminho/para/Dados_CT.ini` — importar catálogo de músicas
 - Required env: `DATABASE_URL` — Postgres connection string
+- Optional env: `VITE_BUNNY_LIBRARY_ID` — Bunny Stream Video Library ID (set before deploying)
 
 ## Stack
 
@@ -19,26 +21,49 @@ _Replace the heading above with the project's name, and this line with one sente
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
+- Frontend: React + Vite + Tailwind CSS + shadcn/ui
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `lib/api-spec/openapi.yaml` — source of truth for all API contracts
+- `lib/db/src/schema/musicas.ts` — tabela de músicas (id, artista, musica, inicio)
+- `lib/db/src/schema/users.ts` — tabela de assinantes (karaoke_users)
+- `artifacts/api-server/src/routes/musicas.ts` — busca, CRUD de músicas
+- `artifacts/api-server/src/routes/users.ts` — gestão de assinantes
+- `artifacts/api-server/src/routes/webhook.ts` — webhook WooCommerce
+- `artifacts/karaoke/src/pages/home.tsx` — página principal com busca em tempo real
+- `artifacts/karaoke/src/pages/player.tsx` — player Bunny Stream
+- `artifacts/karaoke/src/pages/admin.tsx` — painel admin (catálogo + assinantes)
+- `scripts/src/import-musicas.ts` — script de importação do arquivo .ini
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Tabela `musicas` usa ID numérico como chave primária (igual ao nome do arquivo no Bunny Stream)
+- Busca em tempo real com debounce de 300ms no frontend + paginação de 24 por página no backend
+- Busca faz ILIKE nas colunas `artista`, `musica` e `inicio` simultaneamente
+- Webhook WooCommerce processa `subscription_active`, `order_completed`, `subscription_cancelled`, `subscription_expired`
+- Player usa iframe nativo do Bunny Stream: `https://iframe.mediadelivery.net/embed/{LIBRARY_ID}/{id}`
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Página principal: busca em tempo real com grid de cards de músicas e botão "Cantar Agora"
+- Player: reprodução em tela cheia via iframe Bunny Stream
+- Admin — Catálogo: formulário para adicionar músicas ao catálogo
+- Admin — Assinantes: tabela com status de assinatura e botão de revogar acesso
+- Webhook: integração automática com WooCommerce (criar/revogar acesso em pagamentos)
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Interface em Português (PT/BR)
+- Design dark mode premium (padrão Spotify/Netflix)
+- Suporte a ~80.000 músicas simultâneas
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Configurar `VITE_BUNNY_LIBRARY_ID` antes do deploy para que o player funcione
+- O script de importação usa `ON CONFLICT DO NOTHING` — pode importar sem risco de duplicatas
+- O arquivo `.ini` pode estar em codificação Latin-1 — o script detecta automaticamente
+- Após adicionar músicas ao Bunny Stream, o ID do arquivo .mp4 deve ser igual ao ID na tabela
 
 ## Pointers
 

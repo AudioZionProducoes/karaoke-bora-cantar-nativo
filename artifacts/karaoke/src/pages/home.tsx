@@ -1,0 +1,153 @@
+import { useState, useMemo } from "react";
+import { Link } from "wouter";
+import { Search, Play, Music, Mic2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { useSearchMusicas, useGetMusicasStats } from "@workspace/api-client-react";
+import { useDebounce } from "@/hooks/use-debounce";
+import { Layout } from "@/components/layout";
+
+export default function Home() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [page, setPage] = useState(1);
+
+  // Reset page when search changes
+  useMemo(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const { data: stats } = useGetMusicasStats();
+  
+  const { data: searchResults, isLoading } = useSearchMusicas({
+    q: debouncedSearch,
+    page,
+    limit: 24
+  });
+
+  return (
+    <Layout>
+      <div className="flex flex-col items-center pt-12 pb-8 max-w-3xl mx-auto text-center space-y-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          {stats ? `${stats.totalSongs.toLocaleString()} tracks ready` : "Loading catalog..."}
+        </div>
+        
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white drop-shadow-sm">
+          Your Stage Awaits.
+        </h1>
+        <p className="text-lg text-muted-foreground max-w-xl">
+          Search the ultimate Brazilian karaoke catalog. High quality, premium tracks, zero waiting.
+        </p>
+        
+        <div className="w-full relative mt-4 group">
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 -z-10"></div>
+          <div className="relative flex items-center w-full">
+            <Search className="absolute left-6 h-5 w-5 text-muted-foreground" />
+            <Input 
+              type="text" 
+              placeholder="Search by artist, song, or lyrics..." 
+              className="w-full h-16 pl-14 pr-6 rounded-full bg-background border-border/50 text-lg shadow-sm focus-visible:ring-primary focus-visible:border-primary transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 space-y-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+            <Music className="h-5 w-5 text-primary" />
+            {debouncedSearch ? "Search Results" : "Featured Catalog"}
+          </h2>
+          {searchResults && (
+            <span className="text-sm text-muted-foreground">{searchResults.total} found</span>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Card key={i} className="bg-card/50 border-border/40 overflow-hidden">
+                <CardContent className="p-5 flex flex-col h-full gap-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                  <Skeleton className="h-10 w-full mt-auto" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : searchResults?.data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="bg-muted/30 p-4 rounded-full mb-4">
+              <Mic2 className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-xl font-medium">No tracks found</h3>
+            <p className="text-muted-foreground mt-2">Try a different search term</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {searchResults?.data.map((musica) => (
+                <Card key={musica.id} className="group bg-card border-border/40 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.1)] overflow-hidden flex flex-col h-full">
+                  <CardContent className="p-5 flex flex-col h-full gap-4 relative">
+                    <div className="space-y-1.5 flex-1 relative z-10">
+                      <div className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors" title={musica.musica}>
+                        {musica.musica}
+                      </div>
+                      <div className="text-muted-foreground font-medium text-sm line-clamp-1" title={musica.artista}>
+                        {musica.artista}
+                      </div>
+                      {musica.inicio && (
+                        <div className="text-xs text-muted-foreground/70 mt-3 italic line-clamp-2 pl-2 border-l-2 border-primary/30">
+                          "{musica.inicio}"
+                        </div>
+                      )}
+                    </div>
+                    
+                    <Link href={`/player/${musica.id}`}>
+                      <Button className="w-full mt-4 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all z-10 relative">
+                        <Play className="h-4 w-4 mr-2" />
+                        Cantar Agora
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {searchResults && searchResults.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 pt-8">
+                <Button 
+                  variant="outline" 
+                  disabled={page === 1}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  Previous
+                </Button>
+                <div className="text-sm font-medium px-4">
+                  Page {page} of {searchResults.totalPages}
+                </div>
+                <Button 
+                  variant="outline" 
+                  disabled={page === searchResults.totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </Layout>
+  );
+}
