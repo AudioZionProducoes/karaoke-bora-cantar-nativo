@@ -1,8 +1,10 @@
 import { useParams, Link } from "wouter";
-import { ArrowLeft, Play, Music, AlertCircle } from "lucide-react";
+import { ArrowLeft, Play, Music, AlertCircle, FolderOpen } from "lucide-react";
 import { useGetMusica, getGetMusicaQueryKey } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useLocalMusic } from "@/contexts/local-music-context";
+import { useEffect, useState } from "react";
 
 export default function Player() {
   const params = useParams();
@@ -14,6 +16,26 @@ export default function Player() {
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
   const isLibraryConfigured = libraryId && libraryId !== "CONFIGURE_LIBRARY_ID";
+
+  const { directoryHandle, isSupported, selectFolder, getFileUrl } = useLocalMusic();
+  const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null);
+  const [localNotFound, setLocalNotFound] = useState(false);
+
+  useEffect(() => {
+    if (isLibraryConfigured || !musica) return;
+    setLocalVideoUrl(null);
+    setLocalNotFound(false);
+
+    if (!directoryHandle) return;
+
+    getFileUrl(musica.id).then((url) => {
+      if (url) {
+        setLocalVideoUrl(url);
+      } else {
+        setLocalNotFound(true);
+      }
+    });
+  }, [musica, directoryHandle, isLibraryConfigured, getFileUrl]);
 
   if (isLoading) {
     return (
@@ -74,45 +96,59 @@ export default function Player() {
         <div className="w-24"></div>
       </header>
 
-      <main className="flex-1 w-full h-full relative z-10 flex items-center justify-center bg-black">
+      <main className="flex-1 w-full h-screen relative z-10 flex items-center justify-center bg-black pt-16">
         {isLibraryConfigured ? (
+          /* ── Bunny Stream (produção) ── */
           <iframe
             src={`https://iframe.mediadelivery.net/embed/${libraryId}/${musica.id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
             className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
             allowFullScreen
-          ></iframe>
-        ) : (
+          />
+        ) : localVideoUrl ? (
+          /* ── Arquivo local selecionado ── */
           <video
-            key={musica.id}
-            src={`/api/video/${musica.id}`}
-            className="absolute inset-0 w-full h-full object-contain bg-black"
+            key={localVideoUrl}
+            src={localVideoUrl}
+            className="w-full h-full object-contain"
             controls
             autoPlay
-            onError={(e) => {
-              const target = e.currentTarget;
-              target.style.display = "none";
-              const sibling = target.nextElementSibling as HTMLElement | null;
-              if (sibling) sibling.style.display = "flex";
-            }}
           />
+        ) : localNotFound ? (
+          /* ── Arquivo não encontrado na pasta ── */
+          <div className="text-center p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 max-w-md">
+            <AlertCircle className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2">Arquivo não encontrado</h2>
+            <p className="text-muted-foreground mb-2">
+              O arquivo <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded">{musica.id}.mp4</code> não existe na pasta selecionada.
+            </p>
+            <p className="text-xs text-muted-foreground/60">
+              Verifique se o arquivo está na pasta correta e tente novamente.
+            </p>
+          </div>
+        ) : (
+          /* ── Nenhuma fonte configurada — pedir pasta ── */
+          <div className="text-center p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 max-w-md">
+            <FolderOpen className="h-14 w-14 text-primary mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2">Selecione a pasta de músicas</h2>
+            <p className="text-muted-foreground mb-6">
+              Para reproduzir <strong>{musica.musica}</strong>, selecione a pasta onde estão os arquivos MP4. O player vai encontrar o arquivo <code className="text-primary bg-primary/10 px-1 rounded">{musica.id}.mp4</code> automaticamente.
+            </p>
+            {isSupported ? (
+              <Button onClick={selectFolder} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Selecionar Pasta de Músicas
+              </Button>
+            ) : (
+              <p className="text-xs text-yellow-400">
+                Seu navegador não suporta seleção de pasta. Use Chrome ou Edge.
+              </p>
+            )}
+          </div>
         )}
-        {/* Fallback shown only when local video fails to load */}
-        <div
-          className="absolute inset-0 text-center p-8 bg-black/40 backdrop-blur-md flex-col items-center justify-center hidden"
-        >
-          <AlertCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Arquivo de Vídeo Não Encontrado</h2>
-          <p className="text-muted-foreground mb-4">
-            O arquivo <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded">{musica.id}.mp4</code> não foi encontrado na pasta configurada.
-          </p>
-          <p className="text-xs text-muted-foreground/60">
-            Configure a variável <code className="text-primary/60 bg-primary/10 px-1 rounded">LOCAL_MUSIC_PATH</code> no servidor apontando para a pasta dos MP4s, ou configure o <code className="text-primary/60 bg-primary/10 px-1 rounded">VITE_BUNNY_LIBRARY_ID</code> para usar o Bunny Stream.
-          </p>
-        </div>
       </main>
 
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none z-10 pointer-events-none"></div>
     </div>
   );
 }

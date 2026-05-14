@@ -1,7 +1,11 @@
 import { Link } from "wouter";
-import { Mic2, Settings } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X } from "lucide-react";
+import { useLocalMusic } from "@/contexts/local-music-context";
+import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { directoryHandle, isSupported, selectFolder, clearFolder } = useLocalMusic();
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -13,10 +17,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <span className="font-bold text-xl tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
           </Link>
 
-          <nav className="flex items-center gap-4">
+          <nav className="flex items-center gap-3">
+            {isSupported && (
+              directoryHandle ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-3 py-1.5">
+                    <FolderCheck className="h-3.5 w-3.5" />
+                    <span className="font-medium max-w-[120px] truncate">{directoryHandle.name}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                    onClick={clearFolder}
+                    title="Remover pasta"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/50"
+                  onClick={selectFolder}
+                >
+                  <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
+                  Pasta de Músicas
+                </Button>
+              )
+            )}
+
             <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              <span>Administracao</span>
+              <span>Administração</span>
             </Link>
           </nav>
         </div>
@@ -27,7 +61,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="py-6 border-t border-border/40 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Karaoke CT. O palco e seu.</p>
+        <p>© {new Date().getFullYear()} Karaoke CT. O palco é seu.</p>
       </footer>
     </div>
   );
