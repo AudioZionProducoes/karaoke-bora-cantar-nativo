@@ -39,17 +39,18 @@ router.get("/musicas/search", async (req, res): Promise<void> => {
 
   const searchTerm = q?.trim();
 
-  // Check if query is a pure number — enable exact + partial ID matching
-  const numericId = searchTerm && /^\d+$/.test(searchTerm) ? parseInt(searchTerm, 10) : null;
+  // If query is a pure number, search ONLY by exact ID
+  const isNumeric = searchTerm ? /^\d+$/.test(searchTerm) : false;
+  const numericId = isNumeric ? parseInt(searchTerm!, 10) : null;
 
   const where = searchTerm
-    ? or(
-        ilike(musicasTable.musica, `%${searchTerm}%`),
-        ilike(musicasTable.artista, `%${searchTerm}%`),
-        ilike(musicasTable.inicio, `%${searchTerm}%`),
-        sql`CAST(${musicasTable.id} AS TEXT) LIKE ${"%" + searchTerm + "%"}`,
-        ...(numericId !== null ? [eq(musicasTable.id, numericId)] : []),
-      )
+    ? isNumeric
+      ? eq(musicasTable.id, numericId!)
+      : or(
+          ilike(musicasTable.musica, `%${searchTerm}%`),
+          ilike(musicasTable.artista, `%${searchTerm}%`),
+          ilike(musicasTable.inicio, `%${searchTerm}%`),
+        )
     : undefined;
 
   const [data, [totalRow]] = await Promise.all([
