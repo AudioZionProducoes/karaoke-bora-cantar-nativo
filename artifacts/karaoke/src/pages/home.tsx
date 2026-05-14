@@ -50,7 +50,7 @@ export default function Home() {
             <Search className="absolute left-6 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar por artista, música ou letra..."
+              placeholder="Buscar por artista, música, letra ou código..."
               className="w-full h-16 pl-14 pr-6 rounded-full bg-background border-border/50 text-lg shadow-sm focus-visible:ring-primary focus-visible:border-primary transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -99,8 +99,13 @@ export default function Home() {
                 <Card key={musica.id} className="group bg-card border-border/40 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.1)] overflow-hidden flex flex-col h-full">
                   <CardContent className="p-5 flex flex-col h-full gap-4 relative">
                     <div className="space-y-1.5 flex-1 relative z-10">
-                      <div className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors" title={musica.musica}>
-                        {musica.musica}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors" title={musica.musica}>
+                          {musica.musica}
+                        </div>
+                        <span className="shrink-0 text-xs font-mono text-primary/70 bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5">
+                          #{musica.id}
+                        </span>
                       </div>
                       <div className="text-muted-foreground font-medium text-sm line-clamp-1" title={musica.artista}>
                         {musica.artista}
