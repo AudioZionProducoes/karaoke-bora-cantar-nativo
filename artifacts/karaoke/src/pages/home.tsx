@@ -14,13 +14,12 @@ export default function Home() {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
 
-  // Reset page when search changes
   useMemo(() => {
     setPage(1);
   }, [debouncedSearch]);
 
   const { data: stats } = useGetMusicasStats();
-  
+
   const { data: searchResults, isLoading } = useSearchMusicas({
     q: debouncedSearch,
     page,
@@ -35,23 +34,23 @@ export default function Home() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          {stats ? `${stats.totalSongs.toLocaleString()} tracks ready` : "Loading catalog..."}
+          {stats ? `${stats.totalSongs.toLocaleString("pt-BR")} músicas disponíveis` : "Carregando catálogo..."}
         </div>
-        
+
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white drop-shadow-sm">
-          Your Stage Awaits.
+          O Palco é Seu.
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl">
-          Search the ultimate Brazilian karaoke catalog. High quality, premium tracks, zero waiting.
+          Busque no maior catálogo de karaokê. Músicas de alta qualidade, sem espera.
         </p>
-        
+
         <div className="w-full relative mt-4 group">
           <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 -z-10"></div>
           <div className="relative flex items-center w-full">
             <Search className="absolute left-6 h-5 w-5 text-muted-foreground" />
-            <Input 
-              type="text" 
-              placeholder="Search by artist, song, or lyrics..." 
+            <Input
+              type="text"
+              placeholder="Buscar por artista, música ou letra..."
               className="w-full h-16 pl-14 pr-6 rounded-full bg-background border-border/50 text-lg shadow-sm focus-visible:ring-primary focus-visible:border-primary transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -64,10 +63,10 @@ export default function Home() {
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
             <Music className="h-5 w-5 text-primary" />
-            {debouncedSearch ? "Search Results" : "Featured Catalog"}
+            {debouncedSearch ? "Resultados da Busca" : "Catálogo em Destaque"}
           </h2>
           {searchResults && (
-            <span className="text-sm text-muted-foreground">{searchResults.total} found</span>
+            <span className="text-sm text-muted-foreground">{searchResults.total.toLocaleString("pt-BR")} encontradas</span>
           )}
         </div>
 
@@ -90,8 +89,8 @@ export default function Home() {
             <div className="bg-muted/30 p-4 rounded-full mb-4">
               <Mic2 className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-medium">No tracks found</h3>
-            <p className="text-muted-foreground mt-2">Try a different search term</p>
+            <h3 className="text-xl font-medium">Nenhuma música encontrada</h3>
+            <p className="text-muted-foreground mt-2">Tente um termo de busca diferente</p>
           </div>
         ) : (
           <>
@@ -112,7 +111,7 @@ export default function Home() {
                         </div>
                       )}
                     </div>
-                    
+
                     <Link href={`/player/${musica.id}`}>
                       <Button className="w-full mt-4 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all z-10 relative">
                         <Play className="h-4 w-4 mr-2" />
@@ -126,22 +125,22 @@ export default function Home() {
 
             {searchResults && searchResults.totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 pt-8">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   disabled={page === 1}
                   onClick={() => setPage(p => p - 1)}
                 >
-                  Previous
+                  Anterior
                 </Button>
                 <div className="text-sm font-medium px-4">
-                  Page {page} of {searchResults.totalPages}
+                  Página {page} de {searchResults.totalPages}
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   disabled={page === searchResults.totalPages}
                   onClick={() => setPage(p => p + 1)}
                 >
-                  Next
+                  Próxima
                 </Button>
               </div>
             )}
