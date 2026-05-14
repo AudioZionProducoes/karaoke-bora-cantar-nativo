@@ -75,27 +75,41 @@ export default function Player() {
       </header>
 
       <main className="flex-1 w-full h-full relative z-10 flex items-center justify-center bg-black">
-        {!isLibraryConfigured ? (
-          <div className="text-center p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 max-w-lg">
-            <AlertCircle className="h-12 w-12 text-primary mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">Player de Video Não Configurado</h2>
-            <p className="text-muted-foreground mb-6">
-              O ID da biblioteca Bunny Stream ainda não foi configurado. Defina a variável de ambiente{" "}
-              <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded">VITE_BUNNY_LIBRARY_ID</code>.
-            </p>
-            <div className="text-xs text-left bg-black/50 p-4 rounded-lg border border-white/5 font-mono overflow-auto">
-              ID da Música: {musica.id}<br />
-              URL esperada: https://iframe.mediadelivery.net/embed/[LIBRARY_ID]/{musica.id}
-            </div>
-          </div>
-        ) : (
+        {isLibraryConfigured ? (
           <iframe
             src={`https://iframe.mediadelivery.net/embed/${libraryId}/${musica.id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
             className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
             allowFullScreen
           ></iframe>
+        ) : (
+          <video
+            key={musica.id}
+            src={`/api/video/${musica.id}`}
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+            controls
+            autoPlay
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = "none";
+              const sibling = target.nextElementSibling as HTMLElement | null;
+              if (sibling) sibling.style.display = "flex";
+            }}
+          />
         )}
+        {/* Fallback shown only when local video fails to load */}
+        <div
+          className="absolute inset-0 text-center p-8 bg-black/40 backdrop-blur-md flex-col items-center justify-center hidden"
+        >
+          <AlertCircle className="h-12 w-12 text-primary mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2">Arquivo de Vídeo Não Encontrado</h2>
+          <p className="text-muted-foreground mb-4">
+            O arquivo <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded">{musica.id}.mp4</code> não foi encontrado na pasta configurada.
+          </p>
+          <p className="text-xs text-muted-foreground/60">
+            Configure a variável <code className="text-primary/60 bg-primary/10 px-1 rounded">LOCAL_MUSIC_PATH</code> no servidor apontando para a pasta dos MP4s, ou configure o <code className="text-primary/60 bg-primary/10 px-1 rounded">VITE_BUNNY_LIBRARY_ID</code> para usar o Bunny Stream.
+          </p>
+        </div>
       </main>
 
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"></div>
