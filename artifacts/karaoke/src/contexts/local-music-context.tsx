@@ -1,67 +1,81 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
 
 interface LocalMusicContextType {
-  directoryHandle: FileSystemDirectoryHandle | null;
-  isSupported: boolean;
-  selectFolder: () => Promise<void>;
-  getFileUrl: (id: number) => Promise<string | null>;
+  folderName: string | null;
+  selectFolder: () => void;
+  getFileUrl: (id: number) => string | null;
   clearFolder: () => void;
 }
 
 const LocalMusicContext = createContext<LocalMusicContextType | null>(null);
 
 export function LocalMusicProvider({ children }: { children: ReactNode }) {
-  const [directoryHandle, setDirectoryHandle] = useState<FileSystemDirectoryHandle | null>(null);
-  const [blobUrls, setBlobUrls] = useState<Map<number, string>>(new Map());
+  const [folderName, setFolderName] = useState<string | null>(null);
+  const [fileMap, setFileMap] = useState<Map<string, string>>(new Map());
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const isSupported = "showDirectoryPicker" in window;
+  const selectFolder = useCallback(() => {
+    if (!inputRef.current) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.setAttribute("webkitdirectory", "");
+      input.setAttribute("multiple", "");
+      input.style.display = "none";
+      input.addEventListener("change", () => {
+        const files = input.files;
+        if (!files || files.length === 0) return;
 
-  const selectFolder = useCallback(async () => {
-    if (!isSupported) return;
-    try {
-      const handle = await (window as any).showDirectoryPicker({ mode: "read" });
-      setDirectoryHandle(handle);
-      // Clear any previously created blob URLs
-      setBlobUrls((prev) => {
-        prev.forEach((url) => URL.revokeObjectURL(url));
-        return new Map();
+        // Revoke old blob URLs
+        setFileMap((prev) => {
+          prev.forEach((url) => URL.revokeObjectURL(url));
+          return new Map();
+        });
+
+        const newMap = new Map<string, string>();
+        let detectedFolderName = "";
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]!;
+          // Extract just the filename without extension as key
+          const name = file.name.toLowerCase();
+          if (name.endsWith(".mp4")) {
+            const key = file.name.replace(/\.mp4$/i, "");
+            newMap.set(key, URL.createObjectURL(file));
+          }
+          // Detect folder name from relative path (e.g. "musicas/12345.mp4")
+          if (!detectedFolderName && file.webkitRelativePath) {
+            detectedFolderName = file.webkitRelativePath.split("/")[0] ?? "";
+          }
+        }
+
+        setFileMap(newMap);
+        setFolderName(detectedFolderName || `${newMap.size} músicas carregadas`);
+        document.body.removeChild(input);
+        inputRef.current = null;
       });
-    } catch {
-      // User cancelled picker — do nothing
+      document.body.appendChild(input);
+      inputRef.current = input;
     }
-  }, [isSupported]);
+    inputRef.current?.click();
+  }, []);
 
   const getFileUrl = useCallback(
-    async (id: number): Promise<string | null> => {
-      if (!directoryHandle) return null;
-
-      // Return cached blob URL if already created
-      const cached = blobUrls.get(id);
-      if (cached) return cached;
-
-      try {
-        const fileHandle = await directoryHandle.getFileHandle(`${id}.mp4`);
-        const file = await fileHandle.getFile();
-        const url = URL.createObjectURL(file);
-        setBlobUrls((prev) => new Map(prev).set(id, url));
-        return url;
-      } catch {
-        return null;
-      }
+    (id: number): string | null => {
+      return fileMap.get(String(id)) ?? null;
     },
-    [directoryHandle, blobUrls],
+    [fileMap],
   );
 
   const clearFolder = useCallback(() => {
-    setBlobUrls((prev) => {
+    setFileMap((prev) => {
       prev.forEach((url) => URL.revokeObjectURL(url));
       return new Map();
     });
-    setDirectoryHandle(null);
+    setFolderName(null);
   }, []);
 
   return (
-    <LocalMusicContext.Provider value={{ directoryHandle, isSupported, selectFolder, getFileUrl, clearFolder }}>
+    <LocalMusicContext.Provider value={{ folderName, selectFolder, getFileUrl, clearFolder }}>
       {children}
     </LocalMusicContext.Provider>
   );
