@@ -127,7 +127,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <Tabs defaultValue="catalog" className="space-y-6">
+        <Tabs defaultValue="cupons" className="space-y-6">
           <TabsList className="bg-muted/50 border border-border/40 p-1">
             <TabsTrigger value="catalog" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm px-6">
               <Music className="h-4 w-4 mr-2" />
