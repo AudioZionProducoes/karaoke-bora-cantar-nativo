@@ -2,7 +2,8 @@ import { useParams, Link, useLocation } from "wouter";
 import {
   ArrowLeft, Play, Music, AlertCircle, FolderOpen,
   Star, RotateCcw, Trophy, Search, X, Mic2,
-  ListMusic, Trash2, ListPlus, Check, UserRound, ChevronRight
+  ListMusic, Trash2, ListPlus, Check, UserRound, ChevronRight,
+  QrCode, Smartphone
 } from "lucide-react";
 import { useGetMusica, getGetMusicaQueryKey, useSearchMusicas } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,10 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useQueue, type QueueItem } from "@/contexts/queue-context";
+import { useSession } from "@/hooks/use-session";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
+import QRCodeLib from "react-qr-code";
 
 function randomScore() {
   return Math.floor(Math.random() * 21) + 80;
@@ -474,6 +477,29 @@ export default function Player() {
   const [videoKey, setVideoKey] = useState(0);
   const [panel, setPanel] = useState<"none" | "search" | "queue">("none");
 
+  // Session + QR Code for remote control
+  const { session, createSession, joinSession } = useSession();
+  const [showQR, setShowQR] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Create or reuse session on mount
+  useEffect(() => {
+    async function setupSession() {
+      const stored = localStorage.getItem("karaoke-ct-session-id");
+      if (stored) {
+        const ok = await joinSession(stored);
+        if (ok) { setSessionId(stored); return; }
+      }
+      const newId = await createSession("Player");
+      if (newId) setSessionId(newId);
+    }
+    setupSession();
+  }, [createSession, joinSession]);
+
+  const remoteUrl = typeof window !== "undefined" && sessionId
+    ? `${window.location.origin}${import.meta.env.BASE_URL}remote/${sessionId}`
+    : "";
+
   // Store the next queued item to show on score screen
   const [nextQueuedItem, setNextQueuedItem] = useState<QueueItem | null>(null);
 
@@ -586,8 +612,44 @@ export default function Player() {
               </span>
             )}
           </Button>
+          {sessionId && (
+            <Button variant="ghost" size="sm"
+              className="backdrop-blur-sm rounded-full border text-xs transition-all relative h-8 px-3 bg-black/20 text-white border-white/10 hover:bg-white/10"
+              onClick={() => setShowQR(!showQR)}
+              title="QR Code - Controle Remoto">
+              <QrCode className="h-3.5 w-3.5 mr-1.5" />
+              QR
+            </Button>
+          )}
         </div>
       </header>
+
+      {/* QR Code overlay */}
+      {showQR && sessionId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowQR(false)}>
+          <div className="bg-black/90 border border-white/15 rounded-2xl p-6 max-w-sm w-full flex flex-col items-center gap-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 text-white font-semibold">
+              <Smartphone className="h-5 w-5 text-primary" />
+              Controle Remoto
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Use o celular para escanear o QR Code e adicionar músicas à fila.
+            </p>
+            {remoteUrl && (
+              <div className="bg-white rounded-xl p-3 inline-block">
+                <QRCodeLib value={remoteUrl} size={180} bgColor="#ffffff" fgColor="#000000" />
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground bg-white/5 rounded-lg px-3 py-1.5 text-center break-all">
+              {remoteUrl}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowQR(false)}
+              className="border-white/20 text-white hover:bg-white/10 hover:text-white">
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Queue panel only — search is now persistent in header */}
       {panel === "queue" && <QueuePanel onClose={() => setPanel("none")} />}
