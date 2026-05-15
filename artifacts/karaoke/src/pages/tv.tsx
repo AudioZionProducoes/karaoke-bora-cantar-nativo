@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, Link } from "wouter";
 import { useGetMusica } from "@workspace/api-client-react";
 import { useSession } from "@/hooks/use-session";
@@ -15,6 +15,38 @@ function generateScore(singerName: string): { score: number; stars: number; labe
   return { score, stars, label };
 }
 
+function useRouletteScore(finalScore: number) {
+  const [displayed, setDisplayed] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed(0);
+    setDone(false);
+    const duration = 2500;
+    const start = performance.now();
+    let raf = 0;
+
+    function tick(now: number) {
+      const elapsed = now - start;
+      const t = Math.min(elapsed / duration, 1);
+      // easeOutQuart — starts fast, decelerates near the end
+      const eased = 1 - Math.pow(1 - t, 4);
+      const current = Math.round(eased * finalScore);
+      setDisplayed(current);
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setDone(true);
+      }
+    }
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [finalScore]);
+
+  return { displayed, done };
+}
+
 function ScoreOverlay({
   singerName, musica, artista, nextItem, onNext, onClose,
 }: {
@@ -22,7 +54,8 @@ function ScoreOverlay({
   nextItem: SessionQueueItem | null;
   onNext: () => void; onClose: () => void;
 }) {
-  const { score, stars, label } = generateScore(singerName);
+  const result = useMemo(() => generateScore(singerName), [singerName]);
+  const { displayed, done } = useRouletteScore(result.score);
   const nextRef = useRef(onNext);
   nextRef.current = onNext;
 
@@ -33,6 +66,9 @@ function ScoreOverlay({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  const circumference = 2 * Math.PI * 70;
+  const ringOffset = circumference * (1 - displayed / 100);
 
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white p-6 animate-in fade-in duration-500">
@@ -47,13 +83,13 @@ function ScoreOverlay({
       <p className="text-muted-foreground text-sm mb-6">{artista}</p>
 
       <div className="relative flex items-center justify-center mb-6">
-        <svg width="140" height="140" viewBox="0 0 160 160" className="-rotate-90">
+        <svg width="180" height="180" viewBox="0 0 160 160" className="-rotate-90">
           <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
           <circle cx="80" cy="80" r="70" fill="none" stroke="url(#scoreGrad)" strokeWidth="10"
             strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 70}`}
-            strokeDashoffset={`${2 * Math.PI * 70 * (1 - score / 100)}`}
-            className="transition-all duration-1000" />
+            strokeDasharray={`${circumference}`}
+            strokeDashoffset={`${ringOffset}`}
+            style={{ transition: "stroke-dashoffset 50ms linear" }} />
           <defs>
             <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#a855f7" />
@@ -62,12 +98,24 @@ function ScoreOverlay({
           </defs>
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className="text-4xl font-black tabular-nums leading-none">{score}</span>
+          <span className={`tabular-nums leading-none font-black ${done ? "text-5xl text-white" : "text-4xl text-primary"} transition-colors duration-300`}>
+            {displayed}
+          </span>
           <span className="text-muted-foreground text-xs mt-1">pontos</span>
         </div>
       </div>
 
-      <p className="text-lg font-bold mb-6 text-primary">{label}</p>
+      <div className="h-8 mb-4 flex items-center justify-center">
+        {done ? (
+          <p className="text-xl font-bold text-primary animate-in zoom-in duration-300">{result.label}</p>
+        ) : (
+          <div className="flex gap-1">
+            <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+            <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+            <span className="w-2 h-2 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+          </div>
+        )}
+      </div>
 
       {nextItem ? (
         <div className="mb-6 w-full max-w-sm bg-white/5 border border-white/10 rounded-xl p-4 text-left">
