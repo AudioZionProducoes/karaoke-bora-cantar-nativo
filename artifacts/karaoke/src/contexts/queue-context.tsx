@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export interface QueueItem {
   id: number;
@@ -8,6 +8,27 @@ export interface QueueItem {
 }
 
 const MAX_QUEUE = 30;
+const STORAGE_KEY = "karaoke-ct-queue";
+
+function loadQueue(): QueueItem[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed as QueueItem[];
+  } catch {
+    // ignore parse errors
+  }
+  return [];
+}
+
+function saveQueue(queue: QueueItem[]) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(queue));
+  } catch {
+    // ignore storage errors (private mode, quota, etc.)
+  }
+}
 
 interface QueueContextType {
   queue: QueueItem[];
@@ -21,7 +42,12 @@ interface QueueContextType {
 const QueueContext = createContext<QueueContextType | null>(null);
 
 export function QueueProvider({ children }: { children: ReactNode }) {
-  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [queue, setQueue] = useState<QueueItem[]>(loadQueue);
+
+  // Persist to localStorage whenever queue changes
+  useEffect(() => {
+    saveQueue(queue);
+  }, [queue]);
 
   const addToQueue = useCallback((item: QueueItem): boolean => {
     let added = false;
