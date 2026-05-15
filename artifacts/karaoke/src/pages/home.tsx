@@ -106,11 +106,11 @@ export default function Home() {
         <div className="w-full relative mt-4 group">
           <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10"></div>
           <div className="relative flex items-center w-full">
-            <Search className="absolute left-6 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-6 h-5 w-5 text-yellow-400 dark:text-black" />
             <Input
               type="text"
               placeholder="Buscar por artista, música, letra ou código..."
-              className="w-full h-16 pl-14 pr-6 rounded-full bg-background border-border/50 text-lg shadow-sm focus-visible:ring-primary focus-visible:border-primary dark:focus-visible:ring-yellow-400 dark:focus-visible:border-yellow-400 transition-all"
+              className="w-full h-16 pl-14 pr-6 rounded-full bg-black border-yellow-400/30 text-yellow-400 placeholder:text-yellow-400/60 text-lg shadow-sm focus-visible:ring-yellow-400 focus-visible:border-yellow-400 dark:bg-yellow-400 dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
