@@ -11,6 +11,7 @@ import { Layout } from "@/components/layout";
 import { useQueue, type QueueItem } from "@/contexts/queue-context";
 import { useToast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
+import { ArtistAvatar } from "@/components/artist-avatar";
 import { useSession } from "@/hooks/use-session";
 
 export default function Home() {
@@ -157,24 +158,27 @@ export default function Home() {
               {searchResults?.data.map((musica) => (
                 <Card key={musica.id} className="group bg-card border-border/40 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.1)] overflow-hidden flex flex-col h-full">
                   <CardContent className="p-5 flex flex-col h-full gap-4 relative">
-                    <div className="space-y-1.5 flex-1 relative z-10">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors" title={musica.musica}>
-                          {musica.musica}
+                    <div className="flex items-start gap-3">
+                      <ArtistAvatar name={musica.artista} size={44} className="mt-0.5" />
+                      <div className="space-y-1.5 flex-1 min-w-0 relative z-10">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-semibold text-lg line-clamp-1 group-hover:text-primary transition-colors" title={musica.musica}>
+                            {musica.musica}
+                          </div>
+                          <span className="shrink-0 text-xs font-mono text-primary/70 bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5">
+                            #{musica.id}
+                          </span>
                         </div>
-                        <span className="shrink-0 text-xs font-mono text-primary/70 bg-primary/10 border border-primary/20 rounded px-1.5 py-0.5">
-                          #{musica.id}
-                        </span>
+                        <div className="text-muted-foreground font-medium text-sm line-clamp-1" title={musica.artista}>
+                          {musica.artista}
+                        </div>
                       </div>
-                      <div className="text-muted-foreground font-medium text-sm line-clamp-1" title={musica.artista}>
-                        {musica.artista}
-                      </div>
+                    </div>
                       {musica.inicio && (
                         <div className="text-xs text-muted-foreground/70 mt-3 italic line-clamp-2 pl-2 border-l-2 border-primary/30">
                           "{musica.inicio}"
                         </div>
                       )}
-                    </div>
 
                     <div className="flex gap-2 mt-4">
                       <Link href={`/player/${musica.id}`} className="flex-1">
