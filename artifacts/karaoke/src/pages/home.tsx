@@ -64,7 +64,7 @@ export default function Home() {
       />
 
       <div className="flex flex-col items-center pt-12 pb-8 max-w-3xl mx-auto text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(250,204,21,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.25)]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -83,7 +83,7 @@ export default function Home() {
         <div className="flex gap-3">
           <Button
             size="lg"
-            className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all"
+            className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
             onClick={handleStartTV}
             disabled={startingSession}
           >
@@ -94,7 +94,7 @@ export default function Home() {
             <Button
               variant="outline"
               size="lg"
-              className="border-primary/50 text-primary hover:bg-primary/10"
+              className="border-primary/50 text-primary hover:bg-primary/10 dark:border-yellow-400/50 dark:text-yellow-400 dark:hover:bg-yellow-400/10"
               onClick={() => navigate(`/tv/${session.id}`)}
             >
               <QrCode className="h-5 w-5 mr-2" />
@@ -104,13 +104,13 @@ export default function Home() {
         </div>
 
         <div className="w-full relative mt-4 group">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 -z-10"></div>
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10"></div>
           <div className="relative flex items-center w-full">
             <Search className="absolute left-6 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Buscar por artista, música, letra ou código..."
-              className="w-full h-16 pl-14 pr-6 rounded-full bg-background border-border/50 text-lg shadow-sm focus-visible:ring-primary focus-visible:border-primary transition-all"
+              className="w-full h-16 pl-14 pr-6 rounded-full bg-background border-border/50 text-lg shadow-sm focus-visible:ring-primary focus-visible:border-primary dark:focus-visible:ring-yellow-400 dark:focus-visible:border-yellow-400 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -121,7 +121,7 @@ export default function Home() {
       <div className="mt-8 space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-            <Music className="h-5 w-5 text-primary" />
+            <Music className="h-5 w-5 text-primary dark:text-yellow-400" />
             {debouncedSearch ? "Resultados da Busca" : "Catálogo em Destaque"}
           </h2>
           {searchResults && (
@@ -155,7 +155,7 @@ export default function Home() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {searchResults?.data.map((musica) => (
-                <Card key={musica.id} className="group bg-card border-border/40 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.1)] overflow-hidden flex flex-col h-full">
+                <Card key={musica.id} className="group bg-card border-border/40 hover:border-primary/50 dark:hover:border-yellow-400/50 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.1)] dark:hover:shadow-[0_0_20px_rgba(250,204,21,0.15)] overflow-hidden flex flex-col h-full">
                   <CardContent className="p-5 flex flex-col h-full gap-4 relative">
                     <div className="space-y-1.5 flex-1 relative z-10">
                       <div className="flex items-center justify-between gap-2">
@@ -178,7 +178,7 @@ export default function Home() {
 
                     <div className="flex gap-2 mt-4">
                       <Link href={`/player/${musica.id}`} className="flex-1">
-                        <Button className="w-full dark:bg-yellow-400 dark:text-black dark:hover:bg-yellow-300 bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative">
+                        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative">
                           <Play className="h-4 w-4 mr-2" />
                           Cantar Agora
                         </Button>
