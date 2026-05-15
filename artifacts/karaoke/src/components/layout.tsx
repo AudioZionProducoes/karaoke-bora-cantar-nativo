@@ -1,32 +1,52 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut, Search } from "lucide-react";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useTheme } from "@/components/theme-provider";
 import { useQueue } from "@/contexts/queue-context";
 import { useAuth } from "@/contexts/auth-context";
+import { useSearch } from "@/contexts/search-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { folderName, selectFolder, clearFolder } = useLocalMusic();
   const { theme, setTheme } = useTheme();
   const { queue, removeFromQueue, clearQueue } = useQueue();
   const { user, logout } = useAuth();
+  const { searchTerm, setSearchTerm } = useSearch();
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [queueOpen, setQueueOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-4 max-w-7xl">
+          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80 shrink-0">
             <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.2)]">
               <Mic2 className="h-5 w-5" />
             </div>
             <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
           </Link>
 
-          <nav className="flex items-center gap-3">
+          {/* Global search bar in header */}
+          <div className="flex-1 max-w-xl hidden md:block">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10"></div>
+              <div className="relative flex items-center w-full">
+                <Search className="absolute left-3.5 h-4 w-4 text-white dark:text-black" />
+                <Input
+                  type="text"
+                  placeholder="Buscar música..."
+                  className="w-full h-9 pl-9 pr-4 rounded-full bg-black border-white/30 text-white placeholder:text-white/60 text-sm shadow-sm focus-visible:ring-white focus-visible:border-white dark:bg-[hsl(55,100%,50%)] dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <nav className="flex items-center gap-3 ml-auto">
             {folderName ? (
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-3 py-1.5">

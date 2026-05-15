@@ -7,6 +7,7 @@ import { LocalMusicProvider } from "@/contexts/local-music-context";
 import { QueueProvider } from "@/contexts/queue-context";
 import { SessionProvider } from "@/contexts/session-context";
 import { AuthProvider } from "@/contexts/auth-context";
+import { SearchProvider } from "@/contexts/search-context";
 import NotFound from "@/pages/not-found";
 
 import Home from "@/pages/home";
@@ -41,10 +42,12 @@ function App() {
             <QueueProvider>
               <SessionProvider>
                 <AuthProvider>
-                  <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-                    <Router />
-                  </WouterRouter>
-                  <Toaster />
+                  <SearchProvider>
+                    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                      <Router />
+                    </WouterRouter>
+                    <Toaster />
+                  </SearchProvider>
                 </AuthProvider>
               </SessionProvider>
             </QueueProvider>
