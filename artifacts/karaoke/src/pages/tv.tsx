@@ -103,7 +103,7 @@ export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
   const { session, joinSession, advanceQueue } = useSession();
-  const { getFileUrl, folderName } = useLocalMusic();
+  const { getFileUrl } = useLocalMusic();
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
   const isLibraryConfigured = libraryId && libraryId !== "CONFIGURE_LIBRARY_ID";
@@ -161,10 +161,12 @@ export default function TVPage() {
   }
 
   const nextItem = session?.queue?.[0] ?? null;
-  const currentSinger = currentSongId
-    ? session?.queue?.find(q => q.id === currentSongId)?.singerName
-      ?? "Anônimo"
-    : null;
+  // Prefer the server-stored singer name; fall back to queue lookup only as backup
+  const currentSinger = session?.currentSingerName
+    ? session.currentSingerName
+    : currentSongId
+      ? session?.queue?.find(q => q.id === currentSongId)?.singerName ?? "Anônimo"
+      : null;
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden flex flex-col">
@@ -172,76 +174,78 @@ export default function TVPage() {
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
 
       {/* QR Code overlay (corner) */}
-      <div className="absolute top-4 right-4 z-30 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3 flex flex-col items-center gap-2">
-        <QRCode value={remoteUrl} size={80} bgColor="transparent" fgColor="#fff" />
-        <div className="text-[10px] text-center text-muted-foreground leading-tight max-w-[100px]">
-          <Smartphone className="h-3 w-3 mx-auto mb-0.5" />
+      <div className="absolute top-3 right-3 z-30 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-2.5 flex flex-col items-center gap-1">
+        <QRCode value={remoteUrl} size={70} bgColor="transparent" fgColor="#fff" />
+        <div className="text-[9px] text-center text-muted-foreground leading-tight max-w-[80px]">
+          <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5" />
           Escaneie para controlar
         </div>
       </div>
 
-      {/* Session info header */}
-      <header className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent">
-        <div className="flex items-center gap-3">
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-full bg-black/20 border border-white/10">
-              <ArrowLeft className="h-4 w-4 mr-2" />Sair
-            </Button>
-          </Link>
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider">Modo TV</div>
+      {/* Top header bar */}
+      <header className="shrink-0 z-20 bg-black/80 backdrop-blur-sm border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex items-center gap-3">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-8">
+                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />Sair
+              </Button>
+            </Link>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider hidden sm:block">Modo TV</div>
             <div className="font-bold text-sm">Sessão: <span className="text-primary">{sessionId}</span></div>
           </div>
         </div>
-      </header>
 
-      {/* Now Playing info */}
-      <div className="absolute top-16 left-4 z-20 max-w-xs">
-        {musica ? (
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3">
-            <div className="text-[10px] text-primary uppercase tracking-wider mb-1">Agora cantando</div>
-            {currentSinger && (
-              <div className="flex items-center gap-1.5 mb-1">
-                <UserRound className="h-3.5 w-3.5 text-primary" />
-                <span className="font-bold text-primary text-sm">{currentSinger}</span>
-              </div>
-            )}
-            <div className="font-bold text-white text-sm line-clamp-1">{musica.musica}</div>
-            <div className="text-xs text-muted-foreground">{musica.artista}</div>
-          </div>
-        ) : (
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3">
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Aguardando...</div>
-            <div className="text-sm text-white/60">Nenhuma música na fila</div>
-          </div>
-        )}
-      </div>
-
-      {/* Queue sidebar */}
-      <div className="absolute top-16 right-4 z-20 mt-28 w-56 max-h-[calc(100vh-180px)] overflow-y-auto">
+        {/* Horizontal queue bar */}
         {session && session.queue.length > 0 && (
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-3">
-            <div className="flex items-center gap-1.5 mb-2 text-xs text-muted-foreground uppercase tracking-wider">
-              <ListMusic className="h-3 w-3" />
-              Fila ({session.queue.length})
-            </div>
-            <div className="space-y-2">
+          <div className="px-4 pb-2 overflow-x-auto">
+            <div className="flex items-center gap-2 min-w-max">
+              {/* Now playing badge (yellow highlight, first in line) */}
+              {currentSongId && currentSinger && (
+                <div className="shrink-0 flex items-center gap-2 bg-yellow-500/15 border border-yellow-400/40 rounded-lg px-3 py-1.5">
+                  <div className="bg-yellow-400/20 rounded-full p-1">
+                    <UserRound className="h-3 w-3 text-yellow-400" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora Cantando</div>
+                    <div className="text-xs font-bold text-white leading-tight">{currentSinger}</div>
+                    <div className="text-[10px] text-white/70 leading-tight">{musica?.musica ?? "Música " + currentSongId}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Up next items */}
               {session.queue.map((item, i) => (
-                <div key={item.id} className="flex items-start gap-2 text-xs">
-                  <span className="text-muted-foreground font-mono w-4 shrink-0">{i + 1}</span>
-                  <div className="min-w-0">
-                    <div className="font-bold text-primary line-clamp-1">{item.singerName}</div>
-                    <div className="text-white/80 line-clamp-1">{item.musica}</div>
+                <div
+                  key={item.id}
+                  className={`shrink-0 flex items-center gap-2 rounded-lg px-3 py-1.5 border ${
+                    i === 0 && currentSongId !== item.id
+                      ? "bg-primary/10 border-primary/30"
+                      : "bg-white/5 border-white/10"
+                  }`}
+                >
+                  <span className="text-[10px] font-mono text-muted-foreground">{i + 1}</span>
+                  <div>
+                    <div className="text-xs font-bold text-primary leading-tight">{item.singerName}</div>
+                    <div className="text-[10px] text-white/70 leading-tight">{item.musica}</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
+
+        {/* Empty queue state in bar */}
+        {(!session?.queue || session.queue.length === 0) && (
+          <div className="px-4 pb-2 text-xs text-muted-foreground flex items-center gap-1.5">
+            <ListMusic className="h-3 w-3" />
+            Fila vazia — escaneie o QR Code para adicionar músicas
+          </div>
+        )}
+      </header>
 
       {/* Video Player */}
-      <div className="flex-1 flex items-center justify-center bg-black">
+      <div className="flex-1 flex items-center justify-center bg-black min-h-0">
         {isLibraryConfigured && currentSongId ? (
           <iframe
             key={`iframe-${currentSongId}`}

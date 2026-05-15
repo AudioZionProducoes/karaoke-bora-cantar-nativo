@@ -13,6 +13,7 @@ export interface Session {
   name: string;
   queue: SessionQueueItem[];
   currentSongId: string | null;
+  currentSingerName: string | null;
   currentSongStartedAt: string | null;
   updatedAt: string;
 }

@@ -141,12 +141,21 @@ router.post("/sessions/:id/play", async (req, res): Promise<void> => {
     return;
   }
 
+  // If playing from queue, grab the singer name
+  const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
+  const fromQueue = queue.find((q) => q.id === Number(songId));
+
   await db
     .update(sessionsTable)
-    .set({ currentSongId: songId ? String(songId) : null, currentSongStartedAt: new Date(), updatedAt: new Date() })
+    .set({
+      currentSongId: songId ? String(songId) : null,
+      currentSingerName: fromQueue?.singerName ?? null,
+      currentSongStartedAt: new Date(),
+      updatedAt: new Date(),
+    })
     .where(eq(sessionsTable.id, id));
 
-  res.json({ currentSongId: songId ?? null });
+  res.json({ currentSongId: songId ?? null, currentSingerName: fromQueue?.singerName ?? null });
 });
 
 router.post("/sessions/:id/next", async (req, res): Promise<void> => {
@@ -172,6 +181,7 @@ router.post("/sessions/:id/next", async (req, res): Promise<void> => {
     .set({
       queue: updatedQueue,
       currentSongId: next ? String(next.id) : null,
+      currentSingerName: next?.singerName ?? null,
       currentSongStartedAt: new Date(),
       updatedAt: new Date(),
     })
