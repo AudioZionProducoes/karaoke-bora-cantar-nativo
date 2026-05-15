@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut, Ticket, Clock } from "lucide-react";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useTheme } from "@/components/theme-provider";
 import { useQueue } from "@/contexts/queue-context";
 import { useAuth } from "@/contexts/auth-context";
+import { useTemporaryAccess } from "@/contexts/temporary-access-context";
 import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -12,6 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const { queue, removeFromQueue, clearQueue } = useQueue();
   const { user, logout } = useAuth();
+  const { hasAccess, remainingMinutes, clearAccess } = useTemporaryAccess();
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [queueOpen, setQueueOpen] = useState(false);
 
@@ -58,7 +60,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
 
-            {user ? (
+            {hasAccess ? (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded-full px-3 py-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{remainingMinutes}min</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs text-muted-foreground hover:text-destructive gap-1"
+                  onClick={clearAccess}
+                  title="Encerrar acesso temporário"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ) : user ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground hidden sm:inline" title={user.email}>
                   {user.email}

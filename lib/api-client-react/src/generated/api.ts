@@ -20,9 +20,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AccessCode,
   AuthenticateUser200,
   AuthenticateUserBody,
   CatalogStats,
+  CreateAccessCodes201,
+  CreateAccessCodesBody,
   CreateUserPassword200,
   ErrorResponse,
   HealthStatus,
@@ -31,8 +34,12 @@ import type {
   MusicaInput,
   MusicaSearchResult,
   MusicaUpdate,
+  RedeemAccessCode200,
+  RedeemAccessCodeBody,
   SearchMusicasParams,
   UserLogout200,
+  ValidateAccessCode200,
+  ValidateAccessCodeParams,
   WebhookResult,
   WooCommerceEvent
 } from './api.schemas';
@@ -1020,6 +1027,314 @@ export const useCreateUserPassword = <TError = ErrorType<ErrorResponse>,
       > => {
       return useMutation(getCreateUserPasswordMutationOptions(options));
     }
+
+export const getListAccessCodesUrl = () => {
+
+
+
+
+  return `/api/access-codes`
+}
+
+/**
+ * Returns all generated access codes with their status
+ * @summary List access codes
+ */
+export const listAccessCodes = async ( options?: RequestInit): Promise<AccessCode[]> => {
+
+  return customFetch<AccessCode[]>(getListAccessCodesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAccessCodesQueryKey = () => {
+    return [
+    `/api/access-codes`
+    ] as const;
+    }
+
+
+export const getListAccessCodesQueryOptions = <TData = Awaited<ReturnType<typeof listAccessCodes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAccessCodes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAccessCodesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAccessCodes>>> = ({ signal }) => listAccessCodes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAccessCodes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAccessCodesQueryResult = NonNullable<Awaited<ReturnType<typeof listAccessCodes>>>
+export type ListAccessCodesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List access codes
+ */
+
+export function useListAccessCodes<TData = Awaited<ReturnType<typeof listAccessCodes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAccessCodes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAccessCodesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateAccessCodesUrl = () => {
+
+
+
+
+  return `/api/access-codes`
+}
+
+/**
+ * Generates one or more temporary access codes
+ * @summary Generate access codes
+ */
+export const createAccessCodes = async (createAccessCodesBody: CreateAccessCodesBody, options?: RequestInit): Promise<CreateAccessCodes201> => {
+
+  return customFetch<CreateAccessCodes201>(getCreateAccessCodesUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createAccessCodesBody,)
+  }
+);}
+
+
+
+
+export const getCreateAccessCodesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAccessCodes>>, TError,{data: BodyType<CreateAccessCodesBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAccessCodes>>, TError,{data: BodyType<CreateAccessCodesBody>}, TContext> => {
+
+const mutationKey = ['createAccessCodes'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAccessCodes>>, {data: BodyType<CreateAccessCodesBody>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAccessCodes(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAccessCodesMutationResult = NonNullable<Awaited<ReturnType<typeof createAccessCodes>>>
+    export type CreateAccessCodesMutationBody = BodyType<CreateAccessCodesBody>
+    export type CreateAccessCodesMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Generate access codes
+ */
+export const useCreateAccessCodes = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAccessCodes>>, TError,{data: BodyType<CreateAccessCodesBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAccessCodes>>,
+        TError,
+        {data: BodyType<CreateAccessCodesBody>},
+        TContext
+      > => {
+      return useMutation(getCreateAccessCodesMutationOptions(options));
+    }
+
+export const getRedeemAccessCodeUrl = (code: string,) => {
+
+
+
+
+  return `/api/access-codes/${code}/redeem`
+}
+
+/**
+ * Redeems a code to grant temporary access
+ * @summary Redeem access code
+ */
+export const redeemAccessCode = async (code: string,
+    redeemAccessCodeBody?: RedeemAccessCodeBody, options?: RequestInit): Promise<RedeemAccessCode200> => {
+
+  return customFetch<RedeemAccessCode200>(getRedeemAccessCodeUrl(code),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      redeemAccessCodeBody,)
+  }
+);}
+
+
+
+
+export const getRedeemAccessCodeMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data?: BodyType<RedeemAccessCodeBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data?: BodyType<RedeemAccessCodeBody>}, TContext> => {
+
+const mutationKey = ['redeemAccessCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof redeemAccessCode>>, {code: string;data?: BodyType<RedeemAccessCodeBody>}> = (props) => {
+          const {code,data} = props ?? {};
+
+          return  redeemAccessCode(code,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RedeemAccessCodeMutationResult = NonNullable<Awaited<ReturnType<typeof redeemAccessCode>>>
+    export type RedeemAccessCodeMutationBody = BodyType<RedeemAccessCodeBody> | undefined
+    export type RedeemAccessCodeMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Redeem access code
+ */
+export const useRedeemAccessCode = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data?: BodyType<RedeemAccessCodeBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof redeemAccessCode>>,
+        TError,
+        {code: string;data?: BodyType<RedeemAccessCodeBody>},
+        TContext
+      > => {
+      return useMutation(getRedeemAccessCodeMutationOptions(options));
+    }
+
+export const getValidateAccessCodeUrl = (params: ValidateAccessCodeParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/access-codes/validate?${stringifiedParams}` : `/api/access-codes/validate`
+}
+
+/**
+ * Checks if a redeemed code is still valid
+ * @summary Validate redeemed code
+ */
+export const validateAccessCode = async (params: ValidateAccessCodeParams, options?: RequestInit): Promise<ValidateAccessCode200> => {
+
+  return customFetch<ValidateAccessCode200>(getValidateAccessCodeUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getValidateAccessCodeQueryKey = (params?: ValidateAccessCodeParams,) => {
+    return [
+    `/api/access-codes/validate`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getValidateAccessCodeQueryOptions = <TData = Awaited<ReturnType<typeof validateAccessCode>>, TError = ErrorType<unknown>>(params: ValidateAccessCodeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof validateAccessCode>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getValidateAccessCodeQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof validateAccessCode>>> = ({ signal }) => validateAccessCode(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof validateAccessCode>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ValidateAccessCodeQueryResult = NonNullable<Awaited<ReturnType<typeof validateAccessCode>>>
+export type ValidateAccessCodeQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Validate redeemed code
+ */
+
+export function useValidateAccessCode<TData = Awaited<ReturnType<typeof validateAccessCode>>, TError = ErrorType<unknown>>(
+ params: ValidateAccessCodeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof validateAccessCode>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getValidateAccessCodeQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getWoocommerceWebhookUrl = () => {
 

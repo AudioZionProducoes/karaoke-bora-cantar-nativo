@@ -14,6 +14,8 @@ tags:
     description: Song catalog operations
   - name: users
     description: User management operations
+  - name: access-codes
+    description: Temporary access code operations
   - name: webhook
     description: Webhook integrations
 paths:
@@ -354,6 +356,158 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /access-codes:
+    get:
+      operationId: listAccessCodes
+      tags: [access-codes]
+      summary: List access codes
+      description: Returns all generated access codes with their status
+      responses:
+        "200":
+          description: List of access codes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccessCode"
+    post:
+      operationId: createAccessCodes
+      tags: [access-codes]
+      summary: Generate access codes
+      description: Generates one or more temporary access codes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [durationMinutes]
+              properties:
+                durationMinutes:
+                  type: integer
+                  description: Access duration in minutes
+                quantity:
+                  type: integer
+                  default: 1
+                  description: Number of codes to generate (max 50)
+                label:
+                  type: string
+                  description: Optional label/description
+                createdBy:
+                  type: integer
+                  description: Admin user ID
+      responses:
+        "201":
+          description: Codes generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  codes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        durationMinutes:
+                          type: integer
+                        label:
+                          type: string
+                          nullable: true
+                        expiresAt:
+                          type: string
+
+  /access-codes/{code}/redeem:
+    post:
+      operationId: redeemAccessCode
+      tags: [access-codes]
+      summary: Redeem access code
+      description: Redeems a code to grant temporary access
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  description: Email or device identifier of who redeemed
+      responses:
+        "200":
+          description: Code redeemed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  durationMinutes:
+                    type: integer
+                  accessExpiresAt:
+                    type: string
+        "404":
+          description: Code not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Already used
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "410":
+          description: Code expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /access-codes/validate:
+    get:
+      operationId: validateAccessCode
+      tags: [access-codes]
+      summary: Validate redeemed code
+      description: Checks if a redeemed code is still valid
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                  remainingMinutes:
+                    type: integer
+                  durationMinutes:
+                    type: integer
+                  accessExpiresAt:
+                    type: string
+
   /webhook/woocommerce:
     post:
       operationId: woocommerceWebhook
@@ -495,6 +649,34 @@ components:
           type: boolean
         message:
           type: string
+
+    AccessCode:
+      type: object
+      required: [id, code, durationMinutes, used, status]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        durationMinutes:
+          type: integer
+        label:
+          type: ["string", "null"]
+        used:
+          type: boolean
+        usedAt:
+          type: ["string", "null"]
+        usedBy:
+          type: ["string", "null"]
+        expiresAt:
+          type: ["string", "null"]
+        createdAt:
+          type: ["string", "null"]
+        createdBy:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [pending, used, expired]
 
     ErrorResponse:
       type: object

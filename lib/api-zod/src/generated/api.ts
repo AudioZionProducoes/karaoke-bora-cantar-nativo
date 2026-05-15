@@ -224,6 +224,76 @@ export const CreateUserPasswordResponse = zod.object({
 
 
 /**
+ * Returns all generated access codes with their status
+ * @summary List access codes
+ */
+export const ListAccessCodesResponseItem = zod.object({
+  "id": zod.number(),
+  "code": zod.string(),
+  "durationMinutes": zod.number(),
+  "label": zod.string().nullish(),
+  "used": zod.boolean(),
+  "usedAt": zod.string().nullish(),
+  "usedBy": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "createdAt": zod.string().nullish(),
+  "createdBy": zod.number().nullish(),
+  "status": zod.enum(['pending', 'used', 'expired'])
+})
+export const ListAccessCodesResponse = zod.array(ListAccessCodesResponseItem)
+
+
+/**
+ * Generates one or more temporary access codes
+ * @summary Generate access codes
+ */
+export const createAccessCodesBodyQuantityDefault = 1;
+
+export const CreateAccessCodesBody = zod.object({
+  "durationMinutes": zod.number().describe('Access duration in minutes'),
+  "quantity": zod.number().default(createAccessCodesBodyQuantityDefault).describe('Number of codes to generate (max 50)'),
+  "label": zod.string().optional().describe('Optional label\/description'),
+  "createdBy": zod.number().optional().describe('Admin user ID')
+})
+
+
+/**
+ * Redeems a code to grant temporary access
+ * @summary Redeem access code
+ */
+export const RedeemAccessCodeParams = zod.object({
+  "code": zod.coerce.string()
+})
+
+export const RedeemAccessCodeBody = zod.object({
+  "identifier": zod.string().optional().describe('Email or device identifier of who redeemed')
+})
+
+export const RedeemAccessCodeResponse = zod.object({
+  "success": zod.boolean().optional(),
+  "message": zod.string().optional(),
+  "durationMinutes": zod.number().optional(),
+  "accessExpiresAt": zod.string().optional()
+})
+
+
+/**
+ * Checks if a redeemed code is still valid
+ * @summary Validate redeemed code
+ */
+export const ValidateAccessCodeQueryParams = zod.object({
+  "code": zod.coerce.string()
+})
+
+export const ValidateAccessCodeResponse = zod.object({
+  "valid": zod.boolean().optional(),
+  "remainingMinutes": zod.number().optional(),
+  "durationMinutes": zod.number().optional(),
+  "accessExpiresAt": zod.string().optional()
+})
+
+
+/**
  * Handles subscription purchase, renewal, and cancellation events
  * @summary WooCommerce subscription webhook
  */

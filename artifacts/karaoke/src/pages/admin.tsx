@@ -15,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Settings, Music, Users, Loader2, KeyRound, Smartphone } from "lucide-react";
+import { Settings, Music, Users, Loader2, KeyRound, Smartphone, Ticket } from "lucide-react";
+import { CuponsTab } from "@/components/cupons-tab";
 
 const songFormSchema = z.object({
   id: z.coerce.number().min(1, "O ID deve ser maior que 0"),
@@ -122,7 +123,7 @@ export default function Admin() {
           </div>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Painel Administrativo</h1>
-            <p className="text-muted-foreground">Gerencie o catálogo e os assinantes</p>
+            <p className="text-muted-foreground">Gerencie o catálogo, assinantes e cupons de acesso</p>
           </div>
         </div>
 
@@ -135,6 +136,10 @@ export default function Admin() {
             <TabsTrigger value="subscribers" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm px-6">
               <Users className="h-4 w-4 mr-2" />
               Assinantes
+            </TabsTrigger>
+            <TabsTrigger value="cupons" className="data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm px-6">
+              <Ticket className="h-4 w-4 mr-2" />
+              Cupons
             </TabsTrigger>
           </TabsList>
 
@@ -310,6 +315,10 @@ export default function Admin() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="cupons" className="animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
+            <CuponsTab />
           </TabsContent>
         </Tabs>
       </div>

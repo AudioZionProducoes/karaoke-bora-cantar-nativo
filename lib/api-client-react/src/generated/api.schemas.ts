@@ -86,6 +86,35 @@ export interface WebhookResult {
   message: string;
 }
 
+export type AccessCodeStatus = typeof AccessCodeStatus[keyof typeof AccessCodeStatus];
+
+
+export const AccessCodeStatus = {
+  pending: 'pending',
+  used: 'used',
+  expired: 'expired',
+} as const;
+
+export interface AccessCode {
+  id: number;
+  code: string;
+  durationMinutes: number;
+  /** @nullable */
+  label?: string | null;
+  used: boolean;
+  /** @nullable */
+  usedAt?: string | null;
+  /** @nullable */
+  usedBy?: string | null;
+  /** @nullable */
+  expiresAt?: string | null;
+  /** @nullable */
+  createdAt?: string | null;
+  /** @nullable */
+  createdBy?: number | null;
+  status: AccessCodeStatus;
+}
+
 export interface ErrorResponse {
   error: string;
 }
@@ -129,5 +158,51 @@ export type CreateUserPassword200 = {
   email?: string;
   temporaryPassword?: string;
   message?: string;
+};
+
+export type CreateAccessCodesBody = {
+  /** Access duration in minutes */
+  durationMinutes: number;
+  /** Number of codes to generate (max 50) */
+  quantity?: number;
+  /** Optional label/description */
+  label?: string;
+  /** Admin user ID */
+  createdBy?: number;
+};
+
+export type CreateAccessCodes201CodesItem = {
+  code?: string;
+  durationMinutes?: number;
+  label?: string | null;
+  expiresAt?: string;
+};
+
+export type CreateAccessCodes201 = {
+  success?: boolean;
+  codes?: CreateAccessCodes201CodesItem[];
+};
+
+export type RedeemAccessCodeBody = {
+  /** Email or device identifier of who redeemed */
+  identifier?: string;
+};
+
+export type RedeemAccessCode200 = {
+  success?: boolean;
+  message?: string;
+  durationMinutes?: number;
+  accessExpiresAt?: string;
+};
+
+export type ValidateAccessCodeParams = {
+code: string;
+};
+
+export type ValidateAccessCode200 = {
+  valid?: boolean;
+  remainingMinutes?: number;
+  durationMinutes?: number;
+  accessExpiresAt?: string;
 };
 
