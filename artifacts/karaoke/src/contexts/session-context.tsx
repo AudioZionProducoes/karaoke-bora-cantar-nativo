@@ -5,6 +5,7 @@ export interface SessionQueueItem {
   musica: string;
   artista: string;
   singerName: string;
+  addedBy: string;
   addedAt: string;
 }
 
@@ -22,6 +23,7 @@ interface SessionContextType {
   session: Session | null;
   loading: boolean;
   error: string | null;
+  deviceId: string;
   createSession: (name?: string) => Promise<string | null>;
   joinSession: (id: string) => Promise<boolean>;
   addToQueue: (songId: number, musica: string, artista: string, singerName: string) => Promise<boolean>;
@@ -32,9 +34,10 @@ interface SessionContextType {
   leaveSession: () => void;
 }
 
-const SessionContext = createContext<SessionContextType | null>(null);
+export const SessionContext = createContext<SessionContextType | null>(null);
 
 const STORAGE_KEY = "karaoke-ct-session-id";
+const DEVICE_KEY = "karaoke-ct-device-id";
 
 function getStoredSessionId(): string | null {
   try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
@@ -44,19 +47,33 @@ function setStoredSessionId(id: string | null) {
   try { if (id) localStorage.setItem(STORAGE_KEY, id); else localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
 }
 
+function getDeviceId(): string {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return Math.random().toString(36).slice(2);
+  }
+}
+
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(getStoredSessionId);
+  const deviceId = getDeviceId();
 
   const fetchSession = useCallback(async (id: string) => {
-    const res = await fetch(`/api/sessions/${id}`);
+    const res = await fetch(`/api/sessions/${id}`, { headers: { "X-Device-Id": deviceId } });
     if (!res.ok) return false;
     const data = await res.json();
     setSession(data);
     return true;
-  }, []);
+  }, [deviceId]);
 
   // Polling loop
   useEffect(() => {
@@ -128,7 +145,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/sessions/${sessionId}/queue`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Device-Id": deviceId },
         body: JSON.stringify({ id: songId, musica, artista, singerName }),
       });
       if (!res.ok) return false;
@@ -138,12 +155,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch {
       return false;
     }
-  }, [sessionId]);
+  }, [sessionId, deviceId]);
 
   const removeFromQueue = useCallback(async (songId: number): Promise<boolean> => {
     if (!sessionId) return false;
     try {
-      const res = await fetch(`/api/sessions/${sessionId}/queue/${songId}`, { method: "DELETE" });
+      const res = await fetch(`/api/sessions/${sessionId}/queue/${songId}`, {
+        method: "DELETE",
+        headers: { "X-Device-Id": deviceId },
+      });
       if (!res.ok) return false;
       const data = await res.json();
       setSession((prev) => prev ? { ...prev, queue: data.queue } : null);
@@ -151,7 +171,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch {
       return false;
     }
-  }, [sessionId]);
+  }, [sessionId, deviceId]);
 
   const advanceQueue = useCallback(async (): Promise<boolean> => {
     if (!sessionId) return false;
@@ -202,7 +222,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/sessions/${sessionId}/queue/${songId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Device-Id": deviceId },
         body: JSON.stringify({ musica, artista }),
       });
       if (!res.ok) return false;
@@ -212,10 +232,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch {
       return false;
     }
-  }, [sessionId]);
+  }, [sessionId, deviceId]);
 
   const value: SessionContextType = {
-    session, loading, error,
+    session, loading, error, deviceId,
     createSession, joinSession, addToQueue,
     removeFromQueue, updateQueueItem, advanceQueue, playSong, leaveSession,
   };
@@ -225,10 +245,4 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       {children}
     </SessionContext.Provider>
   );
-}
-
-export function useSession() {
-  const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error("useSession must be used within SessionProvider");
-  return ctx;
 }

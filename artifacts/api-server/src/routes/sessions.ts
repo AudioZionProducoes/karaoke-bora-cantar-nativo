@@ -10,6 +10,14 @@ function generateId(): string {
   return id;
 }
 
+function getDeviceId(req: { headers: { [k: string]: unknown } }): string {
+  const header = req.headers["x-device-id"];
+  return typeof header === "string" && header.trim() ? header.trim() : "anon";
+}
+
+// Express Request wrapper for type safety
+type ExpressReq = Parameters<Parameters<IRouter["post"]>[1]>[0];
+
 const router: IRouter = Router();
 
 router.get("/sessions", async (req, res): Promise<void> => {
@@ -54,7 +62,7 @@ router.get("/sessions/:id", async (req, res): Promise<void> => {
   res.json(session);
 });
 
-router.post("/sessions/:id/queue", async (req, res): Promise<void> => {
+router.post("/sessions/:id/queue", async (req: ExpressReq, res): Promise<void> => {
   const id = req.params.id?.toUpperCase();
   const { id: songId, musica, artista, singerName } = req.body ?? {};
 
@@ -88,6 +96,7 @@ router.post("/sessions/:id/queue", async (req, res): Promise<void> => {
     musica,
     artista,
     singerName: typeof singerName === "string" ? singerName.trim() : "Anônimo",
+    addedBy: getDeviceId(req),
     addedAt: new Date().toISOString(),
   };
   const updatedQueue = [...queue, entry];
@@ -100,7 +109,7 @@ router.post("/sessions/:id/queue", async (req, res): Promise<void> => {
   res.status(201).json({ queue: updatedQueue });
 });
 
-router.delete("/sessions/:id/queue/:songId", async (req, res): Promise<void> => {
+router.delete("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promise<void> => {
   const id = req.params.id?.toUpperCase();
   const songId = Number(req.params.songId);
 
@@ -116,6 +125,18 @@ router.delete("/sessions/:id/queue/:songId", async (req, res): Promise<void> => 
   }
 
   const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
+  const item = queue.find((q) => q.id === songId);
+  if (!item) {
+    res.status(404).json({ error: "Música não encontrada na fila" });
+    return;
+  }
+
+  const deviceId = getDeviceId(req);
+  if (item.addedBy && item.addedBy !== "anon" && item.addedBy !== deviceId) {
+    res.status(403).json({ error: "Você só pode apagar músicas que você adicionou" });
+    return;
+  }
+
   const updatedQueue = queue.filter((q) => q.id !== songId);
 
   await db
@@ -158,7 +179,7 @@ router.post("/sessions/:id/play", async (req, res): Promise<void> => {
   res.json({ currentSongId: songId ?? null, currentSingerName: fromQueue?.singerName ?? null });
 });
 
-router.put("/sessions/:id/queue/:songId", async (req, res): Promise<void> => {
+router.put("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promise<void> => {
   const id = req.params.id?.toUpperCase();
   const songId = Number(req.params.songId);
   const { musica, artista } = req.body ?? {};
@@ -179,15 +200,21 @@ router.put("/sessions/:id/queue/:songId", async (req, res): Promise<void> => {
   }
 
   const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
-  const itemIndex = queue.findIndex((q) => q.id === songId);
-  if (itemIndex === -1) {
+  const item = queue.find((q) => q.id === songId);
+  if (!item) {
     res.status(404).json({ error: "Música não encontrada na fila" });
     return;
   }
 
+  const deviceId = getDeviceId(req);
+  if (item.addedBy && item.addedBy !== "anon" && item.addedBy !== deviceId) {
+    res.status(403).json({ error: "Você só pode editar músicas que você adicionou" });
+    return;
+  }
+
   // Update musica and artista, keep singerName and addedAt
-  const updatedQueue = queue.map((q, i) =>
-    i === itemIndex ? { ...q, musica, artista } : q
+  const updatedQueue = queue.map((q) =>
+    q.id === songId ? { ...q, musica, artista } : q
   );
 
   await db

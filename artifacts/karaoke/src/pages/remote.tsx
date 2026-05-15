@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useSearchMusicas } from "@workspace/api-client-react";
-import { useSession } from "@/contexts/session-context";
+import { useSession } from "@/hooks/use-session";
+import type { SessionQueueItem } from "@/contexts/session-context";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +67,7 @@ function AddToQueueDialog({
 export default function RemotePage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue } = useSession();
+  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue } = useSession();
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -370,23 +371,27 @@ export default function RemotePage() {
                   {index === 0 && currentSongId === item.id && (
                     <span className="text-[10px] bg-primary/20 text-primary rounded-full px-2 py-0.5 shrink-0">Tocando</span>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-primary shrink-0"
-                    onClick={() => setEditingItem(item)}
-                    title="Trocar música"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                    onClick={() => removeFromQueue(item.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
+                  {(item.addedBy === deviceId || !item.addedBy || item.addedBy === "anon") && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-primary shrink-0"
+                        onClick={() => setEditingItem(item)}
+                        title="Trocar música"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => removeFromQueue(item.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

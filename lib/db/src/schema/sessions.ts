@@ -5,6 +5,7 @@ export interface QueueEntry {
   musica: string;
   artista: string;
   singerName: string;
+  addedBy: string;
   addedAt: string;
 }
 

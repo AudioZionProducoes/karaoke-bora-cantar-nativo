@@ -59,7 +59,7 @@ export default function Admin() {
       onError: (error) => {
         toast({
           title: "Erro ao cadastrar música",
-          description: error.error || "Ocorreu um erro desconhecido.",
+          description: (error as {message?:string}).message || String(error) || "Ocorreu um erro desconhecido.",
           variant: "destructive"
         });
       }
@@ -82,7 +82,7 @@ export default function Admin() {
         onError: (error) => {
           toast({
             title: "Erro ao revogar acesso",
-            description: error.error || "Ocorreu um erro desconhecido.",
+            description: (error as {message?:string}).message || String(error) || "Ocorreu um erro desconhecido.",
             variant: "destructive"
           });
         }

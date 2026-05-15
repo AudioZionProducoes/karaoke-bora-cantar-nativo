@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link } from "wouter";
 import { useGetMusica } from "@workspace/api-client-react";
-import { useSession, type SessionQueueItem } from "@/contexts/session-context";
+import { useSession } from "@/hooks/use-session";
+import type { SessionQueueItem } from "@/contexts/session-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { Button } from "@/components/ui/button";
 import QRCode from "react-qr-code";
@@ -110,7 +111,7 @@ export default function TVPage() {
 
   const currentSongId = session?.currentSongId ? Number(session.currentSongId) : null;
   const { data: musica } = useGetMusica(currentSongId ?? 0, {
-    query: { enabled: !!currentSongId && currentSongId > 0 }
+    query: { queryKey: ["musica", currentSongId ?? 0], enabled: !!currentSongId && currentSongId > 0 }
   });
 
   const [joined, setJoined] = useState(false);

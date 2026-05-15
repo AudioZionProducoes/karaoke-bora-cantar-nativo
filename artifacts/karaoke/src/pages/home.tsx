@@ -11,7 +11,7 @@ import { Layout } from "@/components/layout";
 import { useQueue, type QueueItem } from "@/contexts/queue-context";
 import { useToast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
-import { useSession } from "@/contexts/session-context";
+import { useSession } from "@/hooks/use-session";
 
 export default function Home() {
   const { addToQueue, isInQueue, queue } = useQueue();
