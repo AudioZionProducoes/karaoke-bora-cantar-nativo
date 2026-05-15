@@ -54,8 +54,8 @@ export default function Home() {
           {stats ? `${stats.totalSongs.toLocaleString("pt-BR")} músicas disponíveis` : "Carregando catálogo..."}
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white drop-shadow-sm">
-          O Palco é Seu.
+        <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground drop-shadow-sm">
+          Faça de sua Festa um Grande Evento.
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl">
           Busque no maior catálogo de karaokê. Músicas de alta qualidade, sem espera.

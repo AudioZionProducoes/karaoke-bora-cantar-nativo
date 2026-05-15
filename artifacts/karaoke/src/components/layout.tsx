@@ -1,10 +1,13 @@
 import { Link } from "wouter";
-import { Mic2, Settings, FolderOpen, FolderCheck, X } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon } from "lucide-react";
 import { useLocalMusic } from "@/contexts/local-music-context";
+import { useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { folderName, selectFolder, clearFolder } = useLocalMusic();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">
@@ -14,7 +17,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
               <Mic2 className="h-5 w-5" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
+            <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
           </Link>
 
           <nav className="flex items-center gap-3">
@@ -45,6 +48,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 Pasta de Músicas
               </Button>
             )}
+
+            {/* Theme toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground border border-border/50 rounded-lg"
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              title={isDark ? "Mudar para fundo branco" : "Mudar para fundo preto"}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
 
             <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
               <Settings className="h-4 w-4" />
