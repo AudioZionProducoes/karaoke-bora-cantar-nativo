@@ -64,7 +64,7 @@ export default function Home() {
         onCancel={() => setPendingItem(null)}
       />
 
-      <div className="flex flex-col items-center pt-8 pb-8 max-w-3xl mx-auto text-center space-y-6">
+      <div className="flex flex-col items-center pt-4 pb-4 max-w-3xl mx-auto text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(250,204,21,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.25)]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -105,7 +105,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="mt-8 space-y-8">
+      <div className="mt-2 space-y-4">
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2 shrink-0">
             <Music className="h-5 w-5 text-primary dark:text-yellow-400" />
