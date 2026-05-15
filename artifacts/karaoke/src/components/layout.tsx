@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut, Ticket, Clock } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut, Ticket, Clock, AlertTriangle, ArrowRight } from "lucide-react";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useTheme } from "@/components/theme-provider";
 import { useQueue } from "@/contexts/queue-context";
@@ -62,7 +62,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {hasAccess ? (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded-full px-3 py-1">
+                <div className={`flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1 border ${
+                  remainingMinutes <= 10
+                    ? "text-amber-400 bg-amber-500/10 border-amber-500/30 animate-pulse"
+                    : "text-primary bg-primary/10 border-primary/20"
+                }`}>
                   <Clock className="h-3 w-3" />
                   <span>{remainingMinutes}min</span>
                 </div>
@@ -100,6 +104,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
             )}
           </nav>
         </div>
+
+        {/* Warning banner when temporary access is about to expire */}
+        {hasAccess && remainingMinutes <= 10 && (
+          <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2">
+            <div className="container mx-auto max-w-7xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-sm">
+                <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+                <span className="text-amber-400 font-medium">
+                  Seu tempo está acabando! Faltam apenas {remainingMinutes} minutos.
+                </span>
+              </div>
+              <Link href="/planos">
+                <Button
+                  size="sm"
+                  className="h-7 text-xs bg-amber-500 hover:bg-amber-500/90 text-black font-bold shrink-0"
+                >
+                  Assinar plano
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Slide-out queue panel from the right */}
         {queueOpen && (
