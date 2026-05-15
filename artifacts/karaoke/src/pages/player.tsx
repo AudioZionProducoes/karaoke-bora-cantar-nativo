@@ -532,8 +532,8 @@ export default function Player() {
     <div className="min-h-screen bg-black text-white flex flex-col relative overflow-hidden selection:bg-primary/30">
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
 
-      {/* Header */}
-      <header className="p-3 flex items-center gap-3 z-20 absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent">
+      {/* Header — always on top of video */}
+      <header className="p-3 flex items-center gap-3 z-[100] absolute top-0 left-0 right-0 bg-black/70 backdrop-blur-md border-b border-white/10">
         {/* Left: Back + Title */}
         <div className="flex items-center gap-3 shrink-0">
           <Link href="/">
@@ -586,7 +586,7 @@ export default function Player() {
           {isLibraryConfigured ? (
             <iframe
               src={`https://iframe.mediadelivery.net/embed/${libraryId}/${musica.id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
-              className="absolute inset-0 w-full h-full border-0"
+              className="absolute inset-0 w-full h-full border-0 z-10"
               allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
               allowFullScreen
             />
