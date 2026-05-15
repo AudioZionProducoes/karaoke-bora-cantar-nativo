@@ -88,54 +88,54 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="fixed inset-0 z-50 flex" onClick={() => setQueueOpen(false)}>
             <div className="flex-1" />
             <div
-              className="w-full max-w-sm bg-background/98 border-l border-border/40 animate-in slide-in-from-right duration-200 flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto"
+              className="w-full max-w-md bg-background/98 border-l border-border/40 animate-in slide-in-from-right duration-200 flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between p-4 border-b border-border/40 sticky top-0 bg-background/98 backdrop-blur">
                 <div className="flex items-center gap-2">
-                  <ListMusic className="h-4 w-4 text-primary" />
-                  <span className="font-semibold text-sm">Fila de espera</span>
-                  <span className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-0.5">{queue.length}/30</span>
+                  <ListMusic className="h-5 w-5 text-primary" />
+                  <span className="font-semibold text-base">Fila de espera</span>
+                  <span className="text-sm text-muted-foreground bg-muted rounded-full px-2.5 py-0.5">{queue.length}/30</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {queue.length > 0 && (
                     <Button variant="ghost" size="sm"
-                      className="text-xs text-muted-foreground hover:text-destructive h-7"
+                      className="text-sm text-muted-foreground hover:text-destructive h-8"
                       onClick={clearQueue}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />Limpar
+                      <Trash2 className="h-4 w-4 mr-1" />Limpar
                     </Button>
                   )}
                   <Button variant="ghost" size="sm"
-                    className="text-xs text-muted-foreground hover:text-foreground h-7 gap-1"
+                    className="text-sm text-muted-foreground hover:text-foreground h-8 gap-1"
                     onClick={() => setQueueOpen(false)}>
-                    <X className="h-3.5 w-3.5" />Fechar
+                    <X className="h-4 w-4" />Fechar
                   </Button>
                 </div>
               </div>
 
               <div className="p-4 flex-1">
                 {queue.length === 0 ? (
-                  <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-sm">
-                    <ListMusic className="h-5 w-5 opacity-40" />
+                  <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-base">
+                    <ListMusic className="h-6 w-6 opacity-40" />
                     <p>A fila está vazia. Clique em <strong className="text-foreground/60">+</strong> em qualquer música para adicionar.</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {queue.map((item, index) => (
-                      <div key={item.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/40 border border-border/30 hover:border-primary/30 transition-colors">
-                        <span className="text-xs font-mono text-muted-foreground w-5 shrink-0 text-center">{index + 1}</span>
-                        <div className="bg-primary/15 rounded-full p-1 shrink-0">
-                          <UserRound className="h-3 w-3 text-primary" />
+                      <div key={item.id} className="flex items-center gap-4 px-4 py-3 rounded-lg bg-muted/40 border border-border/30 hover:border-primary/30 transition-colors">
+                        <span className="text-sm font-mono text-muted-foreground w-6 shrink-0 text-center">{index + 1}</span>
+                        <div className="bg-primary/15 rounded-full p-1.5 shrink-0">
+                          <UserRound className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-bold text-primary line-clamp-1">{item.singerName}</div>
-                          <div className="text-xs text-foreground line-clamp-1">{item.musica}</div>
-                          <div className="text-xs text-muted-foreground line-clamp-1">{item.artista}</div>
+                          <div className="text-sm font-bold text-primary line-clamp-1">{item.singerName}</div>
+                          <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{item.artista}</div>
                         </div>
                         <Button variant="ghost" size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
                           onClick={() => removeFromQueue(item.id)}>
-                          <X className="h-3 w-3" />
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
