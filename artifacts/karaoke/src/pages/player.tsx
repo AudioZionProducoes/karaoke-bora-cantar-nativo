@@ -64,18 +64,18 @@ function PersistentSearchBar() {
       <AddToQueueDialog item={pendingItem} onConfirm={handleConfirmQueue} onCancel={() => setPendingItem(null)} />
       <div className="relative">
         <div
-          className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition-all ${
+          className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition-all w-full ${
             focused
-              ? "bg-black/70 border-primary/60 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]"
-              : "bg-black/40 border-white/15 hover:border-white/30"
+              ? "bg-black/80 border-[hsl(55,100%,50%)]/70 shadow-[0_0_15px_hsla(55,100%,50%,0.25)]"
+              : "bg-black/60 border-[hsl(55,100%,50%)]/30 hover:border-[hsl(55,100%,50%)]/50"
           }`}
         >
-          <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Search className="h-4 w-4 text-[hsl(55,100%,50%)] shrink-0" />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Buscar música..."
-            className="flex-1 bg-transparent border-0 text-white text-sm placeholder:text-muted-foreground focus:outline-none min-w-0"
+            placeholder="Buscar próxima música..."
+            className="flex-1 bg-transparent border-0 text-white text-sm placeholder:text-white/40 focus:outline-none min-w-0"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setFocused(true)}
@@ -90,7 +90,7 @@ function PersistentSearchBar() {
           />
           {searchTerm && (
             <Button variant="ghost" size="icon"
-              className="h-5 w-5 text-muted-foreground hover:text-white shrink-0"
+              className="h-5 w-5 text-white/50 hover:text-white shrink-0"
               onClick={() => { setSearchTerm(""); inputRef.current?.focus(); }}>
               <X className="h-3 w-3" />
             </Button>
