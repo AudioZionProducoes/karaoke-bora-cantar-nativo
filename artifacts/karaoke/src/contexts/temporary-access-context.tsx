@@ -55,6 +55,8 @@ export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
       if (mins === 0) {
         saveAccess(null);
         setAccess(null);
+        // Redirect to plans page when temporary access expires
+        window.location.href = "/planos";
       }
     }
     updateRemaining();
