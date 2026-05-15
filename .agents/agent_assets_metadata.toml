@@ -6,3 +6,9 @@ id = "Jw_Yt0TgPpQQsxeZD0XfZ"
 uri = "file://karaoke-ct-source.tar.gz"
 type = "unspecified"
 title = "Karaokê CT - Código Fonte (tar.gz)"
+
+[[outputs]]
+id = "a1bg81L0ZZ8uCBq0D7SeK"
+uri = "file://Karaoke_CT_Documentacao_Completa.pdf"
+type = "pdf"
+title = "Karaoke CT - Documentação Completa do Código (PDF)"
