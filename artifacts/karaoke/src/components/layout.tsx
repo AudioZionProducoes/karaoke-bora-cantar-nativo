@@ -100,7 +100,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Button>
               </div>
             ) : (
-              <Link href="/login" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+              <Link href="/login" className="text-sm font-medium text-primary dark:text-[hsl(55,100%,50%)] hover:text-primary/80 dark:hover:text-[hsl(55,100%,60%)] transition-colors flex items-center gap-1.5">
                 <LogIn className="h-4 w-4" />
                 <span>Entrar</span>
               </Link>
