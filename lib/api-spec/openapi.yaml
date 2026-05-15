@@ -690,6 +690,9 @@ components:
         status:
           type: string
           enum: [pending, used, expired]
+        remainingMinutes:
+          type: ["integer", "null"]
+          description: Minutes left for used (not expired) codes. Null for pending.
 
     ErrorResponse:
       type: object

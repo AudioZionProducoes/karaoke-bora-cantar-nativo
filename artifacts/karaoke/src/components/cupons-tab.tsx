@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useCreateAccessCodes, useListAccessCodes } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Copy, Check, Ticket, Clock, Calendar, Hash } from "lucide-react";
+import { Loader2, Copy, Check, Ticket, Clock, Calendar, Hash, Timer } from "lucide-react";
 
 const DURATIONS = [
   { value: "15", label: "15 minutos" },
@@ -35,6 +35,60 @@ interface AccessCodeItem {
   createdAt: string | null;
   createdBy: number | null;
   status: string;
+  remainingMinutes?: number | null;
+}
+
+function useCountdown(usedAt: string | null, durationMinutes: number) {
+  const [remaining, setRemaining] = useState<number>(() => {
+    if (!usedAt || !durationMinutes) return 0;
+    const expires = new Date(usedAt).getTime() + durationMinutes * 60_000;
+    const ms = expires - Date.now();
+    return Math.max(0, Math.ceil(ms / 60_000));
+  });
+
+  useEffect(() => {
+    if (!usedAt || !durationMinutes) return;
+
+    const expires = new Date(usedAt).getTime() + durationMinutes * 60_000;
+
+    const tick = () => {
+      const ms = expires - Date.now();
+      setRemaining(Math.max(0, Math.ceil(ms / 60_000)));
+    };
+
+    tick();
+    const interval = setInterval(tick, 30_000); // update every 30 seconds
+    return () => clearInterval(interval);
+  }, [usedAt, durationMinutes]);
+
+  return remaining;
+}
+
+function formatCountdown(minutes: number) {
+  if (minutes <= 0) return "Expirado";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0) return `${h}h ${m}min restantes`;
+  return `${m}min restantes`;
+}
+
+function CountdownCell({ usedAt, durationMinutes, status }: { usedAt: string | null; durationMinutes: number; status: string }) {
+  const remaining = useCountdown(usedAt, durationMinutes);
+
+  if (status === "pending") {
+    return <span className="text-muted-foreground text-xs">Aguardando resgate</span>;
+  }
+
+  if (status === "expired" || remaining <= 0) {
+    return <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20 text-xs">Expirado</Badge>;
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs">
+      <Timer className="h-3.5 w-3.5 text-amber-400 animate-pulse" />
+      <span className="text-amber-400 font-medium tabular-nums">{formatCountdown(remaining)}</span>
+    </div>
+  );
 }
 
 export function CuponsTab() {
@@ -102,7 +156,7 @@ export function CuponsTab() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "used":
-        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">Usado</Badge>;
+        return <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">Em uso</Badge>;
       case "expired":
         return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">Expirado</Badge>;
       default:
@@ -225,6 +279,7 @@ export function CuponsTab() {
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>WhatsApp</TableHead>
+                    <TableHead>Contador</TableHead>
                     <TableHead>Criado em</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
@@ -253,6 +308,9 @@ export function CuponsTab() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {c.redeemerWhatsapp || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        <CountdownCell usedAt={c.usedAt} durationMinutes={c.durationMinutes} status={c.status} />
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">

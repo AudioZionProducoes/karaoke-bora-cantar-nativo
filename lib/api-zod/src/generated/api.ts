@@ -241,7 +241,8 @@ export const ListAccessCodesResponseItem = zod.object({
   "expiresAt": zod.string().nullish(),
   "createdAt": zod.string().nullish(),
   "createdBy": zod.number().nullish(),
-  "status": zod.enum(['pending', 'used', 'expired'])
+  "status": zod.enum(['pending', 'used', 'expired']),
+  "remainingMinutes": zod.number().nullish().describe('Minutes left for used (not expired) codes. Null for pending.')
 })
 export const ListAccessCodesResponse = zod.array(ListAccessCodesResponseItem)
 

@@ -119,6 +119,11 @@ export interface AccessCode {
   /** @nullable */
   createdBy?: number | null;
   status: AccessCodeStatus;
+  /**
+     * Minutes left for used (not expired) codes. Null for pending.
+     * @nullable
+     */
+  remainingMinutes?: number | null;
 }
 
 export interface ErrorResponse {

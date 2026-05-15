@@ -26,7 +26,7 @@ router.post("/access-codes", async (req, res): Promise<void> => {
   const qty = typeof quantity === "number" && quantity > 0 ? Math.min(quantity, 50) : 1;
   const createdBy = req.body?.createdBy ?? null;
 
-  const results: { code: string; durationMinutes: number; label: string | null; expiresAt: string }[] = [];
+  const results: { code: string; durationMinutes: number; label: string | null; expiresAt: string | null }[] = [];
 
   for (let i = 0; i < qty; i++) {
     let code: string;
@@ -48,16 +48,12 @@ router.post("/access-codes", async (req, res): Promise<void> => {
       return;
     }
 
-    const now = new Date();
-    const expiresAt = addMinutes(now, durationMinutes);
-
     const [record] = await db
       .insert(accessCodesTable)
       .values({
         code,
         durationMinutes,
         label: typeof label === "string" && label.trim() ? label.trim() : null,
-        expiresAt,
         createdBy,
       })
       .returning();
@@ -66,7 +62,7 @@ router.post("/access-codes", async (req, res): Promise<void> => {
       code: record.code,
       durationMinutes: record.durationMinutes,
       label: record.label,
-      expiresAt: record.expiresAt!.toISOString(),
+      expiresAt: null,
     });
   }
 
@@ -88,22 +84,36 @@ router.get("/access-codes", async (_req, res): Promise<void> => {
   const now = new Date();
 
   res.json(
-    codes.map((c) => ({
-      id: c.id,
-      code: c.code,
-      durationMinutes: c.durationMinutes,
-      label: c.label,
-      used: c.used,
-      usedAt: c.usedAt?.toISOString() ?? null,
-      usedBy: c.usedBy,
-      redeemerName: c.redeemerName,
-      redeemerEmail: c.redeemerEmail,
-      redeemerWhatsapp: c.redeemerWhatsapp,
-      expiresAt: c.expiresAt?.toISOString() ?? null,
-      createdAt: c.createdAt?.toISOString() ?? null,
-      createdBy: c.createdBy,
-      status: c.used ? "used" : c.expiresAt && c.expiresAt < now ? "expired" : "pending",
-    })),
+    codes.map((c) => {
+      let remainingMinutes: number | null = null;
+      if (c.used && c.usedAt) {
+        const expiresAt = addMinutes(c.usedAt, c.durationMinutes);
+        const msRemaining = expiresAt.getTime() - now.getTime();
+        remainingMinutes = msRemaining > 0 ? Math.ceil(msRemaining / 60_000) : 0;
+      }
+
+      return {
+        id: c.id,
+        code: c.code,
+        durationMinutes: c.durationMinutes,
+        label: c.label,
+        used: c.used,
+        usedAt: c.usedAt?.toISOString() ?? null,
+        usedBy: c.usedBy,
+        redeemerName: c.redeemerName,
+        redeemerEmail: c.redeemerEmail,
+        redeemerWhatsapp: c.redeemerWhatsapp,
+        expiresAt: c.expiresAt?.toISOString() ?? null,
+        createdAt: c.createdAt?.toISOString() ?? null,
+        createdBy: c.createdBy,
+        status: c.used
+          ? c.expiresAt && c.expiresAt < now
+            ? "expired"
+            : "used"
+          : "pending",
+        remainingMinutes,
+      };
+    }),
   );
 });
 
@@ -126,18 +136,12 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
     return;
   }
 
-  const now = new Date();
-
-  if (code.expiresAt && code.expiresAt < now) {
-    res.status(410).json({ error: "Código expirado" });
-    return;
-  }
-
   if (code.used) {
     res.status(409).json({ error: "Código já utilizado" });
     return;
   }
 
+  const now = new Date();
   const usedBy = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : null;
   const redeemerName = typeof req.body?.name === "string" ? req.body.name.trim() : null;
   const redeemerEmail = usedBy;
@@ -153,6 +157,7 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
       redeemerName,
       redeemerEmail,
       redeemerWhatsapp,
+      expiresAt: accessExpiresAt,
     })
     .where(eq(accessCodesTable.id, code.id));
 
