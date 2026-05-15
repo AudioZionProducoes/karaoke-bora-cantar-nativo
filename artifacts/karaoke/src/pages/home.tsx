@@ -8,16 +8,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSearchMusicas, useGetMusicasStats } from "@workspace/api-client-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Layout } from "@/components/layout";
-import { useQueue } from "@/contexts/queue-context";
+import { useQueue, type QueueItem } from "@/contexts/queue-context";
 import { useToast } from "@/hooks/use-toast";
+import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
 
 export default function Home() {
   const { addToQueue, isInQueue, queue } = useQueue();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const [page, setPage] = useState(1);
+  const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
 
-  function handleAddToQueue(m: { id: number; musica: string; artista: string }) {
+  useMemo(() => { setPage(1); }, [debouncedSearch]);
+
+  const { data: stats } = useGetMusicasStats();
+  const { data: searchResults, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 24 });
+
+  function openQueueDialog(m: PendingQueueItem) {
     if (queue.length >= 30) {
       toast({ title: "Fila cheia", description: "A fila já tem 30 músicas.", variant: "destructive" });
       return;
@@ -26,25 +34,24 @@ export default function Home() {
       toast({ title: "Já na fila", description: `"${m.musica}" já está na lista de espera.` });
       return;
     }
-    addToQueue({ id: m.id, musica: m.musica, artista: m.artista });
-    toast({ title: "Adicionada à fila ✓", description: `"${m.musica}" entrou na lista de espera.` });
+    setPendingItem(m);
   }
-  const [page, setPage] = useState(1);
 
-  useMemo(() => {
-    setPage(1);
-  }, [debouncedSearch]);
-
-  const { data: stats } = useGetMusicasStats();
-
-  const { data: searchResults, isLoading } = useSearchMusicas({
-    q: debouncedSearch,
-    page,
-    limit: 24
-  });
+  function handleConfirmQueue(singerName: string) {
+    if (!pendingItem) return;
+    addToQueue({ ...pendingItem, singerName });
+    toast({ title: "Adicionada à fila ✓", description: `"${pendingItem.musica}" entrou na fila para ${singerName}.` });
+    setPendingItem(null);
+  }
 
   return (
     <Layout>
+      <AddToQueueDialog
+        item={pendingItem}
+        onConfirm={handleConfirmQueue}
+        onCancel={() => setPendingItem(null)}
+      />
+
       <div className="flex flex-col items-center pt-12 pb-8 max-w-3xl mx-auto text-center space-y-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
           <span className="relative flex h-2 w-2">
@@ -146,7 +153,7 @@ export default function Home() {
                         size="icon"
                         title="Adicionar à fila"
                         className={`shrink-0 border-border/50 transition-all z-10 relative ${isInQueue(musica.id) ? "text-emerald-400 border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20" : "text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
-                        onClick={() => handleAddToQueue({ id: musica.id, musica: musica.musica, artista: musica.artista })}
+                        onClick={() => openQueueDialog({ id: musica.id, musica: musica.musica, artista: musica.artista })}
                       >
                         {isInQueue(musica.id) ? <Check className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}
                       </Button>
@@ -158,21 +165,13 @@ export default function Home() {
 
             {searchResults && searchResults.totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 pt-8">
-                <Button
-                  variant="outline"
-                  disabled={page === 1}
-                  onClick={() => setPage(p => p - 1)}
-                >
+                <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
                   Anterior
                 </Button>
                 <div className="text-sm font-medium px-4">
                   Página {page} de {searchResults.totalPages}
                 </div>
-                <Button
-                  variant="outline"
-                  disabled={page === searchResults.totalPages}
-                  onClick={() => setPage(p => p + 1)}
-                >
+                <Button variant="outline" disabled={page === searchResults.totalPages} onClick={() => setPage(p => p + 1)}>
                   Próxima
                 </Button>
               </div>

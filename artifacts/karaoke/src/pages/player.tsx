@@ -2,36 +2,65 @@ import { useParams, Link, useLocation } from "wouter";
 import {
   ArrowLeft, Play, Music, AlertCircle, FolderOpen,
   Star, RotateCcw, Trophy, Search, X, Mic2,
-  ListMusic, Trash2, ChevronRight, ListPlus, Check
+  ListMusic, Trash2, ListPlus, Check, UserRound, ChevronRight
 } from "lucide-react";
 import { useGetMusica, getGetMusicaQueryKey, useSearchMusicas } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLocalMusic } from "@/contexts/local-music-context";
-import { useQueue } from "@/contexts/queue-context";
+import { useQueue, type QueueItem } from "@/contexts/queue-context";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
+import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
 
 function randomScore() {
   return Math.floor(Math.random() * 21) + 80;
 }
 
-function ScoreScreen({ score, musica, artista, onReplay, onBack }: {
-  score: number; musica: string; artista: string; onReplay: () => void; onBack: () => void;
+function ScoreScreen({
+  score, musica, artista, singerName, nextItem,
+  onReplay, onBack, onNext,
+}: {
+  score: number;
+  musica: string;
+  artista: string;
+  singerName?: string;
+  nextItem?: QueueItem | null;
+  onReplay: () => void;
+  onBack: () => void;
+  onNext: () => void;
 }) {
   const stars = score >= 95 ? 5 : score >= 90 ? 4 : score >= 85 ? 3 : 2;
   const label = score === 100 ? "Perfeito! 🎤" : score >= 95 ? "Incrível!" : score >= 90 ? "Excelente!" : score >= 85 ? "Muito Bom!" : "Bom trabalho!";
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Enter" && nextItem) onNext();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [nextItem, onNext]);
 
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white p-8 animate-in fade-in duration-500">
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
       <div className="absolute bottom-0 right-1/4 w-1/2 h-64 bg-violet-500/20 blur-[120px] rounded-full pointer-events-none translate-y-1/2" />
-      <Trophy className="h-14 w-14 text-yellow-400 mb-4 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]" />
+
+      <Trophy className="h-14 w-14 text-yellow-400 mb-3 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]" />
       <p className="text-muted-foreground text-sm mb-1 uppercase tracking-widest font-medium">Resultado</p>
+
+      {singerName && (
+        <div className="flex items-center gap-2 mb-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
+          <UserRound className="h-4 w-4 text-primary" />
+          <span className="font-bold text-lg text-primary">{singerName}</span>
+        </div>
+      )}
+
       <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{musica}</h2>
-      <p className="text-muted-foreground text-sm mb-8">{artista}</p>
+      <p className="text-muted-foreground text-sm mb-6">{artista}</p>
+
       <div className="relative flex items-center justify-center mb-6">
         <svg width="160" height="160" viewBox="0 0 160 160" className="-rotate-90">
           <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
@@ -52,17 +81,45 @@ function ScoreScreen({ score, musica, artista, onReplay, onBack }: {
           <span className="text-muted-foreground text-xs mt-1">pontos</span>
         </div>
       </div>
+
       <div className="flex gap-1.5 mb-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <Star key={i} className={`h-7 w-7 ${i < stars ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]" : "text-white/20"}`} />
         ))}
       </div>
-      <p className="text-xl font-bold mb-10 text-primary">{label}</p>
+      <p className="text-xl font-bold mb-8 text-primary">{label}</p>
+
+      {/* Next in queue card */}
+      {nextItem && (
+        <div className="mb-6 w-full max-w-sm bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <ListMusic className="h-3 w-3" />Próxima na fila
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="bg-primary/20 rounded-full p-2 shrink-0">
+              <UserRound className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-bold text-white text-base line-clamp-1">{nextItem.singerName}</div>
+              <div className="text-sm text-muted-foreground line-clamp-1">{nextItem.musica} — {nextItem.artista}</div>
+            </div>
+          </div>
+          <Button
+            className="w-full mt-3 bg-primary hover:bg-primary/90 text-white font-bold"
+            onClick={onNext}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Começar — {nextItem.singerName}
+            <span className="ml-2 text-xs text-primary-foreground/60">(Enter)</span>
+          </Button>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <Button variant="outline" onClick={onReplay} className="border-white/20 text-white hover:bg-white/10 hover:text-white">
           <RotateCcw className="h-4 w-4 mr-2" />Cantar de novo
         </Button>
-        <Button onClick={onBack} className="bg-primary hover:bg-primary/90">
+        <Button onClick={onBack} variant="ghost" className="text-white hover:bg-white/10">
           <ArrowLeft className="h-4 w-4 mr-2" />Voltar ao Catálogo
         </Button>
       </div>
@@ -77,12 +134,13 @@ function SearchTopPanel({ onClose }: { onClose: () => void }) {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const { addToQueue, isInQueue, queue } = useQueue();
   const { toast } = useToast();
+  const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
   const { data, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 8 });
 
-  function handleAddToQueue(m: { id: number; musica: string; artista: string }) {
+  function openQueueDialog(m: PendingQueueItem) {
     if (queue.length >= 30) {
       toast({ title: "Fila cheia", description: "A fila já tem 30 músicas.", variant: "destructive" });
       return;
@@ -91,87 +149,96 @@ function SearchTopPanel({ onClose }: { onClose: () => void }) {
       toast({ title: "Já na fila", description: `"${m.musica}" já está na lista de espera.` });
       return;
     }
-    addToQueue({ id: m.id, musica: m.musica, artista: m.artista });
-    toast({ title: "Adicionada à fila ✓", description: `"${m.musica}" entrou na lista de espera.` });
+    setPendingItem(m);
+  }
+
+  function handleConfirmQueue(singerName: string) {
+    if (!pendingItem) return;
+    addToQueue({ ...pendingItem, singerName });
+    toast({ title: "Adicionada à fila ✓", description: `"${pendingItem.musica}" para ${singerName}.` });
+    setPendingItem(null);
   }
 
   return (
-    <div className="absolute top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/10 animate-in slide-in-from-top duration-200">
-      <div className="flex items-center gap-3 px-4 py-3">
-        <Search className="h-5 w-5 text-muted-foreground shrink-0" />
-        <Input
-          autoFocus
-          placeholder="Buscar próxima música por artista, título ou código..."
-          className="flex-1 bg-transparent border-0 text-white text-base placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-0"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => e.key === "Escape" && onClose()}
-        />
-        <Button variant="ghost" size="icon" onClick={onClose}
-          className="shrink-0 text-muted-foreground hover:text-white h-9 w-9 rounded-full">
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+    <>
+      <AddToQueueDialog item={pendingItem} onConfirm={handleConfirmQueue} onCancel={() => setPendingItem(null)} />
+      <div className="absolute top-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/10 animate-in slide-in-from-top duration-200">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <Search className="h-5 w-5 text-muted-foreground shrink-0" />
+          <Input
+            autoFocus
+            placeholder="Buscar próxima música por artista, título ou código..."
+            className="flex-1 bg-transparent border-0 text-white text-base placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 h-10 px-0"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === "Escape" && onClose()}
+          />
+          <Button variant="ghost" size="icon" onClick={onClose}
+            className="shrink-0 text-muted-foreground hover:text-white h-9 w-9 rounded-full">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-      {(isLoading || (data && data.data.length > 0)) && (
-        <div className="border-t border-white/10 px-3 pb-3">
-          {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="flex flex-col gap-1.5 p-3 rounded-lg bg-white/5">
-                  <Skeleton className="h-4 w-3/4 bg-white/10" />
-                  <Skeleton className="h-3 w-1/2 bg-white/5" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <>
+        {(isLoading || (data && data.data.length > 0)) && (
+          <div className="border-t border-white/10 px-3 pb-3">
+            {isLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
-                {data?.data.map((m) => (
-                  <div key={m.id} className="rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-all p-3 flex flex-col gap-2">
-                    <div>
-                      <div className="flex items-start justify-between gap-1 mb-0.5">
-                        <div className="font-medium text-sm text-white line-clamp-1 flex-1">{m.musica}</div>
-                        <span className="text-[10px] font-mono text-primary/60 bg-primary/10 rounded px-1 py-0.5 shrink-0">#{m.id}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground line-clamp-1">{m.artista}</div>
-                    </div>
-                    <div className="flex gap-1.5 mt-auto">
-                      <Button size="sm"
-                        className="flex-1 h-7 text-xs bg-primary/80 hover:bg-primary"
-                        onClick={() => { navigate(`/player/${m.id}`); onClose(); }}>
-                        <Play className="h-3 w-3 mr-1" />Tocar
-                      </Button>
-                      <Button size="sm" variant="outline"
-                        className={`h-7 w-7 p-0 border-white/20 ${isInQueue(m.id) ? "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" : "text-white hover:bg-white/10 hover:text-white"}`}
-                        onClick={() => handleAddToQueue(m)}
-                        title="Adicionar à fila">
-                        {isInQueue(m.id) ? <Check className="h-3 w-3" /> : <ListPlus className="h-3 w-3" />}
-                      </Button>
-                    </div>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-1.5 p-3 rounded-lg bg-white/5">
+                    <Skeleton className="h-4 w-3/4 bg-white/10" />
+                    <Skeleton className="h-3 w-1/2 bg-white/5" />
                   </div>
                 ))}
               </div>
-              {data && data.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-3 pt-3">
-                  <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}
-                    className="text-xs text-muted-foreground hover:text-white h-7">Anterior</Button>
-                  <span className="text-xs text-muted-foreground">{page} / {data.totalPages}</span>
-                  <Button variant="ghost" size="sm" disabled={page === data.totalPages} onClick={() => setPage(p => p + 1)}
-                    className="text-xs text-muted-foreground hover:text-white h-7">Próxima</Button>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3">
+                  {data?.data.map((m) => (
+                    <div key={m.id} className="rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-all p-3 flex flex-col gap-2">
+                      <div>
+                        <div className="flex items-start justify-between gap-1 mb-0.5">
+                          <div className="font-medium text-sm text-white line-clamp-1 flex-1">{m.musica}</div>
+                          <span className="text-[10px] font-mono text-primary/60 bg-primary/10 rounded px-1 py-0.5 shrink-0">#{m.id}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground line-clamp-1">{m.artista}</div>
+                      </div>
+                      <div className="flex gap-1.5 mt-auto">
+                        <Button size="sm"
+                          className="flex-1 h-7 text-xs bg-primary/80 hover:bg-primary"
+                          onClick={() => { navigate(`/player/${m.id}`); onClose(); }}>
+                          <Play className="h-3 w-3 mr-1" />Tocar
+                        </Button>
+                        <Button size="sm" variant="outline"
+                          className={`h-7 w-7 p-0 border-white/20 ${isInQueue(m.id) ? "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" : "text-white hover:bg-white/10 hover:text-white"}`}
+                          onClick={() => openQueueDialog({ id: m.id, musica: m.musica, artista: m.artista })}
+                          title="Adicionar à fila">
+                          {isInQueue(m.id) ? <Check className="h-3 w-3" /> : <ListPlus className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+                {data && data.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 pt-3">
+                    <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                      className="text-xs text-muted-foreground hover:text-white h-7">Anterior</Button>
+                    <span className="text-xs text-muted-foreground">{page} / {data.totalPages}</span>
+                    <Button variant="ghost" size="sm" disabled={page === data.totalPages} onClick={() => setPage(p => p + 1)}
+                      className="text-xs text-muted-foreground hover:text-white h-7">Próxima</Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
-      {debouncedSearch && !isLoading && data?.data.length === 0 && (
-        <div className="border-t border-white/10 flex items-center justify-center gap-2 py-5 text-muted-foreground text-sm">
-          <Mic2 className="h-4 w-4" />Nenhuma música encontrada para "{debouncedSearch}"
-        </div>
-      )}
-    </div>
+        {debouncedSearch && !isLoading && data?.data.length === 0 && (
+          <div className="border-t border-white/10 flex items-center justify-center gap-2 py-5 text-muted-foreground text-sm">
+            <Mic2 className="h-4 w-4" />Nenhuma música encontrada para "{debouncedSearch}"
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -206,12 +273,16 @@ function QueuePanel({ onClose }: { onClose: () => void }) {
           <p>A fila está vazia. Busque músicas e clique em <strong className="text-white/60">+</strong> para adicionar.</p>
         </div>
       ) : (
-        <div className="max-h-64 overflow-y-auto">
+        <div className="max-h-72 overflow-y-auto">
           {queue.map((item, index) => (
             <div key={item.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
               <span className="text-xs font-mono text-muted-foreground w-5 shrink-0 text-center">{index + 1}</span>
+              <div className="bg-primary/15 rounded-full p-1 shrink-0">
+                <UserRound className="h-3.5 w-3.5 text-primary" />
+              </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-white line-clamp-1">{item.musica}</div>
+                <div className="text-sm font-bold text-primary line-clamp-1">{item.singerName}</div>
+                <div className="text-xs text-white line-clamp-1">{item.musica}</div>
                 <div className="text-xs text-muted-foreground line-clamp-1">{item.artista}</div>
               </div>
               <span className="text-[10px] font-mono text-primary/60 bg-primary/10 rounded px-1.5 py-0.5 shrink-0">#{item.id}</span>
@@ -249,23 +320,38 @@ export default function Player() {
   const [videoKey, setVideoKey] = useState(0);
   const [panel, setPanel] = useState<"none" | "search" | "queue">("none");
 
-  // Ref to avoid stale closures in handleVideoEnd
+  // Store the next queued item to show on score screen
+  const [nextQueuedItem, setNextQueuedItem] = useState<QueueItem | null>(null);
+
+  // Ref to avoid stale closures
   const shiftQueueRef = useRef(shiftQueue);
   const navigateRef = useRef(navigate);
   useEffect(() => { shiftQueueRef.current = shiftQueue; }, [shiftQueue]);
   useEffect(() => { navigateRef.current = navigate; }, [navigate]);
 
+  // Peek at the next item (first in queue) without removing it
+  const peekNextItem = queue[0] ?? null;
+
   const handleVideoEnd = useCallback(() => {
+    // Show score screen; peek at next item from queue
+    setNextQueuedItem(queue[0] ?? null);
+    setScore(randomScore());
+  }, [queue]);
+
+  // Called when user presses Enter or clicks "Começar" on score screen
+  const handleNext = useCallback(() => {
     const next = shiftQueueRef.current();
     if (next) {
+      setScore(null);
+      setNextQueuedItem(null);
+      setVideoKey((k) => k + 1);
       navigateRef.current(`/player/${next.id}`);
-    } else {
-      setScore(randomScore());
     }
   }, []);
 
   const handleReplay = useCallback(() => {
     setScore(null);
+    setNextQueuedItem(null);
     setVideoKey((k) => k + 1);
   }, []);
 
@@ -323,11 +409,10 @@ export default function Player() {
           {isLibraryConfigured && !score && (
             <Button variant="ghost" size="sm"
               className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs"
-              onClick={() => setScore(randomScore())}>
+              onClick={() => { setNextQueuedItem(queue[0] ?? null); setScore(randomScore()); }}>
               <Trophy className="h-3.5 w-3.5 mr-1.5" />Pontuação
             </Button>
           )}
-          {/* Queue button with badge */}
           <Button variant="ghost" size="sm"
             className={`backdrop-blur-sm rounded-full border text-xs transition-all relative ${panel === "queue" ? "bg-primary text-white border-primary" : "bg-black/20 text-white border-white/10 hover:bg-white/10"}`}
             onClick={() => togglePanel("queue")}>
@@ -396,8 +481,11 @@ export default function Player() {
               score={score}
               musica={musica.musica}
               artista={musica.artista}
+              singerName={undefined}
+              nextItem={nextQueuedItem}
               onReplay={handleReplay}
               onBack={() => window.history.back()}
+              onNext={handleNext}
             />
           )}
         </main>

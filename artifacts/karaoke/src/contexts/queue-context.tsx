@@ -4,15 +4,16 @@ export interface QueueItem {
   id: number;
   musica: string;
   artista: string;
+  singerName: string;
 }
 
 const MAX_QUEUE = 30;
 
 interface QueueContextType {
   queue: QueueItem[];
-  addToQueue: (item: QueueItem) => boolean; // returns false if full or duplicate
+  addToQueue: (item: QueueItem) => boolean;
   removeFromQueue: (id: number) => void;
-  shiftQueue: () => QueueItem | null; // removes and returns first item
+  shiftQueue: () => QueueItem | null;
   clearQueue: () => void;
   isInQueue: (id: number) => boolean;
 }
@@ -30,8 +31,6 @@ export function QueueProvider({ children }: { children: ReactNode }) {
       added = true;
       return [...prev, item];
     });
-    // Can't reliably return from setState callback; use a ref pattern instead
-    // Returning optimistic: check before calling
     return added;
   }, []);
 
