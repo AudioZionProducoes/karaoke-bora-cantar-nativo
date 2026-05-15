@@ -7,7 +7,6 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArtistAvatar } from "@/components/artist-avatar";
 import {
   Search, Mic2, ListMusic, Play, Plus, Check, UserRound,
   Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil
@@ -302,7 +301,6 @@ export default function RemotePage() {
             <div className="space-y-2">
               {searchResults?.data.map((m) => (
                 <div key={m.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
-                  <ArtistAvatar name={m.artista} size={36} />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm line-clamp-1">{m.musica}</div>
                     <div className="text-xs text-muted-foreground">{m.artista}</div>
