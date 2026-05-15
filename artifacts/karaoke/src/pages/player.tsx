@@ -612,44 +612,8 @@ export default function Player() {
               </span>
             )}
           </Button>
-          {sessionId && (
-            <Button variant="ghost" size="sm"
-              className="backdrop-blur-sm rounded-full border text-xs transition-all relative h-8 px-3 bg-black/20 text-white border-white/10 hover:bg-white/10"
-              onClick={() => setShowQR(!showQR)}
-              title="QR Code - Controle Remoto">
-              <QrCode className="h-3.5 w-3.5 mr-1.5" />
-              QR
-            </Button>
-          )}
         </div>
       </header>
-
-      {/* QR Code overlay */}
-      {showQR && sessionId && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowQR(false)}>
-          <div className="bg-black/90 border border-white/15 rounded-2xl p-6 max-w-sm w-full flex flex-col items-center gap-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2 text-white font-semibold">
-              <Smartphone className="h-5 w-5 text-primary" />
-              Controle Remoto
-            </div>
-            <p className="text-sm text-muted-foreground text-center">
-              Use o celular para escanear o QR Code e adicionar músicas à fila.
-            </p>
-            {remoteUrl && (
-              <div className="bg-white rounded-xl p-3 inline-block">
-                <QRCodeLib value={remoteUrl} size={180} bgColor="#ffffff" fgColor="#000000" />
-              </div>
-            )}
-            <div className="text-xs text-muted-foreground bg-white/5 rounded-lg px-3 py-1.5 text-center break-all">
-              {remoteUrl}
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setShowQR(false)}
-              className="border-white/20 text-white hover:bg-white/10 hover:text-white">
-              Fechar
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Queue panel only — search is now persistent in header */}
       {panel === "queue" && <QueuePanel onClose={() => setPanel("none")} />}
@@ -705,6 +669,19 @@ export default function Player() {
               onBack={() => window.history.back()}
               onNext={handleNext}
             />
+          )}
+
+          {/* QR Code overlay — inside video area, bottom-right */}
+          {sessionId && remoteUrl && (
+            <div className="absolute bottom-4 right-4 z-30 bg-primary/80 backdrop-blur-sm border border-primary/50 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-primary/20">
+              <div className="bg-white rounded-md p-1">
+                <QRCodeLib value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#000000" />
+              </div>
+              <div className="text-[9px] text-center text-primary-foreground leading-tight max-w-[72px] font-bold">
+                <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-primary-foreground/80" />
+                Controle
+              </div>
+            </div>
           )}
         </main>
       </div>
