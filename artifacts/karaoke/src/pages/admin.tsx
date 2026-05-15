@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useCreateMusica, useListUsers, useRevokeUserAccess, getSearchMusicasQueryKey, getGetMusicasStatsQueryKey, useGenerateUserPassword } from "@workspace/api-client-react";
+import { useCreateMusica, useListUsers, useRevokeUserAccess, getSearchMusicasQueryKey, getGetMusicasStatsQueryKey, useCreateUserPassword } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -69,13 +69,13 @@ export default function Admin() {
 
   const { data: users, isLoading: isLoadingUsers } = useListUsers();
   const revokeAccess = useRevokeUserAccess();
-  const generatePassword = useGenerateUserPassword();
+  const generatePassword = useCreateUserPassword();
   const [generatedPassword, setGeneratedPassword] = useState<{ email: string; password: string } | null>(null);
 
   function onGeneratePassword(userId: number, email: string) {
     generatePassword.mutate({ id: userId }, {
       onSuccess: (data) => {
-        setGeneratedPassword({ email, password: data.temporaryPassword });
+        setGeneratedPassword({ email, password: data.temporaryPassword ?? "" });
         toast({
           title: "Senha gerada",
           description: `Nova senha temporária criada para ${email}.`,
