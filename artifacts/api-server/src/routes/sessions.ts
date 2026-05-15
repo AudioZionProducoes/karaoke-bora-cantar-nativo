@@ -47,7 +47,7 @@ router.post("/sessions", async (req, res): Promise<void> => {
 });
 
 router.get("/sessions/:id", async (req, res): Promise<void> => {
-  const id = req.params.id?.toUpperCase();
+  const id = String(req.params.id ?? "").toUpperCase();
   if (!id || id.length !== 6) {
     res.status(400).json({ error: "ID de sessão inválido" });
     return;
@@ -63,7 +63,7 @@ router.get("/sessions/:id", async (req, res): Promise<void> => {
 });
 
 router.post("/sessions/:id/queue", async (req: ExpressReq, res): Promise<void> => {
-  const id = req.params.id?.toUpperCase();
+  const id = String(req.params.id ?? "").toUpperCase();
   const { id: songId, musica, artista, singerName } = req.body ?? {};
 
   if (!id || id.length !== 6) {
@@ -110,7 +110,7 @@ router.post("/sessions/:id/queue", async (req: ExpressReq, res): Promise<void> =
 });
 
 router.delete("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promise<void> => {
-  const id = req.params.id?.toUpperCase();
+  const id = String(req.params.id ?? "").toUpperCase();
   const songId = Number(req.params.songId);
 
   if (!id || id.length !== 6 || Number.isNaN(songId)) {
@@ -148,7 +148,7 @@ router.delete("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promi
 });
 
 router.post("/sessions/:id/play", async (req, res): Promise<void> => {
-  const id = req.params.id?.toUpperCase();
+  const id = String(req.params.id ?? "").toUpperCase();
   const { songId } = req.body ?? {};
 
   if (!id || id.length !== 6) {
@@ -180,7 +180,7 @@ router.post("/sessions/:id/play", async (req, res): Promise<void> => {
 });
 
 router.put("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promise<void> => {
-  const id = req.params.id?.toUpperCase();
+  const id = String(req.params.id ?? "").toUpperCase();
   const songId = Number(req.params.songId);
   const { musica, artista } = req.body ?? {};
 
@@ -226,7 +226,7 @@ router.put("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promise<
 });
 
 router.post("/sessions/:id/next", async (req, res): Promise<void> => {
-  const id = req.params.id?.toUpperCase();
+  const id = String(req.params.id ?? "").toUpperCase();
 
   if (!id || id.length !== 6) {
     res.status(400).json({ error: "ID de sessão inválido" });

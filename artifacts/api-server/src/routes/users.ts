@@ -24,6 +24,38 @@ router.get("/users", async (_req, res): Promise<void> => {
   );
 });
 
+router.post("/users/login", async (req, res): Promise<void> => {
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  if (!email || !email.includes("@")) {
+    res.status(400).json({ error: "Email inválido" });
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(karaokeUsersTable)
+    .where(eq(karaokeUsersTable.email, email));
+
+  if (!user) {
+    res.status(401).json({ error: "Email não encontrado. Verifique sua assinatura." });
+    return;
+  }
+
+  if (!user.accessGranted) {
+    res.status(403).json({ error: "Acesso revogado. Entre em contato com o suporte." });
+    return;
+  }
+
+  res.json({
+    id: user.id,
+    email: user.email,
+    subscriptionStatus: user.subscriptionStatus,
+    accessGranted: user.accessGranted,
+    accessGrantedAt: user.accessGrantedAt?.toISOString() ?? null,
+    expiresAt: user.expiresAt?.toISOString() ?? null,
+  });
+});
+
 router.post("/users/:id/revoke", async (req, res): Promise<void> => {
   const params = RevokeUserAccessParams.safeParse(req.params);
   if (!params.success) {

@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut } from "lucide-react";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useTheme } from "@/components/theme-provider";
 import { useQueue } from "@/contexts/queue-context";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { folderName, selectFolder, clearFolder } = useLocalMusic();
   const { theme, setTheme } = useTheme();
   const { queue, removeFromQueue, clearQueue } = useQueue();
+  const { user, logout } = useAuth();
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [queueOpen, setQueueOpen] = useState(false);
 
@@ -80,6 +82,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
+
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground hidden sm:inline" title={user.email}>
+                  {user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs text-muted-foreground hover:text-destructive gap-1"
+                  onClick={logout}
+                  title="Sair"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Sair</span>
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1.5">
+                <LogIn className="h-4 w-4" />
+                <span>Entrar</span>
+              </Link>
+            )}
 
             <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
               <Settings className="h-4 w-4" />
