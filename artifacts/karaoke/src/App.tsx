@@ -34,7 +34,7 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="karaoke-ct-theme-v3">
+    <ThemeProvider defaultTheme="dark" storageKey="karaoke-ct-theme-canary">
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <LocalMusicProvider>
