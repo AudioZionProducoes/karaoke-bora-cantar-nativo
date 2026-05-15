@@ -125,17 +125,70 @@ export const DeleteMusicaParams = zod.object({
 export const ListUsersResponseItem = zod.object({
   "id": zod.number(),
   "email": zod.string(),
-  "woocommerceCustomerId": zod.string().nullish(),
   "subscriptionStatus": zod.enum(['active', 'cancelled', 'expired']),
   "accessGranted": zod.boolean(),
   "accessGrantedAt": zod.string().nullish(),
-  "expiresAt": zod.string().nullish()
+  "expiresAt": zod.string().nullish(),
+  "hasPassword": zod.boolean(),
+  "hasActiveSession": zod.boolean()
 })
 export const ListUsersResponse = zod.array(ListUsersResponseItem)
 
 
 /**
- * Immediately revoke a user's karaoke access
+ * Authenticates a subscriber. Rotates session token for single-device policy.
+ * @summary Login with email and password
+ */
+export const AuthenticateUserBody = zod.object({
+  "email": zod.string().email(),
+  "password": zod.string()
+})
+
+export const AuthenticateUserResponse = zod.object({
+  "token": zod.string().optional(),
+  "id": zod.number().optional(),
+  "email": zod.string().optional(),
+  "subscriptionStatus": zod.string().optional(),
+  "accessGranted": zod.boolean().optional(),
+  "accessGrantedAt": zod.string().nullish(),
+  "expiresAt": zod.string().nullish()
+})
+
+
+/**
+ * Clears active session token on the server.
+ * @summary Logout
+ */
+export const UserLogoutHeader = zod.object({
+  "X-Auth-Token": zod.string().optional()
+})
+
+export const UserLogoutResponse = zod.object({
+  "success": zod.boolean().optional()
+})
+
+
+/**
+ * @summary Get current authenticated user
+ */
+export const GetAuthenticatedUserHeader = zod.object({
+  "X-Auth-Token": zod.string().optional()
+})
+
+export const GetAuthenticatedUserResponse = zod.object({
+  "id": zod.number(),
+  "email": zod.string(),
+  "subscriptionStatus": zod.enum(['active', 'cancelled', 'expired']),
+  "accessGranted": zod.boolean(),
+  "accessGrantedAt": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "hasPassword": zod.boolean(),
+  "hasActiveSession": zod.boolean()
+})
+
+
+/**
+ * Immediately revoke a user's karaoke access and clear session
  * @summary Revoke user access
  */
 export const RevokeUserAccessParams = zod.object({
@@ -145,11 +198,28 @@ export const RevokeUserAccessParams = zod.object({
 export const RevokeUserAccessResponse = zod.object({
   "id": zod.number(),
   "email": zod.string(),
-  "woocommerceCustomerId": zod.string().nullish(),
   "subscriptionStatus": zod.enum(['active', 'cancelled', 'expired']),
   "accessGranted": zod.boolean(),
   "accessGrantedAt": zod.string().nullish(),
-  "expiresAt": zod.string().nullish()
+  "expiresAt": zod.string().nullish(),
+  "hasPassword": zod.boolean(),
+  "hasActiveSession": zod.boolean()
+})
+
+
+/**
+ * Generates a new temporary 8-digit password for a subscriber
+ * @summary Generate temporary password
+ */
+export const CreateUserPasswordParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateUserPasswordResponse = zod.object({
+  "id": zod.number().optional(),
+  "email": zod.string().optional(),
+  "temporaryPassword": zod.string().optional(),
+  "message": zod.string().optional()
 })
 
 

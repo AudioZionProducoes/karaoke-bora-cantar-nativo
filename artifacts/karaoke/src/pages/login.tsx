@@ -3,14 +3,15 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic2, ArrowLeft, LogIn } from "lucide-react";
+import { Mic2, ArrowLeft, LogIn, Lock, Mail } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login, loading, error, user } = useAuth();
   const [, navigate] = useLocation();
 
-  // If already logged in, redirect to home
+  // Already logged in
   if (user) {
     navigate("/");
     return null;
@@ -18,8 +19,8 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
-    const ok = await login(email.trim());
+    if (!email.trim() || !password.trim()) return;
+    const ok = await login(email.trim(), password.trim());
     if (ok) navigate("/");
   }
 
@@ -32,19 +33,31 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-bold">Karaokê CT</h1>
           <p className="text-sm text-muted-foreground">
-            Entre com o email da sua assinatura para liberar o sistema.
+            Entre com email e senha da sua assinatura para liberar o sistema.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="email"
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-12 text-base"
+              className="h-12 pl-10 text-base"
               autoFocus
+            />
+          </div>
+
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="password"
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-12 pl-10 text-base"
             />
           </div>
 
@@ -57,7 +70,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             className="w-full h-12 bg-primary hover:bg-primary/90 font-bold text-base"
-            disabled={loading || !email.trim()}
+            disabled={loading || !email.trim() || !password.trim()}
           >
             {loading ? (
               <span className="animate-pulse">Verificando...</span>
@@ -80,8 +93,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-xs text-center text-muted-foreground/60">
-          Acesso exclusivo para assinantes. Não tem assinatura?{" "}
-          <a href="#" className="text-primary hover:underline">Fale conosco</a>.
+          Acesso exclusivo para assinantes. Sua conta pode ser usada em apenas 1 dispositivo por vez.
         </p>
       </div>
     </div>

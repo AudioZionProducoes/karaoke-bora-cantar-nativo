@@ -8,13 +8,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useCreateMusica, useListUsers, useRevokeUserAccess, getSearchMusicasQueryKey, getGetMusicasStatsQueryKey } from "@workspace/api-client-react";
+import { useCreateMusica, useListUsers, useRevokeUserAccess, getSearchMusicasQueryKey, getGetMusicasStatsQueryKey, useGenerateUserPassword } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Settings, Music, Users, Loader2 } from "lucide-react";
+import { Settings, Music, Users, Loader2, KeyRound, Smartphone } from "lucide-react";
 
 const songFormSchema = z.object({
   id: z.coerce.number().min(1, "O ID deve ser maior que 0"),
@@ -68,6 +69,28 @@ export default function Admin() {
 
   const { data: users, isLoading: isLoadingUsers } = useListUsers();
   const revokeAccess = useRevokeUserAccess();
+  const generatePassword = useGenerateUserPassword();
+  const [generatedPassword, setGeneratedPassword] = useState<{ email: string; password: string } | null>(null);
+
+  function onGeneratePassword(userId: number, email: string) {
+    generatePassword.mutate({ id: userId }, {
+      onSuccess: (data) => {
+        setGeneratedPassword({ email, password: data.temporaryPassword });
+        toast({
+          title: "Senha gerada",
+          description: `Nova senha temporária criada para ${email}.`,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      },
+      onError: (error) => {
+        toast({
+          title: "Erro ao gerar senha",
+          description: (error as {message?:string}).message || String(error) || "Ocorreu um erro.",
+          variant: "destructive"
+        });
+      }
+    });
+  }
 
   function onRevokeAccess(userId: number, email: string) {
     if (confirm(`Tem certeza que deseja revogar o acesso de ${email}?`)) {
@@ -196,9 +219,17 @@ export default function Admin() {
             <Card className="border-border/40 bg-card/50 backdrop-blur">
               <CardHeader>
                 <CardTitle>Assinantes</CardTitle>
-                <CardDescription>Gerencie o acesso e as assinaturas dos usuarios.</CardDescription>
+                <CardDescription>Gerencie o acesso e as assinaturas dos usuarios. Sessão única: apenas 1 dispositivo por conta.</CardDescription>
               </CardHeader>
               <CardContent>
+                {generatedPassword && (
+                  <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30">
+                    <div className="text-sm font-medium text-primary mb-1">Senha temporária gerada para {generatedPassword.email}</div>
+                    <div className="text-2xl font-mono font-bold text-foreground tracking-widest">{generatedPassword.password}</div>
+                    <p className="text-xs text-muted-foreground mt-1">Compartilhe esta senha com o assinante. Ele pode trocar depois.</p>
+                    <Button variant="ghost" size="sm" className="mt-2 h-7 text-xs" onClick={() => setGeneratedPassword(null)}>Ocultar</Button>
+                  </div>
+                )}
                 {isLoadingUsers ? (
                   <div className="flex justify-center items-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -242,14 +273,34 @@ export default function Admin() {
                               {user.expiresAt ? format(new Date(user.expiresAt), "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Sem expiração'}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => onRevokeAccess(user.id, user.email)}
-                                disabled={!user.accessGranted || revokeAccess.isPending}
-                              >
-                                Revogar Acesso
-                              </Button>
+                              <div className="flex items-center gap-2 justify-end">
+                                {!user.hasPassword ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs border-primary/30 text-primary hover:bg-primary/10"
+                                    onClick={() => onGeneratePassword(user.id, user.email)}
+                                    disabled={generatePassword.isPending}
+                                  >
+                                    <KeyRound className="h-3.5 w-3.5 mr-1" />
+                                    Gerar Senha
+                                  </Button>
+                                ) : (
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground" title={user.hasActiveSession ? "Sessão ativa em 1 dispositivo" : "Sem sessão ativa"}>
+                                    <Smartphone className="h-3 w-3" />
+                                    {user.hasActiveSession ? "Online" : "Offline"}
+                                  </div>
+                                )}
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  className="text-xs"
+                                  onClick={() => onRevokeAccess(user.id, user.email)}
+                                  disabled={!user.accessGranted || revokeAccess.isPending}
+                                >
+                                  Revogar
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}

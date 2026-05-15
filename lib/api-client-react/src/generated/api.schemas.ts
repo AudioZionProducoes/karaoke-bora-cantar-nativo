@@ -59,14 +59,14 @@ export const KaraokeUserSubscriptionStatus = {
 export interface KaraokeUser {
   id: number;
   email: string;
-  /** @nullable */
-  woocommerceCustomerId?: string | null;
   subscriptionStatus: KaraokeUserSubscriptionStatus;
   accessGranted: boolean;
   /** @nullable */
   accessGrantedAt?: string | null;
   /** @nullable */
   expiresAt?: string | null;
+  hasPassword: boolean;
+  hasActiveSession: boolean;
 }
 
 export interface WooCommerceEvent {
@@ -103,5 +103,31 @@ page?: number;
  * Results per page
  */
 limit?: number;
+};
+
+export type AuthenticateUserBody = {
+  email: string;
+  password: string;
+};
+
+export type AuthenticateUser200 = {
+  token?: string;
+  id?: number;
+  email?: string;
+  subscriptionStatus?: string;
+  accessGranted?: boolean;
+  accessGrantedAt?: string | null;
+  expiresAt?: string | null;
+};
+
+export type UserLogout200 = {
+  success?: boolean;
+};
+
+export type CreateUserPassword200 = {
+  id?: number;
+  email?: string;
+  temporaryPassword?: string;
+  message?: string;
 };
 

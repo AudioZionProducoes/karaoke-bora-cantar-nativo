@@ -1,7 +1,16 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, karaokeUsersTable } from "@workspace/db";
+import bcryptjs from "bcryptjs";
 import { logger } from "../lib/logger";
+
+function generateTempPassword(): string {
+  return Math.floor(10000000 + Math.random() * 90000000).toString();
+}
+
+async function hashPassword(plain: string): Promise<string> {
+  return bcryptjs.hash(plain, 10);
+}
 
 const router: IRouter = Router();
 
@@ -60,15 +69,24 @@ router.post("/webhook/woocommerce", async (req, res): Promise<void> => {
       return;
     }
 
+    // New subscriber: generate temporary password
+    const tempPassword = generateTempPassword();
+    const hash = await hashPassword(tempPassword);
+
     await db.insert(karaokeUsersTable).values({
       email,
+      passwordHash: hash,
       woocommerceCustomerId: customer_id ?? null,
       subscriptionStatus: "active",
       accessGranted: true,
     });
 
-    req.log.info({ email }, "New subscriber created");
-    res.json({ success: true, message: `Subscriber created for ${email}` });
+    req.log.info({ email, password: tempPassword }, "New subscriber created with temporary password");
+    res.json({
+      success: true,
+      message: `Subscriber created for ${email}`,
+      temporaryPassword: tempPassword,
+    });
     return;
   }
 
@@ -77,7 +95,7 @@ router.post("/webhook/woocommerce", async (req, res): Promise<void> => {
 
     await db
       .update(karaokeUsersTable)
-      .set({ subscriptionStatus: status, accessGranted: false })
+      .set({ subscriptionStatus: status, accessGranted: false, activeSessionToken: null, activeSessionAt: null })
       .where(eq(karaokeUsersTable.email, email));
 
     req.log.info({ email, status }, "Subscription cancelled — access revoked");
