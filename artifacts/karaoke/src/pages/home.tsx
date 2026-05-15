@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Search } from "lucide-react";
+import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Search, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -132,6 +132,13 @@ export default function Home() {
           {searchResults && (
             <span className="text-sm text-muted-foreground shrink-0">{searchResults.total.toLocaleString("pt-BR")} encontradas</span>
           )}
+
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/admin" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 bg-muted/40 border border-border/30 rounded-full px-3 py-1.5">
+              <Settings className="h-3.5 w-3.5" />
+              <span>Admin</span>
+            </Link>
+          </div>
         </div>
 
         {isLoading ? (

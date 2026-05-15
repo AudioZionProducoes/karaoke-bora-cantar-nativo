@@ -27,34 +27,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="flex items-center gap-3">
-            {folderName ? (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-3 py-1.5">
-                  <FolderCheck className="h-3.5 w-3.5 shrink-0" />
-                  <span className="font-medium max-w-[140px] truncate">{folderName}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                  onClick={clearFolder}
-                  title="Remover pasta"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs border-border/50 text-muted-foreground hover:text-foreground hover:border-primary/50"
-                onClick={selectFolder}
-              >
-                <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
-                Pasta de Músicas
-              </Button>
-            )}
-
             {/* Queue toggle button */}
             <Button
               variant={queueOpen ? "default" : "outline"}
@@ -105,11 +77,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <span>Entrar</span>
               </Link>
             )}
-
-            <Link href="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span>Administração</span>
-            </Link>
           </nav>
         </div>
 
