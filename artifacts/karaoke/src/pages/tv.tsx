@@ -182,25 +182,24 @@ export default function TVPage() {
         </div>
       </div>
 
-      {/* Top header bar */}
+      {/* Top header bar — queue starts right next to Sessão label */}
       <header className="shrink-0 z-20 bg-black/80 backdrop-blur-sm border-b border-white/10">
-        <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 px-4 py-2 flex-wrap">
+          {/* Left controls */}
+          <div className="flex items-center gap-3 shrink-0">
             <Link href="/">
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-8">
                 <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />Sair
               </Button>
             </Link>
             <div className="text-xs text-muted-foreground uppercase tracking-wider hidden sm:block">Modo TV</div>
-            <div className="font-bold text-sm">Sessão: <span className="text-primary">{sessionId}</span></div>
+            <div className="font-bold text-sm shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
           </div>
-        </div>
 
-        {/* Queue bar — wraps like notebook lines when full */}
-        {session && session.queue.length > 0 && (
-          <div className="px-4 pb-2 max-h-32 overflow-y-auto">
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Now playing badge (yellow highlight, first in line) */}
+          {/* Queue — flows right after Sessão, wraps like notebook lines */}
+          {session && session.queue.length > 0 && (
+            <>
+              {/* Now playing badge */}
               {currentSongId && currentSinger && (
                 <div className="shrink-0 flex items-center gap-2 bg-yellow-500/15 border border-yellow-400/40 rounded-lg px-3 py-1.5">
                   <div className="bg-yellow-400/20 rounded-full p-1">
@@ -214,7 +213,7 @@ export default function TVPage() {
                 </div>
               )}
 
-              {/* Up next items — wrap naturally like notebook lines */}
+              {/* Up next items */}
               {session.queue.map((item, i) => (
                 <div
                   key={item.id}
@@ -231,17 +230,17 @@ export default function TVPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
+            </>
+          )}
 
-        {/* Empty queue state in bar */}
-        {(!session?.queue || session.queue.length === 0) && (
-          <div className="px-4 pb-2 text-xs text-muted-foreground flex items-center gap-1.5">
-            <ListMusic className="h-3 w-3" />
-            Fila vazia — escaneie o QR Code para adicionar músicas
-          </div>
-        )}
+          {/* Empty queue hint */}
+          {(!session?.queue || session.queue.length === 0) && (
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <ListMusic className="h-3 w-3" />
+              Fila vazia — escaneie o QR Code para adicionar músicas
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Video Player */}
