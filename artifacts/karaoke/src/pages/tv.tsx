@@ -173,27 +173,18 @@ export default function TVPage() {
       {/* Subtle top glow */}
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
 
-      {/* QR Code overlay (corner) */}
-      <div className="absolute top-3 right-3 z-30 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl p-2.5 flex flex-col items-center gap-1">
-        <QRCode value={remoteUrl} size={70} bgColor="transparent" fgColor="#fff" />
-        <div className="text-[9px] text-center text-muted-foreground leading-tight max-w-[80px]">
-          <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5" />
-          Escaneie para controlar
-        </div>
-      </div>
-
-      {/* Top header bar — queue starts right next to Sessão label */}
-      <header className="shrink-0 z-20 bg-black/80 backdrop-blur-sm border-b border-white/10">
-        <div className="flex items-center gap-2 px-4 py-2 flex-wrap">
-          {/* Left controls */}
-          <div className="flex items-center gap-3 shrink-0">
+      {/* Top header bar — compact single row */}
+      <header className="shrink-0 z-20 bg-black/70 backdrop-blur-sm border-b border-white/5">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 flex-wrap">
+          {/* Left controls — minimal */}
+          <div className="flex items-center gap-2 shrink-0">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-8">
-                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />Sair
+              <Button variant="ghost" size="sm" className="text-white/80 hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-7 px-2 text-xs">
+                <ArrowLeft className="h-3 w-3 mr-1" />Sair
               </Button>
             </Link>
-            <div className="text-xs text-muted-foreground uppercase tracking-wider hidden sm:block">Modo TV</div>
-            <div className="font-bold text-sm shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
+            <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
           </div>
 
           {/* Queue — flows right after Sessão, wraps like notebook lines */}
@@ -244,7 +235,7 @@ export default function TVPage() {
       </header>
 
       {/* Video Player */}
-      <div className="flex-1 flex items-center justify-center bg-black min-h-0">
+      <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
         {isLibraryConfigured && currentSongId ? (
           <iframe
             key={`iframe-${currentSongId}`}
@@ -277,6 +268,15 @@ export default function TVPage() {
             </div>
           </div>
         )}
+
+        {/* QR Code overlay — inside video area, bottom-right */}
+        <div className="absolute bottom-4 right-4 z-30 bg-black/50 backdrop-blur-sm border border-white/10 rounded-lg p-2 flex flex-col items-center gap-0.5">
+          <QRCode value={remoteUrl} size={56} bgColor="transparent" fgColor="#fff" />
+          <div className="text-[8px] text-center text-muted-foreground leading-tight max-w-[60px]">
+            <Smartphone className="h-2 w-2 mx-auto mb-0.5" />
+            Controle
+          </div>
+        </div>
       </div>
 
       {/* Score overlay */}
