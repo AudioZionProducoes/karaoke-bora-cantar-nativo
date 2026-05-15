@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Link } from "wouter";
-import { Search, Play, Music, Mic2, ListPlus, Check } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { Search, Play, Music, Mic2, ListPlus, Check, Monitor, QrCode } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,19 +11,30 @@ import { Layout } from "@/components/layout";
 import { useQueue, type QueueItem } from "@/contexts/queue-context";
 import { useToast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
+import { useSession } from "@/contexts/session-context";
 
 export default function Home() {
   const { addToQueue, isInQueue, queue } = useQueue();
+  const { session, createSession } = useSession();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
+  const [startingSession, setStartingSession] = useState(false);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
   const { data: stats } = useGetMusicasStats();
   const { data: searchResults, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 24 });
+
+  async function handleStartTV() {
+    setStartingSession(true);
+    const id = await createSession("Karaoke CT");
+    setStartingSession(false);
+    if (id) navigate(`/tv/${id}`);
+  }
 
   function openQueueDialog(m: PendingQueueItem) {
     if (queue.length >= 30) {
@@ -67,6 +78,30 @@ export default function Home() {
         <p className="text-lg text-muted-foreground max-w-xl">
           Busque no maior catálogo de karaokê. Músicas de alta qualidade, sem espera.
         </p>
+
+        {/* TV Mode button */}
+        <div className="flex gap-3">
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all"
+            onClick={handleStartTV}
+            disabled={startingSession}
+          >
+            <Monitor className="h-5 w-5 mr-2" />
+            {startingSession ? "Iniciando..." : "Modo TV + Controle Remoto"}
+          </Button>
+          {session && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-primary/50 text-primary hover:bg-primary/10"
+              onClick={() => navigate(`/tv/${session.id}`)}
+            >
+              <QrCode className="h-5 w-5 mr-2" />
+              Entrar na Sessão {session.id}
+            </Button>
+          )}
+        </div>
 
         <div className="w-full relative mt-4 group">
           <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 -z-10"></div>
