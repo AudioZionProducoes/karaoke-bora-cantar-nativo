@@ -63,7 +63,24 @@ export default function Home() {
         onCancel={() => setPendingItem(null)}
       />
 
-      <div className="flex flex-col items-center pt-12 pb-8 max-w-3xl mx-auto text-center space-y-6">
+      {/* Search bar at the top */}
+      <div className="w-full max-w-3xl mx-auto pt-8 pb-4">
+        <div className="relative group">
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10"></div>
+          <div className="relative flex items-center w-full">
+            <Search className="absolute left-6 h-5 w-5 text-white dark:text-black" />
+            <Input
+              type="text"
+              placeholder="Buscar por artista, música, letra ou código..."
+              className="w-full h-16 pl-14 pr-6 rounded-full bg-black border-white/30 text-white placeholder:text-white/60 text-lg shadow-sm focus-visible:ring-white focus-visible:border-white dark:bg-[hsl(55,100%,50%)] dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col items-center pt-6 pb-8 max-w-3xl mx-auto text-center space-y-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(250,204,21,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.25)]">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -101,20 +118,6 @@ export default function Home() {
               Entrar na Sessão {session.id}
             </Button>
           )}
-        </div>
-
-        <div className="w-full relative mt-4 group">
-          <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10"></div>
-          <div className="relative flex items-center w-full">
-            <Search className="absolute left-6 h-5 w-5 text-white dark:text-black" />
-            <Input
-              type="text"
-              placeholder="Buscar por artista, música, letra ou código..."
-              className="w-full h-16 pl-14 pr-6 rounded-full bg-black border-white/30 text-white placeholder:text-white/60 text-lg shadow-sm focus-visible:ring-white focus-visible:border-white dark:bg-[hsl(55,100%,50%)] dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
         </div>
       </div>
 
