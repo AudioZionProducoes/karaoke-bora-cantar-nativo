@@ -28,6 +28,9 @@ interface AccessCodeItem {
   used: boolean;
   usedAt: string | null;
   usedBy: string | null;
+  redeemerName: string | null;
+  redeemerEmail: string | null;
+  redeemerWhatsapp: string | null;
   expiresAt: string | null;
   createdAt: string | null;
   createdBy: number | null;
@@ -219,7 +222,9 @@ export function CuponsTab() {
                     <TableHead>Status</TableHead>
                     <TableHead>Duração</TableHead>
                     <TableHead>Identificação</TableHead>
-                    <TableHead>Usado por</TableHead>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>WhatsApp</TableHead>
                     <TableHead>Criado em</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
@@ -241,7 +246,13 @@ export function CuponsTab() {
                         {c.label || "-"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {c.usedBy || "-"}
+                        {c.redeemerName || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {c.redeemerEmail || "-"}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {c.redeemerWhatsapp || "-"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">

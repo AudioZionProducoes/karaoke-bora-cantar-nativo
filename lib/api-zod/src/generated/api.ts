@@ -235,6 +235,9 @@ export const ListAccessCodesResponseItem = zod.object({
   "used": zod.boolean(),
   "usedAt": zod.string().nullish(),
   "usedBy": zod.string().nullish(),
+  "redeemerName": zod.string().nullish(),
+  "redeemerEmail": zod.string().nullish(),
+  "redeemerWhatsapp": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
   "createdAt": zod.string().nullish(),
   "createdBy": zod.number().nullish(),
@@ -266,7 +269,9 @@ export const RedeemAccessCodeParams = zod.object({
 })
 
 export const RedeemAccessCodeBody = zod.object({
-  "identifier": zod.string().optional().describe('Email or device identifier of who redeemed')
+  "name": zod.string().describe('Full name of the person redeeming'),
+  "email": zod.string().describe('Email address for contact'),
+  "whatsapp": zod.string().describe('WhatsApp number for contact')
 })
 
 export const RedeemAccessCodeResponse = zod.object({

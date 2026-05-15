@@ -435,15 +435,22 @@ paths:
           schema:
             type: string
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [name, email, whatsapp]
               properties:
-                identifier:
+                name:
                   type: string
-                  description: Email or device identifier of who redeemed
+                  description: Full name of the person redeeming
+                email:
+                  type: string
+                  description: Email address for contact
+                whatsapp:
+                  type: string
+                  description: WhatsApp number for contact
       responses:
         "200":
           description: Code redeemed successfully
@@ -667,6 +674,12 @@ components:
         usedAt:
           type: ["string", "null"]
         usedBy:
+          type: ["string", "null"]
+        redeemerName:
+          type: ["string", "null"]
+        redeemerEmail:
+          type: ["string", "null"]
+        redeemerWhatsapp:
           type: ["string", "null"]
         expiresAt:
           type: ["string", "null"]

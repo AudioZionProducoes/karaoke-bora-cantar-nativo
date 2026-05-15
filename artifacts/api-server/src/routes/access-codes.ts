@@ -96,6 +96,9 @@ router.get("/access-codes", async (_req, res): Promise<void> => {
       used: c.used,
       usedAt: c.usedAt?.toISOString() ?? null,
       usedBy: c.usedBy,
+      redeemerName: c.redeemerName,
+      redeemerEmail: c.redeemerEmail,
+      redeemerWhatsapp: c.redeemerWhatsapp,
       expiresAt: c.expiresAt?.toISOString() ?? null,
       createdAt: c.createdAt?.toISOString() ?? null,
       createdBy: c.createdBy,
@@ -135,7 +138,10 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
     return;
   }
 
-  const usedBy = typeof req.body?.identifier === "string" ? req.body.identifier.trim() : null;
+  const usedBy = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : null;
+  const redeemerName = typeof req.body?.name === "string" ? req.body.name.trim() : null;
+  const redeemerEmail = usedBy;
+  const redeemerWhatsapp = typeof req.body?.whatsapp === "string" ? req.body.whatsapp.trim() : null;
   const accessExpiresAt = addMinutes(now, code.durationMinutes);
 
   await db
@@ -144,6 +150,9 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
       used: true,
       usedAt: now,
       usedBy,
+      redeemerName,
+      redeemerEmail,
+      redeemerWhatsapp,
     })
     .where(eq(accessCodesTable.id, code.id));
 

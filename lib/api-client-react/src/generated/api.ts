@@ -1191,7 +1191,7 @@ export const getRedeemAccessCodeUrl = (code: string,) => {
  * @summary Redeem access code
  */
 export const redeemAccessCode = async (code: string,
-    redeemAccessCodeBody?: RedeemAccessCodeBody, options?: RequestInit): Promise<RedeemAccessCode200> => {
+    redeemAccessCodeBody: RedeemAccessCodeBody, options?: RequestInit): Promise<RedeemAccessCode200> => {
 
   return customFetch<RedeemAccessCode200>(getRedeemAccessCodeUrl(code),
   {
@@ -1207,8 +1207,8 @@ export const redeemAccessCode = async (code: string,
 
 
 export const getRedeemAccessCodeMutationOptions = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data?: BodyType<RedeemAccessCodeBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data?: BodyType<RedeemAccessCodeBody>}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data: BodyType<RedeemAccessCodeBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data: BodyType<RedeemAccessCodeBody>}, TContext> => {
 
 const mutationKey = ['redeemAccessCode'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -1220,7 +1220,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof redeemAccessCode>>, {code: string;data?: BodyType<RedeemAccessCodeBody>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof redeemAccessCode>>, {code: string;data: BodyType<RedeemAccessCodeBody>}> = (props) => {
           const {code,data} = props ?? {};
 
           return  redeemAccessCode(code,data,requestOptions)
@@ -1234,18 +1234,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type RedeemAccessCodeMutationResult = NonNullable<Awaited<ReturnType<typeof redeemAccessCode>>>
-    export type RedeemAccessCodeMutationBody = BodyType<RedeemAccessCodeBody> | undefined
+    export type RedeemAccessCodeMutationBody = BodyType<RedeemAccessCodeBody>
     export type RedeemAccessCodeMutationError = ErrorType<ErrorResponse>
 
     /**
  * @summary Redeem access code
  */
 export const useRedeemAccessCode = <TError = ErrorType<ErrorResponse>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data?: BodyType<RedeemAccessCodeBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof redeemAccessCode>>, TError,{code: string;data: BodyType<RedeemAccessCodeBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof redeemAccessCode>>,
         TError,
-        {code: string;data?: BodyType<RedeemAccessCodeBody>},
+        {code: string;data: BodyType<RedeemAccessCodeBody>},
         TContext
       > => {
       return useMutation(getRedeemAccessCodeMutationOptions(options));

@@ -107,6 +107,12 @@ export interface AccessCode {
   /** @nullable */
   usedBy?: string | null;
   /** @nullable */
+  redeemerName?: string | null;
+  /** @nullable */
+  redeemerEmail?: string | null;
+  /** @nullable */
+  redeemerWhatsapp?: string | null;
+  /** @nullable */
   expiresAt?: string | null;
   /** @nullable */
   createdAt?: string | null;
@@ -184,8 +190,12 @@ export type CreateAccessCodes201 = {
 };
 
 export type RedeemAccessCodeBody = {
-  /** Email or device identifier of who redeemed */
-  identifier?: string;
+  /** Full name of the person redeeming */
+  name: string;
+  /** Email address for contact */
+  email: string;
+  /** WhatsApp number for contact */
+  whatsapp: string;
 };
 
 export type RedeemAccessCode200 = {

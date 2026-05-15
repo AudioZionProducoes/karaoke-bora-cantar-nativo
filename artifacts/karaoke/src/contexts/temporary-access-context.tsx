@@ -11,7 +11,7 @@ interface TemporaryAccessContextType {
   access: TemporaryAccess | null;
   hasAccess: boolean;
   remainingMinutes: number;
-  redeemCode: (code: string) => Promise<{ success: boolean; message?: string; error?: string }>;
+  redeemCode: (code: string, name: string, email: string, whatsapp: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   clearAccess: () => void;
 }
 
@@ -62,12 +62,12 @@ export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id);
   }, [access]);
 
-  const redeemCode = useCallback(async (code: string) => {
+  const redeemCode = useCallback(async (code: string, name: string, email: string, whatsapp: string) => {
     try {
       const res = await fetch(`/api/access-codes/${encodeURIComponent(code.toUpperCase().trim())}/redeem`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: "Cliente" }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase(), whatsapp: whatsapp.trim() }),
       });
 
       if (!res.ok) {
