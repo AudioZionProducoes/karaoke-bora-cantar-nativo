@@ -178,7 +178,7 @@ export default function Home() {
 
                     <div className="flex gap-2 mt-4">
                       <Link href={`/player/${musica.id}`} className="flex-1">
-                        <Button className="w-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all z-10 relative">
+                        <Button className="w-full dark:bg-yellow-400 dark:text-black dark:hover:bg-yellow-300 bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative">
                           <Play className="h-4 w-4 mr-2" />
                           Cantar Agora
                         </Button>
