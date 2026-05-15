@@ -274,9 +274,9 @@ export default function TVPage() {
           <div className="bg-white rounded-md p-1">
             <QRCode value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#581c87" />
           </div>
-          <div className="text-[9px] text-center text-purple-100 leading-tight max-w-[64px] font-medium">
+          <div className="text-[9px] text-center text-purple-100 leading-tight max-w-[72px] font-bold">
             <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-purple-200" />
-            Controle
+            Controle Remoto
           </div>
         </div>
       </div>
