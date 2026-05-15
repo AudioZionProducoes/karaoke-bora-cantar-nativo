@@ -110,7 +110,7 @@ export default function Home() {
             <Input
               type="text"
               placeholder="Buscar por artista, música, letra ou código..."
-              className="w-full h-16 pl-14 pr-6 rounded-full bg-black border-yellow-400/30 text-yellow-400 placeholder:text-yellow-400/60 text-lg shadow-sm focus-visible:ring-yellow-400 focus-visible:border-yellow-400 dark:bg-yellow-400 dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
+              className="w-full h-16 pl-14 pr-6 rounded-full bg-black border-yellow-400/30 text-yellow-400 placeholder:text-yellow-400/60 text-lg shadow-sm focus-visible:ring-yellow-400 focus-visible:border-yellow-400 dark:bg-[hsl(55,100%,50%)] dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
