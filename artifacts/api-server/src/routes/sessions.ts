@@ -158,6 +158,46 @@ router.post("/sessions/:id/play", async (req, res): Promise<void> => {
   res.json({ currentSongId: songId ?? null, currentSingerName: fromQueue?.singerName ?? null });
 });
 
+router.put("/sessions/:id/queue/:songId", async (req, res): Promise<void> => {
+  const id = req.params.id?.toUpperCase();
+  const songId = Number(req.params.songId);
+  const { musica, artista } = req.body ?? {};
+
+  if (!id || id.length !== 6 || Number.isNaN(songId)) {
+    res.status(400).json({ error: "Parâmetros inválidos" });
+    return;
+  }
+  if (typeof musica !== "string" || typeof artista !== "string") {
+    res.status(400).json({ error: "Dados da música incompletos" });
+    return;
+  }
+
+  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+  if (!session) {
+    res.status(404).json({ error: "Sessão não encontrada" });
+    return;
+  }
+
+  const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
+  const itemIndex = queue.findIndex((q) => q.id === songId);
+  if (itemIndex === -1) {
+    res.status(404).json({ error: "Música não encontrada na fila" });
+    return;
+  }
+
+  // Update musica and artista, keep singerName and addedAt
+  const updatedQueue = queue.map((q, i) =>
+    i === itemIndex ? { ...q, musica, artista } : q
+  );
+
+  await db
+    .update(sessionsTable)
+    .set({ queue: updatedQueue, updatedAt: new Date() })
+    .where(eq(sessionsTable.id, id));
+
+  res.json({ queue: updatedQueue });
+});
+
 router.post("/sessions/:id/next", async (req, res): Promise<void> => {
   const id = req.params.id?.toUpperCase();
 

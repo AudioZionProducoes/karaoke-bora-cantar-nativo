@@ -26,6 +26,7 @@ interface SessionContextType {
   joinSession: (id: string) => Promise<boolean>;
   addToQueue: (songId: number, musica: string, artista: string, singerName: string) => Promise<boolean>;
   removeFromQueue: (songId: number) => Promise<boolean>;
+  updateQueueItem: (songId: number, musica: string, artista: string) => Promise<boolean>;
   advanceQueue: () => Promise<boolean>;
   playSong: (songId: number) => Promise<boolean>;
   leaveSession: () => void;
@@ -196,10 +197,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setStoredSessionId(null);
   }, []);
 
+  const updateQueueItem = useCallback(async (songId: number, musica: string, artista: string): Promise<boolean> => {
+    if (!sessionId) return false;
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/queue/${songId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ musica, artista }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      setSession((prev) => prev ? { ...prev, queue: data.queue } : null);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [sessionId]);
+
   const value: SessionContextType = {
     session, loading, error,
     createSession, joinSession, addToQueue,
-    removeFromQueue, advanceQueue, playSong, leaveSession,
+    removeFromQueue, updateQueueItem, advanceQueue, playSong, leaveSession,
   };
 
   return (
