@@ -196,10 +196,10 @@ export default function TVPage() {
           </div>
         </div>
 
-        {/* Horizontal queue bar */}
+        {/* Queue bar — wraps like notebook lines when full */}
         {session && session.queue.length > 0 && (
-          <div className="px-4 pb-2 overflow-x-auto">
-            <div className="flex items-center gap-2 min-w-max">
+          <div className="px-4 pb-2 max-h-32 overflow-y-auto">
+            <div className="flex flex-wrap items-center gap-2">
               {/* Now playing badge (yellow highlight, first in line) */}
               {currentSongId && currentSinger && (
                 <div className="shrink-0 flex items-center gap-2 bg-yellow-500/15 border border-yellow-400/40 rounded-lg px-3 py-1.5">
@@ -214,20 +214,20 @@ export default function TVPage() {
                 </div>
               )}
 
-              {/* Up next items */}
+              {/* Up next items — wrap naturally like notebook lines */}
               {session.queue.map((item, i) => (
                 <div
                   key={item.id}
-                  className={`shrink-0 flex items-center gap-2 rounded-lg px-3 py-1.5 border ${
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 border ${
                     i === 0 && currentSongId !== item.id
                       ? "bg-primary/10 border-primary/30"
                       : "bg-white/5 border-white/10"
                   }`}
                 >
-                  <span className="text-[10px] font-mono text-muted-foreground">{i + 1}</span>
-                  <div>
-                    <div className="text-xs font-bold text-primary leading-tight">{item.singerName}</div>
-                    <div className="text-[10px] text-white/70 leading-tight">{item.musica}</div>
+                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">{i + 1}</span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-primary leading-tight truncate">{item.singerName}</div>
+                    <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
                   </div>
                 </div>
               ))}
