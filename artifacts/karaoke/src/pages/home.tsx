@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
-import { Search, Play, Music, Mic2 } from "lucide-react";
+import { Search, Play, Music, Mic2, ListPlus, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,10 +8,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSearchMusicas, useGetMusicasStats } from "@workspace/api-client-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Layout } from "@/components/layout";
+import { useQueue } from "@/contexts/queue-context";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
+  const { addToQueue, isInQueue, queue } = useQueue();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 300);
+
+  function handleAddToQueue(m: { id: number; musica: string; artista: string }) {
+    if (queue.length >= 30) {
+      toast({ title: "Fila cheia", description: "A fila já tem 30 músicas.", variant: "destructive" });
+      return;
+    }
+    if (isInQueue(m.id)) {
+      toast({ title: "Já na fila", description: `"${m.musica}" já está na lista de espera.` });
+      return;
+    }
+    addToQueue({ id: m.id, musica: m.musica, artista: m.artista });
+    toast({ title: "Adicionada à fila ✓", description: `"${m.musica}" entrou na lista de espera.` });
+  }
   const [page, setPage] = useState(1);
 
   useMemo(() => {
@@ -117,12 +134,23 @@ export default function Home() {
                       )}
                     </div>
 
-                    <Link href={`/player/${musica.id}`}>
-                      <Button className="w-full mt-4 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all z-10 relative">
-                        <Play className="h-4 w-4 mr-2" />
-                        Cantar Agora
+                    <div className="flex gap-2 mt-4">
+                      <Link href={`/player/${musica.id}`} className="flex-1">
+                        <Button className="w-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all z-10 relative">
+                          <Play className="h-4 w-4 mr-2" />
+                          Cantar Agora
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        title="Adicionar à fila"
+                        className={`shrink-0 border-border/50 transition-all z-10 relative ${isInQueue(musica.id) ? "text-emerald-400 border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20" : "text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
+                        onClick={() => handleAddToQueue({ id: musica.id, musica: musica.musica, artista: musica.artista })}
+                      >
+                        {isInQueue(musica.id) ? <Check className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}
                       </Button>
-                    </Link>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

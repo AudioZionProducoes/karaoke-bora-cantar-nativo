@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocalMusicProvider } from "@/contexts/local-music-context";
+import { QueueProvider } from "@/contexts/queue-context";
 import NotFound from "@/pages/not-found";
 
 import Home from "@/pages/home";
@@ -29,10 +30,12 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <LocalMusicProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Router />
-            </WouterRouter>
-            <Toaster />
+            <QueueProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <Router />
+              </WouterRouter>
+              <Toaster />
+            </QueueProvider>
           </LocalMusicProvider>
         </TooltipProvider>
       </QueryClientProvider>
