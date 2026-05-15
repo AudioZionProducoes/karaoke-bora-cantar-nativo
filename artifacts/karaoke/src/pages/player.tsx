@@ -30,6 +30,7 @@ function PersistentSearchBar() {
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
@@ -39,6 +40,18 @@ function PersistentSearchBar() {
 
   const hasResults = focused && debouncedSearch.length > 0 && (isLoading || (data && data.data.length > 0));
   const hasEmpty = focused && debouncedSearch.length > 0 && !isLoading && data?.data.length === 0;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!focused) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setFocused(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [focused]);
 
   function openQueueDialog(m: PendingQueueItem) {
     if (queue.length >= 30) {
@@ -62,7 +75,7 @@ function PersistentSearchBar() {
   return (
     <>
       <AddToQueueDialog item={pendingItem} onConfirm={handleConfirmQueue} onCancel={() => setPendingItem(null)} />
-      <div className="relative">
+      <div ref={containerRef} className="relative">
         <div
           className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition-all w-full ${
             focused
@@ -79,7 +92,6 @@ function PersistentSearchBar() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setFocused(true)}
-            onBlur={() => setTimeout(() => setFocused(false), 200)}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
                 setSearchTerm("");
