@@ -19,14 +19,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-              <Mic2 className="h-5 w-5" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+              <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                <Mic2 className="h-5 w-5" />
+              </div>
+              <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
+            </Link>
 
-          <nav className="flex items-center gap-3">
             {/* Queue toggle button */}
             <Button
               variant={queueOpen ? "default" : "outline"}
@@ -43,6 +43,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </span>
               )}
             </Button>
+          </div>
+
+          <nav className="flex items-center gap-3">
 
             {/* Theme toggle */}
             <Button
@@ -80,11 +83,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </nav>
         </div>
 
-        {/* Slide-down queue panel */}
+        {/* Slide-out queue panel from the right */}
         {queueOpen && (
-          <div className="border-t border-border/40 bg-background/98 animate-in slide-in-from-top duration-200">
-            <div className="container mx-auto px-4 max-w-7xl">
-              <div className="flex items-center justify-between py-3">
+          <div className="fixed inset-0 z-50 flex" onClick={() => setQueueOpen(false)}>
+            <div className="flex-1" />
+            <div
+              className="w-full max-w-sm bg-background/98 border-l border-border/40 animate-in slide-in-from-right duration-200 flex flex-col max-h-[calc(100vh-4rem)] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-4 border-b border-border/40 sticky top-0 bg-background/98 backdrop-blur">
                 <div className="flex items-center gap-2">
                   <ListMusic className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">Fila de espera</span>
@@ -95,7 +102,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <Button variant="ghost" size="sm"
                       className="text-xs text-muted-foreground hover:text-destructive h-7"
                       onClick={clearQueue}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />Limpar tudo
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />Limpar
                     </Button>
                   )}
                   <Button variant="ghost" size="sm"
@@ -106,33 +113,35 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
 
-              {queue.length === 0 ? (
-                <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-sm">
-                  <ListMusic className="h-5 w-5 opacity-40" />
-                  <p>A fila está vazia. Clique em <strong className="text-foreground/60">+</strong> em qualquer música para adicionar.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 pb-3">
-                  {queue.map((item, index) => (
-                    <div key={item.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/40 border border-border/30 hover:border-primary/30 transition-colors">
-                      <span className="text-xs font-mono text-muted-foreground w-5 shrink-0 text-center">{index + 1}</span>
-                      <div className="bg-primary/15 rounded-full p-1 shrink-0">
-                        <UserRound className="h-3 w-3 text-primary" />
+              <div className="p-4 flex-1">
+                {queue.length === 0 ? (
+                  <div className="flex items-center justify-center gap-2 py-6 text-muted-foreground text-sm">
+                    <ListMusic className="h-5 w-5 opacity-40" />
+                    <p>A fila está vazia. Clique em <strong className="text-foreground/60">+</strong> em qualquer música para adicionar.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {queue.map((item, index) => (
+                      <div key={item.id} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/40 border border-border/30 hover:border-primary/30 transition-colors">
+                        <span className="text-xs font-mono text-muted-foreground w-5 shrink-0 text-center">{index + 1}</span>
+                        <div className="bg-primary/15 rounded-full p-1 shrink-0">
+                          <UserRound className="h-3 w-3 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-bold text-primary line-clamp-1">{item.singerName}</div>
+                          <div className="text-xs text-foreground line-clamp-1">{item.musica}</div>
+                          <div className="text-xs text-muted-foreground line-clamp-1">{item.artista}</div>
+                        </div>
+                        <Button variant="ghost" size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+                          onClick={() => removeFromQueue(item.id)}>
+                          <X className="h-3 w-3" />
+                        </Button>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-primary line-clamp-1">{item.singerName}</div>
-                        <div className="text-xs text-foreground line-clamp-1">{item.musica}</div>
-                        <div className="text-xs text-muted-foreground line-clamp-1">{item.artista}</div>
-                      </div>
-                      <Button variant="ghost" size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
-                        onClick={() => removeFromQueue(item.id)}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
