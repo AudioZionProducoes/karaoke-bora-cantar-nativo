@@ -19,6 +19,148 @@ function randomScore() {
   return Math.floor(Math.random() * 21) + 80;
 }
 
+/* Persistent search bar in player header — always visible */
+function PersistentSearchBar() {
+  const [, navigate] = useLocation();
+  const { addToQueue, isInQueue, queue } = useQueue();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [focused, setFocused] = useState(false);
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useMemo(() => { setPage(1); }, [debouncedSearch]);
+
+  const { data, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 8 }, {
+    query: { enabled: focused && debouncedSearch.length > 0, queryKey: ["search-musicas", debouncedSearch, page] }
+  });
+
+  const hasResults = focused && debouncedSearch.length > 0 && (isLoading || (data && data.data.length > 0));
+  const hasEmpty = focused && debouncedSearch.length > 0 && !isLoading && data?.data.length === 0;
+
+  function openQueueDialog(m: PendingQueueItem) {
+    if (queue.length >= 30) {
+      toast({ title: "Fila cheia", description: "A fila já tem 30 músicas.", variant: "destructive" });
+      return;
+    }
+    if (isInQueue(m.id)) {
+      toast({ title: "Já na fila", description: `"${m.musica}" já está na lista de espera.` });
+      return;
+    }
+    setPendingItem(m);
+  }
+
+  function handleConfirmQueue(singerName: string) {
+    if (!pendingItem) return;
+    addToQueue({ ...pendingItem, singerName });
+    toast({ title: "Adicionada à fila ✓", description: `"${pendingItem.musica}" para ${singerName}.` });
+    setPendingItem(null);
+  }
+
+  return (
+    <>
+      <AddToQueueDialog item={pendingItem} onConfirm={handleConfirmQueue} onCancel={() => setPendingItem(null)} />
+      <div className="relative">
+        <div
+          className={`flex items-center gap-2 rounded-full border px-3 py-1.5 transition-all ${
+            focused
+              ? "bg-black/70 border-primary/60 shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)]"
+              : "bg-black/40 border-white/15 hover:border-white/30"
+          }`}
+        >
+          <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Buscar música..."
+            className="flex-1 bg-transparent border-0 text-white text-sm placeholder:text-muted-foreground focus:outline-none min-w-0"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setTimeout(() => setFocused(false), 200)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setSearchTerm("");
+                setFocused(false);
+                inputRef.current?.blur();
+              }
+            }}
+          />
+          {searchTerm && (
+            <Button variant="ghost" size="icon"
+              className="h-5 w-5 text-muted-foreground hover:text-white shrink-0"
+              onClick={() => { setSearchTerm(""); inputRef.current?.focus(); }}>
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+
+        {/* Dropdown results */}
+        {(hasResults || hasEmpty) && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-black/95 backdrop-blur-xl border border-white/15 rounded-xl shadow-2xl overflow-hidden z-50 max-h-[60vh] overflow-y-auto">
+            {isLoading ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-1.5 p-3 rounded-lg bg-white/5">
+                    <Skeleton className="h-4 w-3/4 bg-white/10" />
+                    <Skeleton className="h-3 w-1/2 bg-white/5" />
+                  </div>
+                ))}
+              </div>
+            ) : data && data.data.length > 0 ? (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 p-3">
+                  {data.data.map((m) => (
+                    <div key={m.id} className="rounded-lg bg-white/5 border border-transparent hover:border-white/15 transition-all p-3 flex flex-col gap-2">
+                      <div>
+                        <div className="flex items-start justify-between gap-1 mb-0.5">
+                          <div className="font-medium text-sm text-white line-clamp-1 flex-1">{m.musica}</div>
+                          <span className="text-[10px] font-mono text-primary/60 bg-primary/10 rounded px-1 py-0.5 shrink-0">#{m.id}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground line-clamp-1">{m.artista}</div>
+                      </div>
+                      <div className="flex gap-1.5 mt-auto">
+                        <Button size="sm"
+                          className="flex-1 h-7 text-xs bg-primary/80 hover:bg-primary"
+                          onClick={() => { navigate(`/player/${m.id}`); setSearchTerm(""); setFocused(false); }}>
+                          <Play className="h-3 w-3 mr-1" />Tocar
+                        </Button>
+                        <Button size="sm" variant="outline"
+                          className={`h-7 w-7 p-0 border-white/20 ${isInQueue(m.id) ? "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" : "text-white hover:bg-white/10 hover:text-white"}`}
+                          onClick={() => openQueueDialog({ id: m.id, musica: m.musica, artista: m.artista })}
+                          title="Adicionar à fila">
+                          {isInQueue(m.id) ? <Check className="h-3 w-3" /> : <ListPlus className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {data.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 p-2 border-t border-white/10">
+                    <Button variant="ghost" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}
+                      className="text-xs text-muted-foreground hover:text-white h-7">Anterior</Button>
+                    <span className="text-xs text-muted-foreground">{page} / {data.totalPages}</span>
+                    <Button variant="ghost" size="sm" disabled={page === data.totalPages} onClick={() => setPage(p => p + 1)}
+                      className="text-xs text-muted-foreground hover:text-white h-7">Próxima</Button>
+                  </div>
+                )}
+              </>
+            ) : null}
+
+            {hasEmpty && (
+              <div className="flex items-center justify-center gap-2 py-5 text-muted-foreground text-sm">
+                <Mic2 className="h-4 w-4" />Nenhuma música encontrada para "{debouncedSearch}"
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 function ScoreScreen({
   score, musica, artista, singerName, nextItem,
   onReplay, onBack, onNext,
@@ -391,30 +533,38 @@ export default function Player() {
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
 
       {/* Header */}
-      <header className="p-4 flex items-center justify-between z-20 absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent">
-        <Link href="/">
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10">
-            <ArrowLeft className="h-4 w-4 mr-2" />Voltar
-          </Button>
-        </Link>
-
-        <div className="flex-1 flex flex-col items-center text-center px-4">
-          <h1 className="font-bold text-lg md:text-xl drop-shadow-md line-clamp-1">{musica.musica}</h1>
-          <div className="text-primary-foreground/70 text-sm font-medium flex items-center gap-2">
-            <Music className="h-3 w-3" />{musica.artista}
+      <header className="p-3 flex items-center gap-3 z-20 absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent">
+        {/* Left: Back + Title */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Link href="/">
+            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 h-8 px-3">
+              <ArrowLeft className="h-4 w-4 mr-1.5" />Voltar
+            </Button>
+          </Link>
+          <div className="hidden md:flex flex-col">
+            <h1 className="font-bold text-sm drop-shadow-md line-clamp-1 leading-tight">{musica.musica}</h1>
+            <div className="text-primary-foreground/70 text-xs font-medium flex items-center gap-1">
+              <Music className="h-3 w-3" />{musica.artista}
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Center: Persistent search bar */}
+        <div className="flex-1 max-w-xl mx-auto">
+          <PersistentSearchBar />
+        </div>
+
+        {/* Right: Queue + Score buttons */}
+        <div className="flex items-center gap-2 shrink-0">
           {isLibraryConfigured && !score && (
             <Button variant="ghost" size="sm"
-              className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs"
+              className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs h-8 px-3"
               onClick={() => { setNextQueuedItem(queue[0] ?? null); setScore(randomScore()); }}>
               <Trophy className="h-3.5 w-3.5 mr-1.5" />Pontuação
             </Button>
           )}
           <Button variant="ghost" size="sm"
-            className={`backdrop-blur-sm rounded-full border text-xs transition-all relative ${panel === "queue" ? "bg-primary text-white border-primary" : "bg-black/20 text-white border-white/10 hover:bg-white/10"}`}
+            className={`backdrop-blur-sm rounded-full border text-xs transition-all relative h-8 px-3 ${panel === "queue" ? "bg-primary text-white border-primary" : "bg-black/20 text-white border-white/10 hover:bg-white/10"}`}
             onClick={() => togglePanel("queue")}>
             <ListMusic className="h-3.5 w-3.5 mr-1.5" />
             Fila
@@ -424,16 +574,10 @@ export default function Player() {
               </span>
             )}
           </Button>
-          <Button variant="ghost" size="sm"
-            className={`backdrop-blur-sm rounded-full border text-xs transition-all ${panel === "search" ? "bg-primary text-white border-primary" : "bg-black/20 text-white border-white/10 hover:bg-white/10"}`}
-            onClick={() => togglePanel("search")}>
-            <Search className="h-3.5 w-3.5 mr-1.5" />Buscar
-          </Button>
         </div>
       </header>
 
-      {/* Panels */}
-      {panel === "search" && <SearchTopPanel onClose={() => setPanel("none")} />}
+      {/* Queue panel only — search is now persistent in header */}
       {panel === "queue" && <QueuePanel onClose={() => setPanel("none")} />}
 
       {/* Video */}
