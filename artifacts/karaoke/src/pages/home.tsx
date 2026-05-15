@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Search, Settings } from "lucide-react";
+import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Search, Settings, FolderOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,10 +13,12 @@ import { useToast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
 import { useSession } from "@/hooks/use-session";
 import { useSearch } from "@/contexts/search-context";
+import { useLocalMusic } from "@/contexts/local-music-context";
 
 export default function Home() {
   const { addToQueue, isInQueue, queue } = useQueue();
   const { session, createSession } = useSession();
+  const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { searchTerm, setSearchTerm } = useSearch();
@@ -134,6 +136,15 @@ export default function Home() {
           )}
 
           <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={selectFolder}
+              className="text-xs font-medium text-muted-foreground hover:text-foreground border-border/30 bg-muted/40 rounded-full px-3 py-1.5 h-auto gap-1"
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+              <span>Pasta</span>
+            </Button>
             <Link href="/admin" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 bg-muted/40 border border-border/30 rounded-full px-3 py-1.5">
               <Settings className="h-3.5 w-3.5" />
               <span>Admin</span>
