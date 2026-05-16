@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Search, Settings, FolderOpen } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Settings, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +20,7 @@ export default function Home() {
   const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { searchTerm, setSearchTerm } = useSearch();
+  const { searchTerm } = useSearch();
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
@@ -114,28 +113,11 @@ export default function Home() {
             {debouncedSearch ? "Resultados da Busca" : "Catálogo em Destaque"}
           </h2>
 
-          {/* Search bar next to title */}
-          <div className="flex-1 max-w-md">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10"></div>
-              <div className="relative flex items-center w-full">
-                <Search className="absolute left-3.5 h-4 w-4 text-white dark:text-black" />
-                <Input
-                  type="text"
-                  placeholder="Buscar música..."
-                  className="w-full h-9 pl-9 pr-4 rounded-full bg-black border-white/30 text-white placeholder:text-white/60 text-sm shadow-sm focus-visible:ring-white focus-visible:border-white dark:bg-[hsl(55,100%,50%)] dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
           {searchResults && (
             <span className="text-sm text-muted-foreground shrink-0">{searchResults.total.toLocaleString("pt-BR")} encontradas</span>
           )}
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 ml-auto">
             <Button
               variant="outline"
               size="sm"

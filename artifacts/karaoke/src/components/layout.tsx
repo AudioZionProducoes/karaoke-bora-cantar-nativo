@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut, Ticket, Clock, AlertTriangle, ArrowRight } from "lucide-react";
+import { Mic2, Settings, FolderOpen, FolderCheck, X, Sun, Moon, ListMusic, Trash2, UserRound, LogIn, LogOut, Ticket, Clock, AlertTriangle, ArrowRight, Search } from "lucide-react";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useTheme } from "@/components/theme-provider";
 import { useQueue } from "@/contexts/queue-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useTemporaryAccess } from "@/contexts/temporary-access-context";
+import { useSearch } from "@/contexts/search-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { folderName, selectFolder, clearFolder } = useLocalMusic();
@@ -14,38 +16,55 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { queue, removeFromQueue, clearQueue } = useQueue();
   const { user, logout } = useAuth();
   const { hasAccess, remainingMinutes, clearAccess } = useTemporaryAccess();
+  const { searchTerm, setSearchTerm } = useSearch();
   const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [queueOpen, setQueueOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary/30">
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between max-w-7xl">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-              <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-                <Mic2 className="h-5 w-5" />
-              </div>
-              <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
-            </Link>
+        <div className="container mx-auto px-4 max-w-7xl py-2">
+          <div className="flex items-start justify-between">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3">
+                <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+                  <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                    <Mic2 className="h-5 w-5" />
+                  </div>
+                  <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
+                </Link>
 
-            {/* Queue toggle button */}
-            <Button
-              variant={queueOpen ? "default" : "outline"}
-              size="sm"
-              className={`relative text-xs border-border/50 transition-all ${queueOpen ? "bg-primary text-primary-foreground border-primary" : "text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
-              onClick={() => setQueueOpen((o) => !o)}
-              title={queueOpen ? "Ocultar fila" : "Ver fila de espera"}
-            >
-              <ListMusic className="h-3.5 w-3.5 mr-1.5" />
-              Fila
-              {queue.length > 0 && (
-                <span className={`absolute -top-1.5 -right-1.5 text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none ${queueOpen ? "bg-white text-primary" : "bg-primary text-white"}`}>
-                  {queue.length}
-                </span>
-              )}
-            </Button>
-          </div>
+                {/* Queue toggle button */}
+                <Button
+                  variant={queueOpen ? "default" : "outline"}
+                  size="sm"
+                  className={`relative text-xs border-border/50 transition-all ${queueOpen ? "bg-primary text-primary-foreground border-primary" : "text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
+                  onClick={() => setQueueOpen((o) => !o)}
+                  title={queueOpen ? "Ocultar fila" : "Ver fila de espera"}
+                >
+                  <ListMusic className="h-3.5 w-3.5 mr-1.5" />
+                  Fila
+                  {queue.length > 0 && (
+                    <span className={`absolute -top-1.5 -right-1.5 text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center leading-none ${queueOpen ? "bg-white text-primary" : "bg-primary text-white"}`}>
+                      {queue.length}
+                    </span>
+                  )}
+                </Button>
+              </div>
+
+              {/* Search bar below logo */}
+              <div className="relative group w-72">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg transition-all group-hover:bg-primary/30 group-focus-within:bg-primary/40 dark:bg-yellow-400/20 dark:group-hover:bg-yellow-400/30 dark:group-focus-within:bg-yellow-400/40 -z-10" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white dark:text-black pointer-events-none z-10" />
+                <Input
+                  type="text"
+                  placeholder="Buscar música..."
+                  className="w-full h-9 pl-9 pr-4 rounded-full bg-black border-white/30 text-white placeholder:text-white/60 text-sm shadow-sm focus-visible:ring-white focus-visible:border-white dark:bg-[hsl(55,100%,50%)] dark:border-black/30 dark:text-black dark:placeholder:text-black/60 dark:focus-visible:ring-black dark:focus-visible:border-black transition-all"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
 
           <nav className="flex items-center gap-3">
 
@@ -103,6 +122,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             )}
           </nav>
+          </div>
         </div>
 
         {/* Warning banner when temporary access is about to expire */}
