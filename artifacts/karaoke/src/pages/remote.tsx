@@ -364,7 +364,7 @@ export default function RemotePage() {
                     <UserRound className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-xs text-primary line-clamp-1">{item.singerName}</div>
+                    <div className="font-bold text-xs text-white line-clamp-1">{item.singerName}</div>
                     <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
                     <div className="text-xs text-muted-foreground">{item.artista}</div>
                   </div>

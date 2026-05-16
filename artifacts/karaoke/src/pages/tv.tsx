@@ -77,7 +77,7 @@ function ScoreOverlay({
 
       <div className="flex items-center gap-2 mb-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
         <UserRound className="h-4 w-4 text-primary" />
-        <span className="font-bold text-lg text-primary">{singerName}</span>
+        <span className="font-bold text-lg text-white">{singerName}</span>
       </div>
       <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{musica}</h2>
       <p className="text-muted-foreground text-sm mb-6">{artista}</p>
@@ -265,7 +265,7 @@ export default function TVPage() {
                 >
                   <span className="text-[10px] font-mono text-muted-foreground shrink-0">{i + 1}</span>
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-primary leading-tight truncate">{item.singerName}</div>
+                    <div className="text-xs font-bold text-white leading-tight truncate">{item.singerName}</div>
                     <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
                   </div>
                 </div>

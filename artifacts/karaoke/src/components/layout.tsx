@@ -173,7 +173,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                           <UserRound className="h-4 w-4 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-bold text-primary line-clamp-1">{item.singerName}</div>
+                          <div className="text-sm font-bold text-white line-clamp-1">{item.singerName}</div>
                           <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
                           <div className="text-sm text-muted-foreground line-clamp-1">{item.artista}</div>
                         </div>

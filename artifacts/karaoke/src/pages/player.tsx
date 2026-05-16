@@ -211,7 +211,7 @@ function ScoreScreen({
       {singerName && (
         <div className="flex items-center gap-2 mb-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
           <UserRound className="h-4 w-4 text-primary" />
-          <span className="font-bold text-lg text-primary">{singerName}</span>
+          <span className="font-bold text-lg text-white">{singerName}</span>
         </div>
       )}
 
@@ -438,7 +438,7 @@ function QueuePanel({ onClose }: { onClose: () => void }) {
                 <UserRound className="h-3.5 w-3.5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-primary line-clamp-1">{item.singerName}</div>
+                <div className="text-sm font-bold text-white line-clamp-1">{item.singerName}</div>
                 <div className="text-xs text-white line-clamp-1">{item.musica}</div>
                 <div className="text-xs text-muted-foreground line-clamp-1">{item.artista}</div>
               </div>
