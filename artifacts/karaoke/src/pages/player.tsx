@@ -203,7 +203,7 @@ function ScoreScreen({
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white p-8 animate-in fade-in duration-500">
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
-      <div className="absolute bottom-0 right-1/4 w-1/2 h-64 bg-violet-500/20 blur-[120px] rounded-full pointer-events-none translate-y-1/2" />
+      <div className="absolute bottom-0 right-1/4 w-1/2 h-64 bg-black/20 blur-[120px] rounded-full pointer-events-none translate-y-1/2" />
 
       <Trophy className="h-14 w-14 text-yellow-400 mb-3 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]" />
       <p className="text-muted-foreground text-sm mb-1 uppercase tracking-widest font-medium">Resultado</p>

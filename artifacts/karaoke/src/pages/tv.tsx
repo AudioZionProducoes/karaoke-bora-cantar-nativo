@@ -73,7 +73,7 @@ function ScoreOverlay({
   return (
     <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white p-6 animate-in fade-in duration-500">
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
-      <div className="absolute bottom-0 right-1/4 w-1/2 h-64 bg-violet-500/20 blur-[120px] rounded-full pointer-events-none translate-y-1/2" />
+      <div className="absolute bottom-0 right-1/4 w-1/2 h-64 bg-black/20 blur-[120px] rounded-full pointer-events-none translate-y-1/2" />
 
       <div className="flex items-center gap-2 mb-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
         <UserRound className="h-4 w-4 text-primary" />
@@ -319,12 +319,12 @@ export default function TVPage() {
         )}
 
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
-        <div className="absolute bottom-4 right-4 z-30 bg-purple-600/80 backdrop-blur-sm border border-purple-400/50 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-purple-900/30">
+        <div className="absolute bottom-4 right-4 z-30 bg-black/80 backdrop-blur-sm border border-white/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
           <div className="bg-white rounded-md p-1">
-            <QRCode value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#581c87" />
+            <QRCode value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#000000" />
           </div>
-          <div className="text-[9px] text-center text-purple-100 leading-tight max-w-[72px] font-bold">
-            <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-purple-200" />
+          <div className="text-[9px] text-center text-white leading-tight max-w-[72px] font-bold">
+            <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-white" />
             Controle Remoto
           </div>
         </div>
