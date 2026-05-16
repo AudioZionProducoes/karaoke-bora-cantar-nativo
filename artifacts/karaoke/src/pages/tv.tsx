@@ -319,12 +319,12 @@ export default function TVPage() {
         )}
 
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
-        <div className="absolute bottom-4 right-4 z-30 bg-black/80 backdrop-blur-sm border border-white/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
-          <div className="bg-white rounded-md p-1">
-            <QRCode value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#f5c800" />
+        <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
+          <div className="bg-[#f5c800] rounded-md p-1">
+            <QRCode value={remoteUrl} size={56} bgColor="#f5c800" fgColor="#000000" />
           </div>
-          <div className="text-[9px] text-center text-white leading-tight max-w-[72px] font-bold">
-            <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-white" />
+          <div className="text-[9px] text-center text-black leading-tight max-w-[72px] font-bold">
+            <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-black" />
             Controle Remoto
           </div>
         </div>
