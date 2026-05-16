@@ -12,3 +12,9 @@ id = "a1bg81L0ZZ8uCBq0D7SeK"
 uri = "file://Karaoke_CT_Documentacao_Completa.pdf"
 type = "pdf"
 title = "Karaoke CT - Documentação Completa do Código (PDF)"
+
+[[outputs]]
+id = "WCViuUHl22TkfcVXkaWHF"
+uri = "file://docs/player-comentado.pdf"
+type = "pdf"
+title = "Documentação Comentada do Player (PDF)"

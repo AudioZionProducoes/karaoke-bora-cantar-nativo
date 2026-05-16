@@ -3,7 +3,7 @@ import {
   ArrowLeft, Play, Music, AlertCircle, FolderOpen,
   Star, RotateCcw, Trophy, Search, X, Mic2,
   ListMusic, Trash2, ListPlus, Check, UserRound, ChevronRight,
-  QrCode, Smartphone
+  Smartphone
 } from "lucide-react";
 import { useGetMusica, getGetMusicaQueryKey, useSearchMusicas } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -478,8 +478,7 @@ export default function Player() {
   const [panel, setPanel] = useState<"none" | "search" | "queue">("none");
 
   // Session + QR Code for remote control
-  const { session, createSession, joinSession } = useSession();
-  const [showQR, setShowQR] = useState(false);
+  const { createSession, joinSession } = useSession();
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Create or reuse session on mount
