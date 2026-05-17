@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { ilike, or, sql, eq, count } from "drizzle-orm";
+import { ilike, or, sql, eq, count, inArray } from "drizzle-orm";
 import { db, musicasTable } from "@workspace/db";
 import {
   SearchMusicasQueryParams,
@@ -15,11 +15,13 @@ const router: IRouter = Router();
 router.get("/musicas/stats", async (req, res): Promise<void> => {
   const [totalSongsRow] = await db
     .select({ count: count() })
-    .from(musicasTable);
+    .from(musicasTable)
+    .where(eq(musicasTable.hasVideo, true));
 
   const [totalArtistsRow] = await db
     .select({ count: sql<number>`count(distinct ${musicasTable.artista})` })
-    .from(musicasTable);
+    .from(musicasTable)
+    .where(eq(musicasTable.hasVideo, true));
 
   res.json({
     totalSongs: Number(totalSongsRow?.count ?? 0),
@@ -43,7 +45,10 @@ router.get("/musicas/search", async (req, res): Promise<void> => {
   const isNumeric = searchTerm ? /^\d+$/.test(searchTerm) : false;
   const numericId = isNumeric ? parseInt(searchTerm!, 10) : null;
 
-  const where = searchTerm
+  // Only show songs that have video available
+  const hasVideoFilter = eq(musicasTable.hasVideo, true);
+
+  const searchWhere = searchTerm
     ? isNumeric
       ? eq(musicasTable.id, numericId!)
       : or(
@@ -52,6 +57,10 @@ router.get("/musicas/search", async (req, res): Promise<void> => {
           ilike(musicasTable.inicio, `%${searchTerm}%`),
         )
     : undefined;
+
+  const where = searchWhere
+    ? sql`${searchWhere} AND ${hasVideoFilter}`
+    : hasVideoFilter;
 
   const [data, [totalRow]] = await Promise.all([
     db
@@ -183,6 +192,46 @@ router.delete("/musicas/:id", async (req, res): Promise<void> => {
   }
 
   res.sendStatus(204);
+});
+
+router.post("/musicas/sync-videos", async (req, res): Promise<void> => {
+  const { ids } = req.body as { ids: number[] };
+
+  if (!Array.isArray(ids)) {
+    res.status(400).json({ error: "ids deve ser um array de números" });
+    return;
+  }
+
+  // Mark all passed IDs as having video
+  const validIds = ids.filter((id) => Number.isInteger(id) && id > 0);
+
+  let synced = 0;
+  let cleared = 0;
+
+  if (validIds.length > 0) {
+    // First clear all videos not in the list
+    const clearResult = await db
+      .update(musicasTable)
+      .set({ hasVideo: false })
+      .where(sql`${musicasTable.hasVideo} = true AND ${musicasTable.id} NOT IN (${sql.join(validIds)})`);
+    cleared = clearResult.rowCount ?? 0;
+
+    // Then mark the provided IDs as having video
+    const syncResult = await db
+      .update(musicasTable)
+      .set({ hasVideo: true })
+      .where(inArray(musicasTable.id, validIds));
+    synced = syncResult.rowCount ?? 0;
+  } else {
+    // If no IDs provided, clear all
+    const clearResult = await db
+      .update(musicasTable)
+      .set({ hasVideo: false })
+      .where(eq(musicasTable.hasVideo, true));
+    cleared = clearResult.rowCount ?? 0;
+  }
+
+  res.json({ synced, cleared });
 });
 
 export default router;

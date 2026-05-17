@@ -35,12 +35,27 @@ export const SearchMusicasResponse = zod.object({
   "id": zod.number(),
   "artista": zod.string(),
   "musica": zod.string(),
-  "inicio": zod.string().nullable()
+  "inicio": zod.string().nullable(),
+  "hasVideo": zod.boolean().optional()
 })),
   "total": zod.number(),
   "page": zod.number(),
   "limit": zod.number(),
   "totalPages": zod.number()
+})
+
+
+/**
+ * Mark which music IDs have corresponding video files available (from local folder or Bunny Stream)
+ * @summary Sync available videos
+ */
+export const SyncVideosBody = zod.object({
+  "ids": zod.array(zod.number())
+})
+
+export const SyncVideosResponse = zod.object({
+  "synced": zod.number(),
+  "cleared": zod.number()
 })
 
 
@@ -66,7 +81,8 @@ export const CreateMusicaBody = zod.object({
   "id": zod.number(),
   "artista": zod.string().min(1),
   "musica": zod.string().min(1),
-  "inicio": zod.string().optional()
+  "inicio": zod.string().optional(),
+  "hasVideo": zod.boolean().optional()
 })
 
 
@@ -81,7 +97,8 @@ export const GetMusicaResponse = zod.object({
   "id": zod.number(),
   "artista": zod.string(),
   "musica": zod.string(),
-  "inicio": zod.string().nullable()
+  "inicio": zod.string().nullable(),
+  "hasVideo": zod.boolean().optional()
 })
 
 
@@ -99,14 +116,16 @@ export const UpdateMusicaParams = zod.object({
 export const UpdateMusicaBody = zod.object({
   "artista": zod.string().min(1).optional(),
   "musica": zod.string().min(1).optional(),
-  "inicio": zod.string().optional()
+  "inicio": zod.string().optional(),
+  "hasVideo": zod.boolean().optional()
 })
 
 export const UpdateMusicaResponse = zod.object({
   "id": zod.number(),
   "artista": zod.string(),
   "musica": zod.string(),
-  "inicio": zod.string().nullable()
+  "inicio": zod.string().nullable(),
+  "hasVideo": zod.boolean().optional()
 })
 
 

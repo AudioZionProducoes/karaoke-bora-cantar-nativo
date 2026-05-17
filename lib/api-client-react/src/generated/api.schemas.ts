@@ -15,6 +15,7 @@ export interface Musica {
   musica: string;
   /** @nullable */
   inicio: string | null;
+  hasVideo?: boolean;
 }
 
 export interface MusicaInput {
@@ -24,6 +25,7 @@ export interface MusicaInput {
   /** @minLength 1 */
   musica: string;
   inicio?: string;
+  hasVideo?: boolean;
 }
 
 export interface MusicaUpdate {
@@ -32,6 +34,7 @@ export interface MusicaUpdate {
   /** @minLength 1 */
   musica?: string;
   inicio?: string;
+  hasVideo?: boolean;
 }
 
 export interface MusicaSearchResult {
@@ -143,6 +146,15 @@ page?: number;
  * Results per page
  */
 limit?: number;
+};
+
+export type SyncVideosBody = {
+  ids: number[];
+};
+
+export type SyncVideos200 = {
+  synced: number;
+  cleared: number;
 };
 
 export type AuthenticateUserBody = {

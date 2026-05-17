@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
+import { useSyncVideos } from "@workspace/api-client-react";
 
 interface LocalMusicContextType {
   folderName: string | null;
@@ -13,6 +14,7 @@ export function LocalMusicProvider({ children }: { children: ReactNode }) {
   const [folderName, setFolderName] = useState<string | null>(null);
   const [fileMap, setFileMap] = useState<Map<string, string>>(new Map());
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const syncVideos = useSyncVideos();
 
   const selectFolder = useCallback(() => {
     if (!inputRef.current) {
@@ -32,6 +34,7 @@ export function LocalMusicProvider({ children }: { children: ReactNode }) {
         });
 
         const newMap = new Map<string, string>();
+        const videoIds: number[] = [];
         let detectedFolderName = "";
 
         for (let i = 0; i < files.length; i++) {
@@ -40,6 +43,10 @@ export function LocalMusicProvider({ children }: { children: ReactNode }) {
           const name = file.name.toLowerCase();
           if (name.endsWith(".mp4")) {
             const key = file.name.replace(/\.mp4$/i, "");
+            const id = parseInt(key, 10);
+            if (!Number.isNaN(id) && id > 0) {
+              videoIds.push(id);
+            }
             newMap.set(key, URL.createObjectURL(file));
           }
           // Detect folder name from relative path (e.g. "musicas/12345.mp4")
@@ -52,12 +59,17 @@ export function LocalMusicProvider({ children }: { children: ReactNode }) {
         setFolderName(detectedFolderName || `${newMap.size} músicas carregadas`);
         document.body.removeChild(input);
         inputRef.current = null;
+
+        // Sync video availability with the database
+        if (videoIds.length > 0) {
+          syncVideos.mutate({ data: { ids: videoIds } });
+        }
       });
       document.body.appendChild(input);
       inputRef.current = input;
     }
     inputRef.current?.click();
-  }, []);
+  }, [syncVideos]);
 
   const getFileUrl = useCallback(
     (id: number): string | null => {
@@ -72,7 +84,9 @@ export function LocalMusicProvider({ children }: { children: ReactNode }) {
       return new Map();
     });
     setFolderName(null);
-  }, []);
+    // Clear all video flags when folder is removed
+    syncVideos.mutate({ data: { ids: [] } });
+  }, [syncVideos]);
 
   return (
     <LocalMusicContext.Provider value={{ folderName, selectFolder, getFileUrl, clearFolder }}>

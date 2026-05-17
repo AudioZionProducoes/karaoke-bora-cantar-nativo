@@ -68,6 +68,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/MusicaSearchResult"
 
+  /musicas/sync-videos:
+    post:
+      operationId: syncVideos
+      tags: [musicas]
+      summary: Sync available videos
+      description: Mark which music IDs have corresponding video files available (from local folder or Bunny Stream)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        "200":
+          description: Sync completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [synced, cleared]
+                properties:
+                  synced:
+                    type: integer
+                  cleared:
+                    type: integer
+
   /musicas/stats:
     get:
       operationId: getMusicasStats
@@ -557,6 +589,8 @@ components:
           type: string
         inicio:
           type: ["string", "null"]
+        hasVideo:
+          type: boolean
 
     MusicaInput:
       type: object
@@ -572,6 +606,8 @@ components:
           minLength: 1
         inicio:
           type: string
+        hasVideo:
+          type: boolean
 
     MusicaUpdate:
       type: object
@@ -584,6 +620,8 @@ components:
           minLength: 1
         inicio:
           type: string
+        hasVideo:
+          type: boolean
 
     MusicaSearchResult:
       type: object

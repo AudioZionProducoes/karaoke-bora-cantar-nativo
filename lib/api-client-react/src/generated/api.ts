@@ -37,6 +37,8 @@ import type {
   RedeemAccessCode200,
   RedeemAccessCodeBody,
   SearchMusicasParams,
+  SyncVideos200,
+  SyncVideosBody,
   UserLogout200,
   ValidateAccessCode200,
   ValidateAccessCodeParams,
@@ -218,6 +220,78 @@ export function useSearchMusicas<TData = Awaited<ReturnType<typeof searchMusicas
 
 
 
+
+export const getSyncVideosUrl = () => {
+
+
+
+
+  return `/api/musicas/sync-videos`
+}
+
+/**
+ * Mark which music IDs have corresponding video files available (from local folder or Bunny Stream)
+ * @summary Sync available videos
+ */
+export const syncVideos = async (syncVideosBody: SyncVideosBody, options?: RequestInit): Promise<SyncVideos200> => {
+
+  return customFetch<SyncVideos200>(getSyncVideosUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      syncVideosBody,)
+  }
+);}
+
+
+
+
+export const getSyncVideosMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncVideos>>, TError,{data: BodyType<SyncVideosBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof syncVideos>>, TError,{data: BodyType<SyncVideosBody>}, TContext> => {
+
+const mutationKey = ['syncVideos'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncVideos>>, {data: BodyType<SyncVideosBody>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  syncVideos(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SyncVideosMutationResult = NonNullable<Awaited<ReturnType<typeof syncVideos>>>
+    export type SyncVideosMutationBody = BodyType<SyncVideosBody>
+    export type SyncVideosMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Sync available videos
+ */
+export const useSyncVideos = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncVideos>>, TError,{data: BodyType<SyncVideosBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof syncVideos>>,
+        TError,
+        {data: BodyType<SyncVideosBody>},
+        TContext
+      > => {
+      return useMutation(getSyncVideosMutationOptions(options));
+    }
 
 export const getGetMusicasStatsUrl = () => {
 
