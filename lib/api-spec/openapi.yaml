@@ -100,6 +100,32 @@ paths:
                   cleared:
                     type: integer
 
+  /musicas/sync-bunny:
+    post:
+      operationId: syncBunny
+      tags: [musicas]
+      summary: Sync with Bunny Stream
+      description: Fetch all videos from Bunny Stream library and mark corresponding songs as having video
+      responses:
+        "200":
+          description: Sync completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [synced, cleared, totalVideos, matched]
+                properties:
+                  synced:
+                    type: integer
+                  cleared:
+                    type: integer
+                  totalVideos:
+                    type: integer
+                  matched:
+                    type: integer
+        "503":
+          description: Bunny credentials not configured
+
   /musicas/stats:
     get:
       operationId: getMusicasStats

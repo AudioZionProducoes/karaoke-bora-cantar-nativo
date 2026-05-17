@@ -37,6 +37,7 @@ import type {
   RedeemAccessCode200,
   RedeemAccessCodeBody,
   SearchMusicasParams,
+  SyncBunny200,
   SyncVideos200,
   SyncVideosBody,
   UserLogout200,
@@ -291,6 +292,77 @@ export const useSyncVideos = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getSyncVideosMutationOptions(options));
+    }
+
+export const getSyncBunnyUrl = () => {
+
+
+
+
+  return `/api/musicas/sync-bunny`
+}
+
+/**
+ * Fetch all videos from Bunny Stream library and mark corresponding songs as having video
+ * @summary Sync with Bunny Stream
+ */
+export const syncBunny = async ( options?: RequestInit): Promise<SyncBunny200> => {
+
+  return customFetch<SyncBunny200>(getSyncBunnyUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getSyncBunnyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncBunny>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof syncBunny>>, TError,void, TContext> => {
+
+const mutationKey = ['syncBunny'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncBunny>>, void> = () => {
+
+
+          return  syncBunny(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SyncBunnyMutationResult = NonNullable<Awaited<ReturnType<typeof syncBunny>>>
+
+    export type SyncBunnyMutationError = ErrorType<void>
+
+    /**
+ * @summary Sync with Bunny Stream
+ */
+export const useSyncBunny = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncBunny>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof syncBunny>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSyncBunnyMutationOptions(options));
     }
 
 export const getGetMusicasStatsUrl = () => {

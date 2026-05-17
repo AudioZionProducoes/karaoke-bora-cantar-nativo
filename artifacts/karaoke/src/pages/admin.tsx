@@ -8,14 +8,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useCreateMusica, useListUsers, useRevokeUserAccess, getSearchMusicasQueryKey, getGetMusicasStatsQueryKey, useCreateUserPassword } from "@workspace/api-client-react";
+import { useCreateMusica, useListUsers, useRevokeUserAccess, getSearchMusicasQueryKey, getGetMusicasStatsQueryKey, useCreateUserPassword, useSyncBunny } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Settings, Music, Users, Loader2, KeyRound, Smartphone, Ticket } from "lucide-react";
+import { Settings, Music, Users, Loader2, KeyRound, Smartphone, Ticket, Cloud } from "lucide-react";
 import { CuponsTab } from "@/components/cupons-tab";
 
 const songFormSchema = z.object({
@@ -71,6 +71,7 @@ export default function Admin() {
   const { data: users, isLoading: isLoadingUsers } = useListUsers();
   const revokeAccess = useRevokeUserAccess();
   const generatePassword = useCreateUserPassword();
+  const syncBunny = useSyncBunny();
   const [generatedPassword, setGeneratedPassword] = useState<{ email: string; password: string } | null>(null);
 
   function onGeneratePassword(userId: number, email: string) {
@@ -210,10 +211,41 @@ export default function Admin() {
                       />
                     </div>
 
-                    <Button type="submit" disabled={createMusica.isPending} className="w-full md:w-auto">
-                      {createMusica.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Cadastrar Musica
-                    </Button>
+                    <div className="flex items-center gap-3">
+                      <Button type="submit" disabled={createMusica.isPending} className="w-full md:w-auto">
+                        {createMusica.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Cadastrar Musica
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={syncBunny.isPending}
+                        onClick={() => {
+                          syncBunny.mutate(undefined, {
+                            onSuccess: (data) => {
+                              toast({
+                                title: "Sincronizado com Bunny Stream",
+                                description: `${data.matched} de ${data.totalVideos} vídeos correspondem ao catálogo. ${data.synced} sincronizados.`,
+                              });
+                              queryClient.invalidateQueries({ queryKey: getSearchMusicasQueryKey() });
+                              queryClient.invalidateQueries({ queryKey: getGetMusicasStatsQueryKey() });
+                            },
+                            onError: (error) => {
+                              toast({
+                                title: "Erro na sincronização",
+                                description: (error as { message?: string }).message || "Verifique se BUNNY_API_KEY e BUNNY_LIBRARY_ID estão configurados.",
+                                variant: "destructive",
+                              });
+                            },
+                          });
+                        }}
+                      >
+                        {syncBunny.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Cloud className="h-4 w-4 mr-2" />
+                        Sincronizar Bunny
+                      </Button>
+                    </div>
                   </form>
                 </Form>
               </CardContent>

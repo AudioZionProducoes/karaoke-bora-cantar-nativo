@@ -60,6 +60,18 @@ export const SyncVideosResponse = zod.object({
 
 
 /**
+ * Fetch all videos from Bunny Stream library and mark corresponding songs as having video
+ * @summary Sync with Bunny Stream
+ */
+export const SyncBunnyResponse = zod.object({
+  "synced": zod.number(),
+  "cleared": zod.number(),
+  "totalVideos": zod.number(),
+  "matched": zod.number()
+})
+
+
+/**
  * Returns total songs count and unique artists count
  * @summary Catalog statistics
  */

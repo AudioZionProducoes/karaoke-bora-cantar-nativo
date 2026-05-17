@@ -157,6 +157,13 @@ export type SyncVideos200 = {
   cleared: number;
 };
 
+export type SyncBunny200 = {
+  synced: number;
+  cleared: number;
+  totalVideos: number;
+  matched: number;
+};
+
 export type AuthenticateUserBody = {
   email: string;
   password: string;

@@ -234,4 +234,91 @@ router.post("/musicas/sync-videos", async (req, res): Promise<void> => {
   res.json({ synced, cleared });
 });
 
+/**
+ * Sync with Bunny Stream — fetch all videos from the library
+ * and mark corresponding songs as having video.
+ *
+ * Requires BUNNY_API_KEY and BUNNY_LIBRARY_ID env vars.
+ */
+router.post("/musicas/sync-bunny", async (req, res): Promise<void> => {
+  const apiKey = process.env["BUNNY_API_KEY"];
+  const libraryId = process.env["BUNNY_LIBRARY_ID"];
+
+  if (!apiKey || !libraryId) {
+    res.status(503).json({
+      error: "BUNNY_API_KEY e BUNNY_LIBRARY_ID precisam estar configurados no servidor.",
+    });
+    return;
+  }
+
+  try {
+    // Bunny Stream API: list all videos in the library
+    const response = await fetch(
+      `https://video.bunnycdn.com/library/${libraryId}/videos?page=1&itemsPerPage=1000`,
+      {
+        headers: {
+          AccessKey: apiKey,
+          accept: "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      res.status(502).json({ error: "Erro na Bunny Stream API", details: err });
+      return;
+    }
+
+    const data = (await response.json()) as { items?: Array<{ guid?: string; id?: string }> };
+    const items = data.items ?? [];
+
+    // Bunny Stream uses GUID as video ID; try to parse numeric ID from it
+    const videoIds: number[] = [];
+    for (const item of items) {
+      const guid = item.guid ?? item.id ?? "";
+      // Try to extract numeric ID from guid (e.g. "12345" or "video-12345")
+      const match = guid.match(/(\d+)/);
+      if (match) {
+        const id = parseInt(match[1]!, 10);
+        if (!Number.isNaN(id) && id > 0) {
+          videoIds.push(id);
+        }
+      }
+    }
+
+    // Sync the extracted IDs
+    let synced = 0;
+    let cleared = 0;
+
+    if (videoIds.length > 0) {
+      const clearResult = await db
+        .update(musicasTable)
+        .set({ hasVideo: false })
+        .where(sql`${musicasTable.hasVideo} = true AND ${musicasTable.id} NOT IN (${sql.join(videoIds)})`);
+      cleared = clearResult.rowCount ?? 0;
+
+      const syncResult = await db
+        .update(musicasTable)
+        .set({ hasVideo: true })
+        .where(inArray(musicasTable.id, videoIds));
+      synced = syncResult.rowCount ?? 0;
+    } else {
+      const clearResult = await db
+        .update(musicasTable)
+        .set({ hasVideo: false })
+        .where(eq(musicasTable.hasVideo, true));
+      cleared = clearResult.rowCount ?? 0;
+    }
+
+    res.json({
+      synced,
+      cleared,
+      totalVideos: items.length,
+      matched: videoIds.length,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao sincronizar com Bunny Stream", details: String(err) });
+  }
+});
+
 export default router;
