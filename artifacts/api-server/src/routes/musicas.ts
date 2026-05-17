@@ -209,14 +209,14 @@ router.post("/musicas/sync-videos", async (req, res): Promise<void> => {
   let cleared = 0;
 
   if (validIds.length > 0) {
-    // First clear all videos not in the list
+    // Clear ALL existing video flags first (complete replace)
     const clearResult = await db
       .update(musicasTable)
       .set({ hasVideo: false })
-      .where(sql`${musicasTable.hasVideo} = true AND ${musicasTable.id} NOT IN (${sql.join(validIds)})`);
+      .where(eq(musicasTable.hasVideo, true));
     cleared = clearResult.rowCount ?? 0;
 
-    // Then mark the provided IDs as having video
+    // Then mark only the provided IDs as having video
     const syncResult = await db
       .update(musicasTable)
       .set({ hasVideo: true })
@@ -291,10 +291,11 @@ router.post("/musicas/sync-bunny", async (req, res): Promise<void> => {
     let cleared = 0;
 
     if (videoIds.length > 0) {
+      // Clear ALL existing video flags first (complete replace with Bunny list)
       const clearResult = await db
         .update(musicasTable)
         .set({ hasVideo: false })
-        .where(sql`${musicasTable.hasVideo} = true AND ${musicasTable.id} NOT IN (${sql.join(videoIds)})`);
+        .where(eq(musicasTable.hasVideo, true));
       cleared = clearResult.rowCount ?? 0;
 
       const syncResult = await db
