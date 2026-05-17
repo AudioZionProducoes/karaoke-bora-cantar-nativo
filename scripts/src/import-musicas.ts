@@ -125,7 +125,8 @@ async function importMusicas(filePath: string): Promise<void> {
         id INTEGER PRIMARY KEY,
         artista TEXT NOT NULL,
         musica TEXT NOT NULL,
-        inicio TEXT
+        inicio TEXT,
+        has_video BOOLEAN DEFAULT false
       )
     `);
 
@@ -139,15 +140,15 @@ async function importMusicas(filePath: string): Promise<void> {
 
       const values = batch
         .map((_, idx) => {
-          const base = idx * 4;
-          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`;
+          const base = idx * 5;
+          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5})`;
         })
         .join(", ");
 
-      const params = batch.flatMap((m) => [m.id, m.artista, m.musica, m.inicio]);
+      const params = batch.flatMap((m) => [m.id, m.artista, m.musica, m.inicio, false]);
 
       const result = await pool.query(
-        `INSERT INTO musicas (id, artista, musica, inicio)
+        `INSERT INTO musicas (id, artista, musica, inicio, has_video)
          VALUES ${values}
          ON CONFLICT (id) DO NOTHING`,
         params,

@@ -7,7 +7,7 @@ export const musicasTable = pgTable("musicas", {
   artista: text("artista").notNull(),
   musica: text("musica").notNull(),
   inicio: text("inicio"),
-  hasVideo: boolean("has_video").default(true),
+  hasVideo: boolean("has_video").default(false),
 });
 
 export const insertMusicaSchema = createInsertSchema(musicasTable);
