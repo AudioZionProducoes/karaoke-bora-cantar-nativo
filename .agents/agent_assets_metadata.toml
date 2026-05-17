@@ -18,3 +18,9 @@ id = "WCViuUHl22TkfcVXkaWHF"
 uri = "file://docs/player-comentado.pdf"
 type = "pdf"
 title = "Documentação Comentada do Player (PDF)"
+
+[[outputs]]
+id = "WjCqpCgstKU0LjWDuf_gX"
+uri = "file://guides/guia-bunny-stream.pdf"
+type = "pdf"
+title = "Guia Bunny Stream - Karaoke CT"
