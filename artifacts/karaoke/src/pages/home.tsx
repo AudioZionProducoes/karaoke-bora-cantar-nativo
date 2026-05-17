@@ -1,29 +1,23 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, ListPlus, Check, Monitor, QrCode, Settings, FolderOpen } from "lucide-react";
+import { Play, Music, Mic2, Monitor, Settings, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSearchMusicas, useGetMusicasStats } from "@workspace/api-client-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Layout } from "@/components/layout";
-import { useQueue, type QueueItem } from "@/contexts/queue-context";
-import { useToast } from "@/hooks/use-toast";
-import { AddToQueueDialog, type PendingQueueItem } from "@/components/add-to-queue-dialog";
 import { useSession } from "@/hooks/use-session";
 import { useSearch } from "@/contexts/search-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
 
 export default function Home() {
-  const { addToQueue, isInQueue, queue } = useQueue();
   const { session, createSession } = useSession();
   const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
-  const { toast } = useToast();
   const { searchTerm } = useSearch();
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
-  const [pendingItem, setPendingItem] = useState<PendingQueueItem | null>(null);
   const [startingSession, setStartingSession] = useState(false);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
@@ -32,39 +26,18 @@ export default function Home() {
   const { data: searchResults, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 24 });
 
   async function handleStartTV() {
+    if (session) {
+      navigate(`/tv/${session.id}`);
+      return;
+    }
     setStartingSession(true);
     const id = await createSession("Karaoke CT");
     setStartingSession(false);
     if (id) navigate(`/tv/${id}`);
   }
 
-  function openQueueDialog(m: PendingQueueItem) {
-    if (queue.length >= 30) {
-      toast({ title: "Fila cheia", description: "A fila já tem 30 músicas.", variant: "destructive" });
-      return;
-    }
-    if (isInQueue(m.id)) {
-      toast({ title: "Já na fila", description: `"${m.musica}" já está na lista de espera.` });
-      return;
-    }
-    setPendingItem(m);
-  }
-
-  function handleConfirmQueue(singerName: string) {
-    if (!pendingItem) return;
-    addToQueue({ ...pendingItem, singerName });
-    toast({ title: "Adicionada à fila ✓", description: `"${pendingItem.musica}" entrou na fila para ${singerName}.` });
-    setPendingItem(null);
-  }
-
   return (
     <Layout>
-      <AddToQueueDialog
-        item={pendingItem}
-        onConfirm={handleConfirmQueue}
-        onCancel={() => setPendingItem(null)}
-      />
-
       <div className="flex flex-col items-center pt-4 pb-4 max-w-3xl mx-auto text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(250,204,21,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.25)]">
           <span className="relative flex h-2 w-2">
@@ -81,8 +54,7 @@ export default function Home() {
           Busque no maior catálogo de karaokê. Músicas de alta qualidade, sem espera.
         </p>
 
-        {/* TV Mode button */}
-        <div className="flex gap-3">
+        <div className="flex flex-col items-center gap-2">
           <Button
             size="lg"
             className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
@@ -90,18 +62,13 @@ export default function Home() {
             disabled={startingSession}
           >
             <Monitor className="h-5 w-5 mr-2" />
-            {startingSession ? "Iniciando..." : "Modo TV + Controle Remoto"}
+            {startingSession ? "Iniciando..." : session ? "Continuar Sessão na TV" : "Iniciar Karaokê na TV"}
           </Button>
+
           {session && (
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-primary/50 text-primary hover:bg-primary/10 dark:border-yellow-400/50 dark:text-yellow-400 dark:hover:bg-yellow-400/10"
-              onClick={() => navigate(`/tv/${session.id}`)}
-            >
-              <QrCode className="h-5 w-5 mr-2" />
-              Entrar na Sessão {session.id}
-            </Button>
+            <p className="text-xs text-muted-foreground">
+              Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span>
+            </p>
           )}
         </div>
       </div>
@@ -181,22 +148,13 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 mt-4">
-                      <Link href={`/player/${musica.id}`} className="flex-1">
+                    <div className="mt-4">
+                      <Link href={`/player/${musica.id}`} className="block">
                         <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative">
                           <Play className="h-4 w-4 mr-2" />
                           Cantar Agora
                         </Button>
                       </Link>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        title="Adicionar à fila"
-                        className={`shrink-0 border-border/50 transition-all z-10 relative ${isInQueue(musica.id) ? "text-emerald-400 border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20" : "text-muted-foreground hover:text-foreground hover:border-primary/50"}`}
-                        onClick={() => openQueueDialog({ id: musica.id, musica: musica.musica, artista: musica.artista })}
-                      >
-                        {isInQueue(musica.id) ? <Check className="h-4 w-4" /> : <ListPlus className="h-4 w-4" />}
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
