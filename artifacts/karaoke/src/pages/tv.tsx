@@ -217,6 +217,14 @@ export default function TVPage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionCountdown, setTransitionCountdown] = useState(10);
 
+  // Frozen song data for transition screen (so polling doesn't swap names mid-transition)
+  interface NextSongSnapshot {
+    singerName: string;
+    musica: string;
+    artista: string;
+  }
+  const nextSongRef = useRef<NextSongSnapshot | null>(null);
+
   const handleNext = useCallback(async () => {
     // TV acts as the owner of the current song so it can always advance
     const ownerDeviceId = session?.currentSongAddedBy ?? "anon";
@@ -235,6 +243,12 @@ export default function TVPage() {
       setShowScore(false);
       // Smooth transition: show "Next Song" screen for 10s with countdown before starting
       if (data.next) {
+        // Freeze the data from the API response so polling doesn't swap names mid-transition
+        nextSongRef.current = {
+          singerName: data.next.singerName,
+          musica: data.next.musica,
+          artista: data.next.artista,
+        };
         setIsTransitioning(true);
         setTransitionCountdown(10);
         const interval = setInterval(() => {
@@ -249,6 +263,7 @@ export default function TVPage() {
         setTimeout(() => {
           clearInterval(interval);
           setIsTransitioning(false);
+          nextSongRef.current = null;
           setVideoKey((k) => k + 1);
         }, 10000);
       } else {
@@ -363,15 +378,15 @@ export default function TVPage() {
 
       {/* Video Player */}
       <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
-        {isTransitioning && session?.queue?.[0] ? (
+        {isTransitioning && nextSongRef.current ? (
           <div className="absolute inset-0 z-35 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white animate-in fade-in duration-500">
             <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
             <div className="flex items-center gap-2 mb-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
               <UserRound className="h-4 w-4 text-primary" />
-              <span className="font-bold text-lg text-white">{session.queue[0].singerName}</span>
+              <span className="font-bold text-lg text-white">{nextSongRef.current.singerName}</span>
             </div>
-            <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{session.queue[0].musica}</h2>
-            <p className="text-muted-foreground text-sm mb-6">{session.queue[0].artista}</p>
+            <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{nextSongRef.current.musica}</h2>
+            <p className="text-muted-foreground text-sm mb-6">{nextSongRef.current.artista}</p>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
               <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
