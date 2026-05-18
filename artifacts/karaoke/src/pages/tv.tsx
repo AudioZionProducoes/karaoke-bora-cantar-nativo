@@ -204,6 +204,15 @@ export default function TVPage() {
     setShowScore(false);
   }, [advanceQueue]);
 
+  // Auto-advance after 10s when score overlay is shown
+  useEffect(() => {
+    if (!showScore) return;
+    const timer = setTimeout(() => {
+      handleNext();
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [showScore, handleNext]);
+
   if (!joined) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
