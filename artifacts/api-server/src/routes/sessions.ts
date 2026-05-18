@@ -28,6 +28,7 @@ router.post("/sessions", async (req, res): Promise<void> => {
   const name = typeof req.body?.name === "string" && req.body.name.trim()
     ? req.body.name.trim()
     : "Sessão";
+  const mode = req.body?.mode === "party" ? "party" : "home";
 
   // Try up to 10 times to get a unique ID
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -35,9 +36,9 @@ router.post("/sessions", async (req, res): Promise<void> => {
     try {
       const [session] = await db
         .insert(sessionsTable)
-        .values({ id, name, queue: [] })
+        .values({ id, name, mode, queue: [] })
         .returning();
-      res.status(201).json({ id: session.id, name: session.name });
+      res.status(201).json({ id: session.id, name: session.name, mode: session.mode });
       return;
     } catch {
       // ID collision, try again
@@ -91,12 +92,23 @@ router.post("/sessions/:id/queue", async (req: ExpressReq, res): Promise<void> =
     return;
   }
 
+  const deviceId = getDeviceId(req);
+
+  // Party mode: each device can only have 1 song in the queue at a time
+  if (session.mode === "party") {
+    const hasSongInQueue = queue.some((q) => q.addedBy === deviceId);
+    if (hasSongInQueue) {
+      res.status(429).json({ error: "Modo Festa: você já tem uma música na fila. Aguarde sua vez para adicionar outra." });
+      return;
+    }
+  }
+
   const entry: QueueEntry = {
     id: Number(songId),
     musica,
     artista,
     singerName: typeof singerName === "string" ? singerName.trim() : "Anônimo",
-    addedBy: getDeviceId(req),
+    addedBy: deviceId,
     addedAt: new Date().toISOString(),
   };
   const updatedQueue = [...queue, entry];
@@ -147,7 +159,7 @@ router.delete("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promi
   res.json({ queue: updatedQueue });
 });
 
-router.post("/sessions/:id/play", async (req, res): Promise<void> => {
+router.post("/sessions/:id/play", async (req: ExpressReq, res): Promise<void> => {
   const id = String(req.params.id ?? "").toUpperCase();
   const { songId } = req.body ?? {};
 
@@ -162,7 +174,7 @@ router.post("/sessions/:id/play", async (req, res): Promise<void> => {
     return;
   }
 
-  // If playing from queue, grab the singer name
+  // If playing from queue, grab the singer name and device
   const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
   const fromQueue = queue.find((q) => q.id === Number(songId));
 
@@ -171,6 +183,7 @@ router.post("/sessions/:id/play", async (req, res): Promise<void> => {
     .set({
       currentSongId: songId ? String(songId) : null,
       currentSingerName: fromQueue?.singerName ?? null,
+      currentSongAddedBy: fromQueue?.addedBy ?? null,
       currentSongStartedAt: new Date(),
       updatedAt: new Date(),
     })
@@ -225,7 +238,7 @@ router.put("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promise<
   res.json({ queue: updatedQueue });
 });
 
-router.post("/sessions/:id/next", async (req, res): Promise<void> => {
+router.post("/sessions/:id/next", async (req: ExpressReq, res): Promise<void> => {
   const id = String(req.params.id ?? "").toUpperCase();
 
   if (!id || id.length !== 6) {
@@ -239,6 +252,13 @@ router.post("/sessions/:id/next", async (req, res): Promise<void> => {
     return;
   }
 
+  // Only the singer who added the current song can skip it
+  const deviceId = getDeviceId(req);
+  if (session.currentSongAddedBy && session.currentSongAddedBy !== "anon" && session.currentSongAddedBy !== deviceId) {
+    res.status(403).json({ error: "Apenas quem colocou a música atual na fila pode pular para a próxima." });
+    return;
+  }
+
   const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
   const next = queue.length > 0 ? queue[0] : null;
   const updatedQueue = queue.slice(1);
@@ -249,6 +269,7 @@ router.post("/sessions/:id/next", async (req, res): Promise<void> => {
       queue: updatedQueue,
       currentSongId: next ? String(next.id) : null,
       currentSingerName: next?.singerName ?? null,
+      currentSongAddedBy: next?.addedBy ?? null,
       currentSongStartedAt: new Date(),
       updatedAt: new Date(),
     })

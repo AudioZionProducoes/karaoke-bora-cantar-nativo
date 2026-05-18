@@ -25,13 +25,13 @@ export default function Home() {
   const { data: stats } = useGetMusicasStats();
   const { data: searchResults, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 24 });
 
-  async function handleStartTV() {
+  async function handleStartTV(mode?: "home" | "party") {
     if (session) {
       navigate(`/tv/${session.id}`);
       return;
     }
     setStartingSession(true);
-    const id = await createSession("Karaokê Bora Cantar");
+    const id = await createSession("Karaokê Bora Cantar", mode);
     setStartingSession(false);
     if (id) navigate(`/tv/${id}`);
   }
@@ -55,20 +55,52 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col items-center gap-2">
-          <Button
-            size="lg"
-            className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
-            onClick={handleStartTV}
-            disabled={startingSession}
-          >
-            <Monitor className="h-5 w-5 mr-2" />
-            {startingSession ? "Iniciando..." : session ? "Continuar Sessão na TV" : "Iniciar Karaokê na TV"}
-          </Button>
+          {!session ? (
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
+                onClick={() => handleStartTV("party")}
+                disabled={startingSession}
+              >
+                <Monitor className="h-5 w-5 mr-2" />
+                {startingSession ? "Iniciando..." : "Modo Festa"}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-border/50 hover:bg-muted/50 transition-all"
+                onClick={() => handleStartTV("home")}
+                disabled={startingSession}
+              >
+                <Monitor className="h-5 w-5 mr-2" />
+                Modo Casa
+              </Button>
+            </div>
+          ) : (
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
+              onClick={() => handleStartTV()}
+              disabled={startingSession}
+            >
+              <Monitor className="h-5 w-5 mr-2" />
+              {startingSession ? "Iniciando..." : "Continuar Sessão na TV"}
+            </Button>
+          )}
 
           {session && (
-            <p className="text-xs text-muted-foreground">
-              Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span>
-            </p>
+            <div className="text-xs text-muted-foreground text-center">
+              <p>Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span></p>
+              <p className="mt-0.5">Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
+            </div>
+          )}
+
+          {!session && (
+            <div className="flex flex-col gap-1 text-[10px] text-muted-foreground text-center max-w-xs">
+              <p><span className="font-medium text-foreground">Modo Festa:</span> cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.</p>
+              <p><span className="font-medium text-foreground">Modo Casa:</span> sem limites. Adicione quantas músicas quiser à fila.</p>
+            </div>
           )}
         </div>
       </div>

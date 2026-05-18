@@ -192,8 +192,15 @@ export default function TVPage() {
     setShowScore(true);
   }, []);
 
+  const [skipError, setSkipError] = useState<string | null>(null);
+
   const handleNext = useCallback(async () => {
-    await advanceQueue();
+    const result = await advanceQueue();
+    if (!result.ok) {
+      setSkipError(result.error ?? "Não foi possível pular");
+      setTimeout(() => setSkipError(null), 3000);
+      return;
+    }
     setShowScore(false);
   }, [advanceQueue]);
 

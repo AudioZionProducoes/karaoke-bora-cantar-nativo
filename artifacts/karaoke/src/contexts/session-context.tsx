@@ -12,9 +12,11 @@ export interface SessionQueueItem {
 export interface Session {
   id: string;
   name: string;
+  mode: "home" | "party";
   queue: SessionQueueItem[];
   currentSongId: string | null;
   currentSingerName: string | null;
+  currentSongAddedBy: string | null;
   currentSongStartedAt: string | null;
   updatedAt: string;
 }
@@ -24,12 +26,12 @@ interface SessionContextType {
   loading: boolean;
   error: string | null;
   deviceId: string;
-  createSession: (name?: string) => Promise<string | null>;
+  createSession: (name?: string, mode?: "home" | "party") => Promise<string | null>;
   joinSession: (id: string) => Promise<boolean>;
-  addToQueue: (songId: number, musica: string, artista: string, singerName: string) => Promise<boolean>;
+  addToQueue: (songId: number, musica: string, artista: string, singerName: string) => Promise<{ ok: boolean; error?: string }>;
   removeFromQueue: (songId: number) => Promise<boolean>;
   updateQueueItem: (songId: number, musica: string, artista: string) => Promise<boolean>;
-  advanceQueue: () => Promise<boolean>;
+  advanceQueue: () => Promise<{ ok: boolean; error?: string }>;
   playSong: (songId: number) => Promise<boolean>;
   leaveSession: () => void;
 }
@@ -92,14 +94,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => { active = false; };
   }, [sessionId, fetchSession]);
 
-  const createSession = useCallback(async (name?: string): Promise<string | null> => {
+  const createSession = useCallback(async (name?: string, mode?: "home" | "party"): Promise<string | null> => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name ?? "Sessão" }),
+        body: JSON.stringify({ name: name ?? "Sessão", mode: mode ?? "home" }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -140,20 +142,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [fetchSession]);
 
-  const addToQueue = useCallback(async (songId: number, musica: string, artista: string, singerName: string): Promise<boolean> => {
-    if (!sessionId) return false;
+  const addToQueue = useCallback(async (songId: number, musica: string, artista: string, singerName: string): Promise<{ ok: boolean; error?: string }> => {
+    if (!sessionId) return { ok: false };
     try {
       const res = await fetch(`/api/sessions/${sessionId}/queue`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Device-Id": deviceId },
         body: JSON.stringify({ id: songId, musica, artista, singerName }),
       });
-      if (!res.ok) return false;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { ok: false, error: err.error };
+      }
       const data = await res.json();
       setSession((prev) => prev ? { ...prev, queue: data.queue } : null);
-      return true;
+      return { ok: true };
     } catch {
-      return false;
+      return { ok: false };
     }
   }, [sessionId, deviceId]);
 
@@ -173,11 +178,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [sessionId, deviceId]);
 
-  const advanceQueue = useCallback(async (): Promise<boolean> => {
-    if (!sessionId) return false;
+  const advanceQueue = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!sessionId) return { ok: false };
     try {
-      const res = await fetch(`/api/sessions/${sessionId}/next`, { method: "POST" });
-      if (!res.ok) return false;
+      const res = await fetch(`/api/sessions/${sessionId}/next`, {
+        method: "POST",
+        headers: { "X-Device-Id": deviceId },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { ok: false, error: err.error };
+      }
       const data = await res.json();
       setSession((prev) => prev ? {
         ...prev,
@@ -185,11 +196,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         currentSongId: data.next ? String(data.next.id) : null,
         currentSongStartedAt: data.next ? new Date().toISOString() : null,
       } : null);
-      return true;
+      return { ok: true };
     } catch {
-      return false;
+      return { ok: false };
     }
-  }, [sessionId]);
+  }, [sessionId, deviceId]);
 
   const playSong = useCallback(async (songId: number): Promise<boolean> => {
     if (!sessionId) return false;

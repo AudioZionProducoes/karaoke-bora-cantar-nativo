@@ -103,12 +103,17 @@ export default function RemotePage() {
     }
   }, [session?.queue]);
 
+  const [addError, setAddError] = useState<string | null>(null);
+
   const handleAdd = useCallback(async (singerName: string) => {
     if (!pendingItem) return;
-    const ok = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
-    if (ok) {
+    const result = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
+    if (result.ok) {
       setInQueueIds((prev) => new Set(prev).add(pendingItem.id));
       setTab("queue");
+      setAddError(null);
+    } else {
+      setAddError(result.error ?? "Não foi possível adicionar à fila");
     }
     setPendingItem(null);
   }, [pendingItem, addToQueue]);
@@ -117,8 +122,14 @@ export default function RemotePage() {
     await playSong(id);
   }, [playSong]);
 
+  const [skipError, setSkipError] = useState<string | null>(null);
+
   const handleNext = useCallback(async () => {
-    await advanceQueue();
+    const result = await advanceQueue();
+    if (!result.ok) {
+      setSkipError(result.error ?? "Não foi possível pular a música");
+      setTimeout(() => setSkipError(null), 3000);
+    }
   }, [advanceQueue]);
 
   // Edit song search
@@ -219,6 +230,16 @@ export default function RemotePage() {
       )}
 
       {/* Header */}
+      {skipError && (
+        <div className="bg-destructive/15 text-destructive text-xs text-center py-2 px-4 border-b border-destructive/20">
+          {skipError}
+        </div>
+      )}
+      {addError && (
+        <div className="bg-amber-500/15 text-amber-400 text-xs text-center py-2 px-4 border-b border-amber-500/20">
+          {addError}
+        </div>
+      )}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-2">
@@ -233,9 +254,20 @@ export default function RemotePage() {
             </div>
           </div>
           {currentSongId && session?.queue && (
-            <Button size="sm" className="bg-primary hover:bg-primary/90 text-xs" onClick={handleNext}>
-              <Play className="h-3 w-3 mr-1" />Próxima
-            </Button>
+            <div className="flex items-center gap-2">
+              {session?.mode === "party" && (
+                <span className="text-[10px] bg-primary/20 text-primary rounded-full px-2 py-0.5">Festa</span>
+              )}
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-xs"
+                onClick={handleNext}
+                disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
+                title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
+              >
+                <Play className="h-3 w-3 mr-1" />Próxima
+              </Button>
+            </div>
           )}
         </div>
 
@@ -404,7 +436,13 @@ export default function RemotePage() {
               <div className="font-bold text-sm">
                 Música #{currentSongId}
               </div>
-              <Button size="sm" className="mt-2 w-full bg-primary hover:bg-primary/90" onClick={handleNext}>
+              <Button
+                size="sm"
+                className="mt-2 w-full bg-primary hover:bg-primary/90"
+                onClick={handleNext}
+                disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
+                title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
+              >
                 <Play className="h-3.5 w-3.5 mr-1.5" />Próxima música
               </Button>
             </div>
