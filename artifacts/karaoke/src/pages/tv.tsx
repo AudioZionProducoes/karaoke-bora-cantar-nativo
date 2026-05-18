@@ -224,6 +224,22 @@ export default function TVPage() {
     artista: string;
   }
   const nextSongRef = useRef<NextSongSnapshot | null>(null);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const transitionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const skipTransition = useCallback(() => {
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    if (transitionIntervalRef.current) {
+      clearInterval(transitionIntervalRef.current);
+      transitionIntervalRef.current = null;
+    }
+    setIsTransitioning(false);
+    nextSongRef.current = null;
+    setVideoKey((k) => k + 1);
+  }, []);
 
   const handleNext = useCallback(async () => {
     // TV acts as the owner of the current song so it can always advance
@@ -260,12 +276,14 @@ export default function TVPage() {
             return c - 1;
           });
         }, 1000);
-        setTimeout(() => {
+        transitionIntervalRef.current = interval;
+        const timer = setTimeout(() => {
           clearInterval(interval);
           setIsTransitioning(false);
           nextSongRef.current = null;
           setVideoKey((k) => k + 1);
         }, 10000);
+        transitionTimerRef.current = timer;
       } else {
         setVideoKey((k) => k + 1);
       }
@@ -379,21 +397,30 @@ export default function TVPage() {
       {/* Video Player */}
       <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
         {isTransitioning && nextSongRef.current ? (
-          <div className="absolute inset-0 z-35 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white animate-in fade-in duration-500">
+          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black text-white animate-in fade-in duration-500">
             <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
-            <p className="text-primary font-bold uppercase tracking-widest text-sm mb-2">Próximo a Cantar</p>
-            <div className="flex items-center gap-3 mb-4 bg-primary/20 border border-primary/30 rounded-full px-6 py-2">
-              <UserRound className="h-5 w-5 text-primary" />
-              <span className="font-bold text-3xl text-white">{nextSongRef.current.singerName}</span>
+            <div className="bg-primary/10 border-2 border-primary/40 rounded-2xl px-10 py-8 flex flex-col items-center shadow-2xl shadow-primary/20">
+              <p className="text-primary font-bold uppercase tracking-widest text-sm mb-4">Próximo a Cantar</p>
+              <div className="flex items-center gap-3 mb-5 bg-primary/20 border border-primary/30 rounded-full px-8 py-3">
+                <UserRound className="h-6 w-6 text-primary" />
+                <span className="font-bold text-4xl text-white">{nextSongRef.current.singerName}</span>
+              </div>
+              <h2 className="text-3xl font-bold mb-2 line-clamp-1 text-center">{nextSongRef.current.musica}</h2>
+              <p className="text-muted-foreground text-base mb-8">{nextSongRef.current.artista}</p>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+              <p className="text-muted-foreground text-base mb-4">Preparando em <span className="text-primary font-bold text-xl">{transitionCountdown}s</span>...</p>
+              <Button
+                onClick={skipTransition}
+                className="bg-green-600 hover:bg-green-500 text-white font-bold text-lg px-8 py-3 rounded-full shadow-lg shadow-green-900/30 transition-all hover:scale-105"
+              >
+                <Play className="h-5 w-5 mr-2 fill-white" />
+                Começar Agora
+              </Button>
             </div>
-            <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{nextSongRef.current.musica}</h2>
-            <p className="text-muted-foreground text-sm mb-6">{nextSongRef.current.artista}</p>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-              <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-              <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-            </div>
-            <p className="text-muted-foreground text-sm mt-4">Preparando em <span className="text-primary font-bold">{transitionCountdown}s</span>...</p>
           </div>
         ) : isLibraryConfigured && currentSongId ? (
           <iframe
