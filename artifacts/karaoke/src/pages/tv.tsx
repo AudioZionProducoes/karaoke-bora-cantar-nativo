@@ -48,11 +48,12 @@ function useRouletteScore(finalScore: number) {
 }
 
 function ScoreOverlay({
-  singerName, musica, artista, nextItem, onNext, onClose,
+  singerName, musica, artista, nextItem, onNext, onClose, autoAdvanceSeconds,
 }: {
   singerName: string; musica: string; artista: string;
   nextItem: SessionQueueItem | null;
   onNext: () => void; onClose: () => void;
+  autoAdvanceSeconds: number | null;
 }) {
   const result = useMemo(() => generateScore(singerName), [singerName]);
   const { displayed, done } = useRouletteScore(result.score);
@@ -66,6 +67,24 @@ function ScoreOverlay({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Countdown timer for auto-advance
+  const [countdown, setCountdown] = useState(autoAdvanceSeconds ?? 0);
+  useEffect(() => {
+    if (!autoAdvanceSeconds || !done) return;
+    setCountdown(autoAdvanceSeconds);
+    const interval = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(interval);
+          nextRef.current?.();
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [autoAdvanceSeconds, done]);
 
   const circumference = 2 * Math.PI * 70;
   const ringOffset = circumference * (1 - displayed / 100);
@@ -134,7 +153,9 @@ function ScoreOverlay({
           <Button className="w-full mt-3 bg-primary hover:bg-primary/90 text-white font-bold" onClick={onNext}>
             <Play className="h-4 w-4 mr-2" />
             Começar — {nextItem.singerName}
-            <span className="ml-2 text-xs text-primary-foreground/60">(Enter)</span>
+            <span className="ml-2 text-xs text-primary-foreground/60">
+              {autoAdvanceSeconds && done ? `(${countdown}s)` : "(Enter)"}
+            </span>
           </Button>
         </div>
       ) : (
@@ -203,15 +224,6 @@ export default function TVPage() {
     }
     setShowScore(false);
   }, [advanceQueue]);
-
-  // Auto-advance after 10s when score overlay is shown
-  useEffect(() => {
-    if (!showScore) return;
-    const timer = setTimeout(() => {
-      handleNext();
-    }, 10000);
-    return () => clearTimeout(timer);
-  }, [showScore, handleNext]);
 
   if (!joined) {
     return (
@@ -370,6 +382,7 @@ export default function TVPage() {
           nextItem={nextItem}
           onNext={handleNext}
           onClose={() => setShowScore(false)}
+          autoAdvanceSeconds={10}
         />
       )}
     </div>
