@@ -12,7 +12,7 @@ import { useSearch } from "@/contexts/search-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
 
 export default function Home() {
-  const { session, createSession } = useSession();
+  const { session, createSession, setMode } = useSession();
   const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
   const { searchTerm } = useSearch();
@@ -27,6 +27,11 @@ export default function Home() {
 
   async function handleStartTV(mode?: "home" | "party") {
     if (session) {
+      if (mode && mode !== session.mode) {
+        setStartingSession(true);
+        await setMode(mode);
+        setStartingSession(false);
+      }
       navigate(`/tv/${session.id}`);
       return;
     }
@@ -55,52 +60,52 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col items-center gap-2">
-          {!session ? (
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Button
-                size="lg"
-                className="bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all"
-                onClick={() => handleStartTV("party")}
-                disabled={startingSession}
-              >
-                <Monitor className="h-5 w-5 mr-2" />
-                {startingSession ? "Iniciando..." : "Modo Festa"}
-              </Button>
-              <Button
-                size="lg"
-                className="bg-green-500 hover:bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
-                onClick={() => handleStartTV("home")}
-                disabled={startingSession}
-              >
-                <Monitor className="h-5 w-5 mr-2" />
-                Modo Casa
-              </Button>
-            </div>
-          ) : (
+          <div className="flex flex-col sm:flex-row items-center gap-3">
             <Button
               size="lg"
-              className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
-              onClick={() => handleStartTV()}
+              className="bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all"
+              onClick={() => handleStartTV("party")}
               disabled={startingSession}
             >
               <Monitor className="h-5 w-5 mr-2" />
-              {startingSession ? "Iniciando..." : "Iniciar Sessão na TV"}
+              {startingSession ? "Iniciando..." : "Modo Festa"}
             </Button>
-          )}
+            <Button
+              size="lg"
+              className="bg-green-500 hover:bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
+              onClick={() => handleStartTV("home")}
+              disabled={startingSession}
+            >
+              <Monitor className="h-5 w-5 mr-2" />
+              Modo Casa
+            </Button>
+          </div>
 
           {session && (
             <div className="text-xs text-muted-foreground text-center">
-              <p>Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span></p>
-              <p className="mt-0.5">Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
+              <p>
+                Sessão ativa:{" "}
+                <Link href={`/tv/${session.id}`} className="font-mono text-primary/80 dark:text-yellow-400/80 hover:underline">
+                  {session.id}
+                </Link>
+              </p>
+              <p className="mt-0.5">
+                Modo:{" "}
+                <span className="font-medium text-foreground">
+                  {session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}
+                </span>
+              </p>
             </div>
           )}
 
-          {!session && (
-            <div className="flex flex-col gap-1 text-[10px] text-muted-foreground text-center max-w-xs">
-              <p><span className="font-medium text-foreground">Modo Festa:</span> cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.</p>
-              <p><span className="font-medium text-foreground">Modo Casa:</span> sem limites. Adicione quantas músicas quiser à fila.</p>
-            </div>
-          )}
+          <div className="flex flex-col gap-1 text-[10px] text-muted-foreground text-center max-w-xs">
+            <p>
+              <span className="font-medium text-foreground">Modo Festa:</span> cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.
+            </p>
+            <p>
+              <span className="font-medium text-foreground">Modo Casa:</span> sem limites. Adicione quantas músicas quiser à fila.
+            </p>
+          </div>
         </div>
       </div>
 
