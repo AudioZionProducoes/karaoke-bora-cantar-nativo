@@ -253,7 +253,7 @@ export default function RemotePage() {
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-12 w-auto rounded-md ring-1 ring-white/10 shadow-[0_0_10px_rgba(250,204,21,0.15)]" />
+              <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-14 w-16 object-contain rounded-md ring-1 ring-white/10 shadow-[0_0_10px_rgba(250,204,21,0.15)]" />
               <div>
                 <div className="font-bold text-sm leading-tight">Karaokê Bora Cantar</div>
                 <div className="text-[10px] text-primary font-mono leading-tight">{sessionId}</div>
