@@ -336,8 +336,8 @@ export default function TVPage() {
                 variant="ghost"
                 className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
                   session.mode === "party"
-                    ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
-                    : "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
+                    ? "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
+                    : "bg-[hsl(142_70%_45%/0.2)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.3)]"
                 }`}
                 onClick={() => setMode(session.mode === "party" ? "home" : "party")}
                 title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
