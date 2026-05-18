@@ -214,6 +214,7 @@ export default function TVPage() {
   }, []);
 
   const [skipError, setSkipError] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleNext = useCallback(async () => {
     // TV acts as the owner of the current song so it can always advance
@@ -231,8 +232,16 @@ export default function TVPage() {
       }
       const data = await res.json();
       setShowScore(false);
-      // Trigger video reset via session update (polling will pick it up)
-      setVideoKey((k) => k + 1);
+      // Smooth transition: show "Next Song" screen for 1.5s before starting
+      if (data.next) {
+        setIsTransitioning(true);
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setVideoKey((k) => k + 1);
+        }, 2500);
+      } else {
+        setVideoKey((k) => k + 1);
+      }
     } catch {
       setSkipError("Erro de rede ao pular música");
       setTimeout(() => setSkipError(null), 3000);
@@ -342,7 +351,23 @@ export default function TVPage() {
 
       {/* Video Player */}
       <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
-        {isLibraryConfigured && currentSongId ? (
+        {isTransitioning && session?.queue?.[0] ? (
+          <div className="absolute inset-0 z-35 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white animate-in fade-in duration-500">
+            <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
+            <div className="flex items-center gap-2 mb-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
+              <UserRound className="h-4 w-4 text-primary" />
+              <span className="font-bold text-lg text-white">{session.queue[0].singerName}</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{session.queue[0].musica}</h2>
+            <p className="text-muted-foreground text-sm mb-6">{session.queue[0].artista}</p>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+            </div>
+            <p className="text-muted-foreground text-sm mt-4">Preparando...</p>
+          </div>
+        ) : isLibraryConfigured && currentSongId ? (
           <iframe
             key={`iframe-${currentSongId}`}
             src={`https://iframe.mediadelivery.net/embed/${libraryId}/${currentSongId}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
@@ -376,15 +401,17 @@ export default function TVPage() {
         )}
 
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
-        <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
-          <div className="bg-[#f5c800] rounded-md p-1">
-            <QRCode value={remoteUrl} size={56} bgColor="#f5c800" fgColor="#000000" />
+        {!isTransitioning && (
+          <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
+            <div className="bg-[#f5c800] rounded-md p-1">
+              <QRCode value={remoteUrl} size={56} bgColor="#f5c800" fgColor="#000000" />
+            </div>
+            <div className="text-[9px] text-center text-black leading-tight max-w-[72px] font-bold">
+              <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-black" />
+              Controle Remoto
+            </div>
           </div>
-          <div className="text-[9px] text-center text-black leading-tight max-w-[72px] font-bold">
-            <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-black" />
-            Controle Remoto
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Score overlay */}
