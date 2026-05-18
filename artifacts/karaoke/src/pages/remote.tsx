@@ -338,19 +338,21 @@ export default function RemotePage() {
                     <div className="text-xs text-muted-foreground">{m.artista}</div>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
-                      onClick={() => handlePlayNow(m.id)}
-                      title="Tocar agora"
-                    >
-                      <Play className="h-4 w-4" />
-                    </Button>
+                    {(!currentSongId || session?.currentSongAddedBy === deviceId || session?.currentSongAddedBy === null) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                        onClick={() => handlePlayNow(m.id)}
+                        title="Tocar agora"
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant={inQueueIds.has(m.id) ? "default" : "outline"}
-                      className={`h-8 w-8 p-0 ${inQueueIds.has(m.id) ? "bg-primary text-primary-foreground" : "border-border/50 text-muted-foreground hover:text-foreground"}`}
+                      className={`h-8 px-2 ${inQueueIds.has(m.id) ? "bg-primary text-primary-foreground w-8 p-0" : "border-border/50 text-muted-foreground hover:text-foreground"}`}
                       onClick={() => {
                         if (inQueueIds.has(m.id)) return;
                         setPendingItem({ id: m.id, musica: m.musica, artista: m.artista });
@@ -358,7 +360,7 @@ export default function RemotePage() {
                       title={inQueueIds.has(m.id) ? "Já na fila" : "Adicionar à fila"}
                       disabled={inQueueIds.has(m.id)}
                     >
-                      {inQueueIds.has(m.id) ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {inQueueIds.has(m.id) ? <Check className="h-4 w-4" /> : <span className="text-xs">Add</span>}
                     </Button>
                   </div>
                 </div>
