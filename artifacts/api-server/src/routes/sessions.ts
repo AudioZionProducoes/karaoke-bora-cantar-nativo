@@ -47,6 +47,38 @@ router.post("/sessions", async (req, res): Promise<void> => {
   res.status(500).json({ error: "Não foi possível criar uma sessão. Tente novamente." });
 });
 
+router.patch("/sessions/:id", async (req, res): Promise<void> => {
+  const id = String(req.params.id ?? "").toUpperCase();
+  if (!id || id.length !== 6) {
+    res.status(400).json({ error: "ID de sessão inválido" });
+    return;
+  }
+
+  const mode = req.body?.mode;
+  if (mode !== "party" && mode !== "home") {
+    res.status(400).json({ error: "Modo inválido. Use 'party' ou 'home'." });
+    return;
+  }
+
+  try {
+    const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+    if (!session) {
+      res.status(404).json({ error: "Sessão não encontrada" });
+      return;
+    }
+
+    const [updated] = await db
+      .update(sessionsTable)
+      .set({ mode })
+      .where(eq(sessionsTable.id, id))
+      .returning();
+
+    res.json({ id: updated.id, name: updated.name, mode: updated.mode });
+  } catch {
+    res.status(500).json({ error: "Erro ao atualizar modo da sessão" });
+  }
+});
+
 router.get("/sessions/:id", async (req, res): Promise<void> => {
   const id = String(req.params.id ?? "").toUpperCase();
   if (!id || id.length !== 6) {

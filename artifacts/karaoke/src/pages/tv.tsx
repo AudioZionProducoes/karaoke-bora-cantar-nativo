@@ -151,7 +151,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, advanceQueue } = useSession();
+  const { session, joinSession, advanceQueue, setMode } = useSession();
   const { getFileUrl } = useLocalMusic();
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
@@ -241,6 +241,21 @@ export default function TVPage() {
             </Link>
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
             <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
+            {session && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className={`h-7 px-2 text-[10px] rounded-full border transition-colors ${
+                  session.mode === "party"
+                    ? "bg-primary/20 border-primary/40 text-primary hover:bg-primary/30"
+                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                }`}
+                onClick={() => setMode(session.mode === "party" ? "home" : "party")}
+                title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+              >
+                {session.mode === "party" ? "Festa" : "Casa"}
+              </Button>
+            )}
           </div>
 
           {/* Queue — flows right after Sessão, wraps like notebook lines */}

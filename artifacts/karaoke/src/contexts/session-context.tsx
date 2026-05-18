@@ -33,6 +33,7 @@ interface SessionContextType {
   updateQueueItem: (songId: number, musica: string, artista: string) => Promise<boolean>;
   advanceQueue: () => Promise<{ ok: boolean; error?: string }>;
   playSong: (songId: number) => Promise<boolean>;
+  setMode: (mode: "home" | "party") => Promise<boolean>;
   leaveSession: () => void;
 }
 
@@ -245,10 +246,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [sessionId, deviceId]);
 
+  const setMode = useCallback(async (mode: "home" | "party"): Promise<boolean> => {
+    if (!sessionId) return false;
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      setSession((prev) => prev ? { ...prev, mode: data.mode } : null);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [sessionId]);
+
   const value: SessionContextType = {
     session, loading, error, deviceId,
     createSession, joinSession, addToQueue,
-    removeFromQueue, updateQueueItem, advanceQueue, playSong, leaveSession,
+    removeFromQueue, updateQueueItem, advanceQueue, playSong, setMode, leaveSession,
   };
 
   return (
