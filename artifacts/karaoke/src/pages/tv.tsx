@@ -238,7 +238,7 @@ export default function TVPage() {
         setTimeout(() => {
           setIsTransitioning(false);
           setVideoKey((k) => k + 1);
-        }, 2500);
+        }, 5000);
       } else {
         setVideoKey((k) => k + 1);
       }
