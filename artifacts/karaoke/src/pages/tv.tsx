@@ -381,9 +381,10 @@ export default function TVPage() {
         {isTransitioning && nextSongRef.current ? (
           <div className="absolute inset-0 z-35 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md text-white animate-in fade-in duration-500">
             <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
-            <div className="flex items-center gap-2 mb-3 bg-primary/20 border border-primary/30 rounded-full px-4 py-1.5">
-              <UserRound className="h-4 w-4 text-primary" />
-              <span className="font-bold text-lg text-white">{nextSongRef.current.singerName}</span>
+            <p className="text-primary font-bold uppercase tracking-widest text-sm mb-2">Próximo a Cantar</p>
+            <div className="flex items-center gap-3 mb-4 bg-primary/20 border border-primary/30 rounded-full px-6 py-2">
+              <UserRound className="h-5 w-5 text-primary" />
+              <span className="font-bold text-3xl text-white">{nextSongRef.current.singerName}</span>
             </div>
             <h2 className="text-2xl font-bold mb-1 line-clamp-1 text-center">{nextSongRef.current.musica}</h2>
             <p className="text-muted-foreground text-sm mb-6">{nextSongRef.current.artista}</p>
