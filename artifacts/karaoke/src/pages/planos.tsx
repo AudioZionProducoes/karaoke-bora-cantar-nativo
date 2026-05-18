@@ -53,7 +53,7 @@ const PLANOS = [
 ];
 
 // URL do checkout WooCommerce - pode ser configurada via variável de ambiente
-const CHECKOUT_URL = import.meta.env.VITE_WOOCOMMERCE_STORE_URL || "https://karaokect.com.br";
+const CHECKOUT_URL = import.meta.env.VITE_WOOCOMMERCE_STORE_URL || "https://karaokeboracantar.com.br";
 
 function getCheckoutLink(planoId: string) {
   // Mapeia IDs de plano para IDs de produto WooCommerce

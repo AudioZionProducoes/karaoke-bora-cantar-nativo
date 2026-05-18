@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useTemporaryAccess } from "@/contexts/temporary-access-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mic2, ArrowLeft, LogIn, Lock, Mail, Ticket, Clock, ArrowRight, User, Phone } from "lucide-react";
+import { ArrowLeft, LogIn, Lock, Mail, Ticket, Clock, ArrowRight, User, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
