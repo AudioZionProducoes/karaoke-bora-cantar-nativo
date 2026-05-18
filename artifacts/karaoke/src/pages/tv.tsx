@@ -172,7 +172,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, advanceQueue, setMode } = useSession();
+  const { session, joinSession, setMode } = useSession();
   const { getFileUrl } = useLocalMusic();
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
@@ -216,14 +216,28 @@ export default function TVPage() {
   const [skipError, setSkipError] = useState<string | null>(null);
 
   const handleNext = useCallback(async () => {
-    const result = await advanceQueue();
-    if (!result.ok) {
-      setSkipError(result.error ?? "Não foi possível pular");
+    // TV acts as the owner of the current song so it can always advance
+    const ownerDeviceId = session?.currentSongAddedBy ?? "anon";
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/next`, {
+        method: "POST",
+        headers: { "X-Device-Id": ownerDeviceId },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setSkipError(err.error ?? "Não foi possível pular");
+        setTimeout(() => setSkipError(null), 3000);
+        return;
+      }
+      const data = await res.json();
+      setShowScore(false);
+      // Trigger video reset via session update (polling will pick it up)
+      setVideoKey((k) => k + 1);
+    } catch {
+      setSkipError("Erro de rede ao pular música");
       setTimeout(() => setSkipError(null), 3000);
-      return;
     }
-    setShowScore(false);
-  }, [advanceQueue]);
+  }, [session?.currentSongAddedBy, sessionId]);
 
   if (!joined) {
     return (
