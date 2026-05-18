@@ -31,7 +31,7 @@ export default function Home() {
       return;
     }
     setStartingSession(true);
-    const id = await createSession("Karaoke CT");
+    const id = await createSession("Karaokê Bora Cantar");
     setStartingSession(false);
     if (id) navigate(`/tv/${id}`);
   }

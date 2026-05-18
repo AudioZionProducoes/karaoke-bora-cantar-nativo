@@ -173,7 +173,7 @@ export function CuponsTab() {
             <Ticket className="h-5 w-5 text-primary" />
             Gerar Cupons de Acesso
           </CardTitle>
-          <CardDescription>Crie códigos temporários para clientes testarem o Karaokê CT</CardDescription>
+          <CardDescription>Crie códigos temporários para clientes testarem o Karaokê Bora Cantar</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">

@@ -58,10 +58,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/15 mb-2">
-            <Mic2 className="h-7 w-7 text-primary" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-primary/15 mb-2 overflow-hidden">
+            <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-10 w-auto rounded" />
           </div>
-          <h1 className="text-2xl font-bold">Karaokê CT</h1>
+          <h1 className="text-2xl font-bold">Karaokê Bora Cantar</h1>
           <p className="text-sm text-muted-foreground">
             Entre com email e senha da sua assinatura para liberar o sistema.
           </p>

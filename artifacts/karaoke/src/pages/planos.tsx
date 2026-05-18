@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mic2, ArrowLeft, Check, Crown, Zap, Star, Music } from "lucide-react";
+import { ArrowLeft, Check, Crown, Zap, Star, Music } from "lucide-react";
 
 const PLANOS = [
   {
@@ -72,11 +72,9 @@ export default function PlanosPage() {
       {/* Header */}
       <header className="border-b border-border/40 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center max-w-7xl">
-          <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20">
-              <Mic2 className="h-5 w-5" />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-foreground">Karaoke CT</span>
+          <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+            <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-9 w-auto rounded-lg ring-1 ring-white/10" />
+            <span className="font-bold text-xl tracking-tight text-foreground">Karaokê Bora Cantar</span>
           </Link>
         </div>
       </header>
@@ -92,7 +90,7 @@ export default function PlanosPage() {
             Liberte sua voz sem limites
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Acesso ilimitado ao catálogo completo do Karaoke CT. Cante quando quiser,
+            Acesso ilimitado ao catálogo completo do Karaokê Bora Cantar. Cante quando quiser,
             onde quiser, com qualidade profissional.
           </p>
         </div>
@@ -162,7 +160,7 @@ export default function PlanosPage() {
           <Link href="/">
             <Button variant="ghost" className="text-muted-foreground">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Karaoke CT
+              Voltar ao Karaokê Bora Cantar
             </Button>
           </Link>
         </div>
@@ -174,7 +172,7 @@ export default function PlanosPage() {
             <div className="p-4 rounded-lg bg-muted/40 border border-border/30">
               <h3 className="font-medium mb-1">Como funciona a assinatura?</h3>
               <p className="text-sm text-muted-foreground">
-                Após o pagamento, você recebe um email com login e senha. Acesse o Karaoke CT
+                Após o pagamento, você recebe um email com login e senha. Acesse o Karaokê Bora Cantar
                 em qualquer dispositivo com 1 conta por vez.
               </p>
             </div>
@@ -197,7 +195,7 @@ export default function PlanosPage() {
       </main>
 
       <footer className="py-6 border-t border-border/40 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Karaoke CT. O palco é seu.</p>
+        <p>© {new Date().getFullYear()} Karaokê Bora Cantar. O palco é seu.</p>
       </footer>
     </div>
   );

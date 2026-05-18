@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Mic2, Sun, Moon, LogIn, LogOut, Clock, AlertTriangle, ArrowRight, Search } from "lucide-react";
+import { Sun, Moon, LogIn, LogOut, Clock, AlertTriangle, ArrowRight, Search } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/contexts/auth-context";
 import { useTemporaryAccess } from "@/contexts/temporary-access-context";
@@ -21,11 +21,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-start justify-between">
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
-                <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-                  <div className="bg-primary/10 p-2 rounded-lg text-primary ring-1 ring-primary/20 shadow-[0_0_15px_rgba(168,85,247,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-                    <Mic2 className="h-5 w-5" />
-                  </div>
-                  <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaoke CT</span>
+                <Link href="/" className="flex items-center gap-2.5 transition-opacity hover:opacity-80">
+                  <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-10 w-auto rounded-lg ring-1 ring-white/10 shadow-[0_0_15px_rgba(250,204,21,0.15)]" />
+                  <span className="font-bold text-xl tracking-tight text-foreground drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">Karaokê Bora Cantar</span>
                 </Link>
               </div>
 
@@ -131,7 +129,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="py-6 border-t border-border/40 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} Karaoke CT. O palco é seu.</p>
+        <p>© {new Date().getFullYear()} Karaokê Bora Cantar. O palco é seu.</p>
       </footer>
     </div>
   );

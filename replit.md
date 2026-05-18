@@ -1,4 +1,4 @@
-# Karaokê CT
+# Karaokê Bora Cantar
 
 Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player integrado com Bunny Stream, painel admin e integração WooCommerce.
 
