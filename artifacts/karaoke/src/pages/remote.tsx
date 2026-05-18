@@ -252,9 +252,12 @@ export default function RemotePage() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div>
-              <div className="font-bold text-sm">Controle Remoto</div>
-              <div className="text-[10px] text-primary font-mono">{sessionId}</div>
+            <div className="flex items-center gap-2">
+              <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-8 w-auto rounded-md ring-1 ring-white/10" />
+              <div>
+                <div className="font-bold text-sm leading-tight">Karaokê Bora Cantar</div>
+                <div className="text-[10px] text-primary font-mono leading-tight">{sessionId}</div>
+              </div>
             </div>
           </div>
           {currentSongId && session?.queue && (
