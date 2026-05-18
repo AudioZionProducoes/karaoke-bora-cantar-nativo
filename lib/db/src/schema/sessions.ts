@@ -9,6 +9,17 @@ export interface QueueEntry {
   addedAt: string;
 }
 
+export interface SwapRequest {
+  requesterDeviceId: string;
+  requesterName: string;
+  targetDeviceId: string;
+  targetName: string;
+  requesterIndex: number;
+  targetIndex: number;
+  status: "pending";
+  requestedAt: string;
+}
+
 export const sessionsTable = pgTable("karaoke_sessions", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -18,5 +29,6 @@ export const sessionsTable = pgTable("karaoke_sessions", {
   currentSingerName: text("current_singer_name"),
   currentSongAddedBy: text("current_song_added_by"),
   currentSongStartedAt: timestamp("current_song_started_at"),
+  swapRequest: jsonb("swap_request").$type<SwapRequest | null>(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

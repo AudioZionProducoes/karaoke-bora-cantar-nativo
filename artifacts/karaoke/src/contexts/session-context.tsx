@@ -9,6 +9,17 @@ export interface SessionQueueItem {
   addedAt: string;
 }
 
+export interface SwapRequestData {
+  requesterDeviceId: string;
+  requesterName: string;
+  targetDeviceId: string;
+  targetName: string;
+  requesterIndex: number;
+  targetIndex: number;
+  status: "pending";
+  requestedAt: string;
+}
+
 export interface Session {
   id: string;
   name: string;
@@ -18,6 +29,7 @@ export interface Session {
   currentSingerName: string | null;
   currentSongAddedBy: string | null;
   currentSongStartedAt: string | null;
+  swapRequest: SwapRequestData | null;
   updatedAt: string;
 }
 
@@ -34,6 +46,9 @@ interface SessionContextType {
   advanceQueue: () => Promise<{ ok: boolean; error?: string }>;
   playSong: (songId: number) => Promise<boolean>;
   setMode: (mode: "home" | "party") => Promise<boolean>;
+  requestSwap: (targetIndex: number) => Promise<{ ok: boolean; error?: string }>;
+  acceptSwap: () => Promise<{ ok: boolean; error?: string }>;
+  declineSwap: () => Promise<{ ok: boolean; error?: string }>;
   leaveSession: () => void;
 }
 
@@ -263,10 +278,68 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [sessionId]);
 
+  const requestSwap = useCallback(async (targetIndex: number): Promise<{ ok: boolean; error?: string }> => {
+    if (!sessionId) return { ok: false };
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/swap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Device-Id": deviceId },
+        body: JSON.stringify({ targetIndex }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { ok: false, error: err.error };
+      }
+      const data = await res.json();
+      setSession((prev) => prev ? { ...prev, swapRequest: data.swapRequest } : null);
+      return { ok: true };
+    } catch {
+      return { ok: false };
+    }
+  }, [sessionId, deviceId]);
+
+  const acceptSwap = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!sessionId) return { ok: false };
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/swap/accept`, {
+        method: "POST",
+        headers: { "X-Device-Id": deviceId },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { ok: false, error: err.error };
+      }
+      const data = await res.json();
+      setSession((prev) => prev ? { ...prev, queue: data.queue, swapRequest: null } : null);
+      return { ok: true };
+    } catch {
+      return { ok: false };
+    }
+  }, [sessionId, deviceId]);
+
+  const declineSwap = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!sessionId) return { ok: false };
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/swap/decline`, {
+        method: "POST",
+        headers: { "X-Device-Id": deviceId },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return { ok: false, error: err.error };
+      }
+      setSession((prev) => prev ? { ...prev, swapRequest: null } : null);
+      return { ok: true };
+    } catch {
+      return { ok: false };
+    }
+  }, [sessionId, deviceId]);
+
   const value: SessionContextType = {
     session, loading, error, deviceId,
     createSession, joinSession, addToQueue,
-    removeFromQueue, updateQueueItem, advanceQueue, playSong, setMode, leaveSession,
+    removeFromQueue, updateQueueItem, advanceQueue, playSong, setMode,
+    requestSwap, acceptSwap, declineSwap, leaveSession,
   };
 
   return (

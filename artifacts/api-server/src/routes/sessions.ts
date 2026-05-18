@@ -303,11 +303,165 @@ router.post("/sessions/:id/next", async (req: ExpressReq, res): Promise<void> =>
       currentSingerName: next?.singerName ?? null,
       currentSongAddedBy: next?.addedBy ?? null,
       currentSongStartedAt: new Date(),
+      swapRequest: null,
       updatedAt: new Date(),
     })
     .where(eq(sessionsTable.id, id));
 
   res.json({ next, queue: updatedQueue });
+});
+
+/* ==========================
+   SWAP REQUEST (Troca a Fila)
+   ========================== */
+
+router.post("/sessions/:id/swap", async (req: ExpressReq, res): Promise<void> => {
+  const id = String(req.params.id ?? "").toUpperCase();
+  const { targetIndex } = req.body ?? {};
+
+  if (!id || id.length !== 6) {
+    res.status(400).json({ error: "ID de sessão inválido" });
+    return;
+  }
+  if (typeof targetIndex !== "number" || targetIndex < 0) {
+    res.status(400).json({ error: "Índice inválido" });
+    return;
+  }
+
+  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+  if (!session) {
+    res.status(404).json({ error: "Sessão não encontrada" });
+    return;
+  }
+
+  const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
+  const deviceId = getDeviceId(req);
+
+  // Find the requester's position in the queue
+  const requesterIndex = queue.findIndex((q) => q.addedBy === deviceId);
+  if (requesterIndex === -1) {
+    res.status(400).json({ error: "Você não tem uma música na fila para trocar" });
+    return;
+  }
+  if (targetIndex >= queue.length) {
+    res.status(400).json({ error: "Índice inválido" });
+    return;
+  }
+  if (requesterIndex === targetIndex) {
+    res.status(400).json({ error: "Você não pode trocar com você mesmo" });
+    return;
+  }
+  if (session.swapRequest) {
+    res.status(409).json({ error: "Já existe uma troca pendente. Aguarde a resposta." });
+    return;
+  }
+
+  const requester = queue[requesterIndex];
+  const target = queue[targetIndex];
+
+  const swapReq = {
+    requesterDeviceId: deviceId,
+    requesterName: requester.singerName,
+    targetDeviceId: target.addedBy,
+    targetName: target.singerName,
+    requesterIndex,
+    targetIndex,
+    status: "pending" as const,
+    requestedAt: new Date().toISOString(),
+  };
+
+  await db
+    .update(sessionsTable)
+    .set({ swapRequest: swapReq, updatedAt: new Date() })
+    .where(eq(sessionsTable.id, id));
+
+  res.status(201).json({ swapRequest: swapReq });
+});
+
+router.post("/sessions/:id/swap/accept", async (req: ExpressReq, res): Promise<void> => {
+  const id = String(req.params.id ?? "").toUpperCase();
+
+  if (!id || id.length !== 6) {
+    res.status(400).json({ error: "ID de sessão inválido" });
+    return;
+  }
+
+  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+  if (!session) {
+    res.status(404).json({ error: "Sessão não encontrada" });
+    return;
+  }
+
+  const deviceId = getDeviceId(req);
+  const swap = session.swapRequest;
+
+  if (!swap || swap.status !== "pending") {
+    res.status(400).json({ error: "Nenhuma troca pendente" });
+    return;
+  }
+
+  // Only the target can accept
+  if (swap.targetDeviceId !== deviceId) {
+    res.status(403).json({ error: "Apenas a pessoa solicitada pode aceitar a troca" });
+    return;
+  }
+
+  const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
+  const { requesterIndex, targetIndex } = swap;
+
+  if (requesterIndex >= queue.length || targetIndex >= queue.length) {
+    res.status(400).json({ error: "Fila mudou desde que a troca foi solicitada" });
+    return;
+  }
+
+  // Swap positions in the queue
+  const newQueue = [...queue];
+  const temp = newQueue[requesterIndex];
+  newQueue[requesterIndex] = newQueue[targetIndex];
+  newQueue[targetIndex] = temp;
+
+  await db
+    .update(sessionsTable)
+    .set({ queue: newQueue, swapRequest: null, updatedAt: new Date() })
+    .where(eq(sessionsTable.id, id));
+
+  res.json({ queue: newQueue, swapped: true });
+});
+
+router.post("/sessions/:id/swap/decline", async (req: ExpressReq, res): Promise<void> => {
+  const id = String(req.params.id ?? "").toUpperCase();
+
+  if (!id || id.length !== 6) {
+    res.status(400).json({ error: "ID de sessão inválido" });
+    return;
+  }
+
+  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+  if (!session) {
+    res.status(404).json({ error: "Sessão não encontrada" });
+    return;
+  }
+
+  const deviceId = getDeviceId(req);
+  const swap = session.swapRequest;
+
+  if (!swap || swap.status !== "pending") {
+    res.status(400).json({ error: "Nenhuma troca pendente" });
+    return;
+  }
+
+  // Target or requester can cancel/decline
+  if (swap.targetDeviceId !== deviceId && swap.requesterDeviceId !== deviceId) {
+    res.status(403).json({ error: "Você não tem permissão para recusar esta troca" });
+    return;
+  }
+
+  await db
+    .update(sessionsTable)
+    .set({ swapRequest: null, updatedAt: new Date() })
+    .where(eq(sessionsTable.id, id));
+
+  res.json({ declined: true });
 });
 
 export default router;

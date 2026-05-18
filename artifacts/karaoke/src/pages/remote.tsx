@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, Mic2, ListMusic, Play, Plus, Check, UserRound,
-  Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil
+  Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil, Shuffle
 } from "lucide-react";
 
 function AddToQueueDialog({
@@ -67,7 +67,7 @@ function AddToQueueDialog({
 export default function RemotePage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue } = useSession();
+  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap } = useSession();
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -82,6 +82,8 @@ export default function RemotePage() {
   const [editSearchTerm, setEditSearchTerm] = useState("");
   const [editSearchResults, setEditSearchResults] = useState<Array<{id:number;musica:string;artista:string}>>([]);
   const [editSearching, setEditSearching] = useState(false);
+  const [swapSelecting, setSwapSelecting] = useState(false);
+  const [swapError, setSwapError] = useState<string | null>(null);
 
   const { data: searchResults, isLoading } = useSearchMusicas({
     q: debouncedSearch, page, limit: 12,
@@ -164,6 +166,28 @@ export default function RemotePage() {
     setEditSearchResults([]);
   }, [editingItem, updateQueueItem]);
 
+  // Swap handlers
+  const handleRequestSwap = useCallback(async (targetIndex: number) => {
+    setSwapSelecting(false);
+    const result = await requestSwap(targetIndex);
+    if (!result.ok) {
+      setSwapError(result.error ?? "Não foi possível solicitar troca");
+      setTimeout(() => setSwapError(null), 4000);
+    }
+  }, [requestSwap]);
+
+  const handleAcceptSwap = useCallback(async () => {
+    const result = await acceptSwap();
+    if (!result.ok) {
+      setSwapError(result.error ?? "Erro ao aceitar troca");
+      setTimeout(() => setSwapError(null), 3000);
+    }
+  }, [acceptSwap]);
+
+  const handleDeclineSwap = useCallback(async () => {
+    await declineSwap();
+  }, [declineSwap]);
+
   if (!joined) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
@@ -239,6 +263,37 @@ export default function RemotePage() {
         <div className="bg-amber-500/15 text-amber-400 text-xs text-center py-2 px-4 border-b border-amber-500/20">
           {addError}
         </div>
+      )}
+      {swapError && (
+        <div className="bg-rose-500/15 text-rose-400 text-xs text-center py-2 px-4 border-b border-rose-500/20">
+          {swapError}
+        </div>
+      )}
+      {/* Swap notification banner */}
+      {session?.swapRequest && (
+        <>
+          {session.swapRequest.requesterDeviceId === deviceId && (
+            <div className="bg-yellow-500/15 text-yellow-400 text-xs text-center py-2 px-4 border-b border-yellow-500/20 animate-pulse">
+              Aguardando <strong>{session.swapRequest.targetName}</strong> aceitar a troca de lugar...
+            </div>
+          )}
+          {session.swapRequest.targetDeviceId === deviceId && (
+            <div className="bg-red-500/20 text-red-400 text-xs text-center py-3 px-4 border-b border-red-500/30">
+              <div className="font-bold mb-1 animate-pulse">
+                <Shuffle className="h-3 w-3 inline mr-1" />
+                {session.swapRequest.requesterName} quer trocar de lugar com você!
+              </div>
+              <div className="flex gap-2 justify-center mt-1">
+                <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white h-6 text-[10px] px-3" onClick={handleAcceptSwap}>
+                  Sim, trocar
+                </Button>
+                <Button size="sm" variant="ghost" className="h-6 text-[10px] px-3 text-muted-foreground hover:text-foreground" onClick={handleDeclineSwap}>
+                  Não, ficar aqui
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
       )}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="flex items-center justify-between px-4 h-14">
@@ -383,6 +438,25 @@ export default function RemotePage() {
       {/* Queue tab */}
       {tab === "queue" && (
         <div className="flex-1 p-4">
+          {/* Swap mode toggle */}
+          {session?.queue && session.queue.length > 1 && !session.swapRequest && (
+            <div className="mb-3">
+              <Button
+                size="sm"
+                variant={swapSelecting ? "default" : "outline"}
+                className={`w-full text-xs ${swapSelecting ? "bg-red-500 hover:bg-red-600 text-white" : "border-border/50 text-muted-foreground hover:text-foreground"}`}
+                onClick={() => setSwapSelecting((s) => !s)}
+              >
+                <Shuffle className="h-3.5 w-3.5 mr-1.5" />
+                {swapSelecting ? "Cancelar Troca" : "Troca a Fila"}
+              </Button>
+              {swapSelecting && (
+                <p className="text-[10px] text-muted-foreground text-center mt-1.5">
+                  Toque no nome de quem você quer trocar de lugar
+                </p>
+              )}
+            </div>
+          )}
           {!session?.queue || session.queue.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <ListMusic className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -391,43 +465,62 @@ export default function RemotePage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {session.queue.map((item, index) => (
-                <div key={item.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
-                  <span className="text-xs font-mono text-muted-foreground w-5 text-center">{index + 1}</span>
-                  <div className="bg-primary/15 rounded-full p-1.5 shrink-0">
-                    <UserRound className="h-3.5 w-3.5 text-primary" />
+              {session.queue.map((item, index) => {
+                const isMySong = item.addedBy === deviceId;
+                const isTargetable = swapSelecting && !isMySong && index > 0;
+                return (
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                      isTargetable
+                        ? "bg-red-500/10 border-red-500/30 cursor-pointer hover:bg-red-500/20 active:scale-[0.98]"
+                        : "bg-muted/30 border-border/20"
+                    }`}
+                    onClick={() => {
+                      if (isTargetable) handleRequestSwap(index);
+                    }}
+                  >
+                    <span className="text-xs font-mono text-muted-foreground w-5 text-center">{index + 1}</span>
+                    <div className="bg-primary/15 rounded-full p-1.5 shrink-0">
+                      <UserRound className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-bold text-xs line-clamp-1 ${isTargetable ? "text-red-400 animate-pulse" : "text-white"}`}>
+                        {item.singerName}
+                      </div>
+                      <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
+                      <div className="text-xs text-muted-foreground">{item.artista}</div>
+                    </div>
+                    {index === 0 && currentSongId === item.id && (
+                      <span className="text-[10px] bg-primary/20 text-primary rounded-full px-2 py-0.5 shrink-0">Tocando</span>
+                    )}
+                    {isMySong && !swapSelecting && (
+                      <span className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5 shrink-0">Você</span>
+                    )}
+                    {(isMySong || !item.addedBy || item.addedBy === "anon") && !swapSelecting && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-primary shrink-0"
+                          onClick={(e) => { e.stopPropagation(); setEditingItem(item); }}
+                          title="Trocar música"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
+                          onClick={(e) => { e.stopPropagation(); removeFromQueue(item.id); }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-xs text-white line-clamp-1">{item.singerName}</div>
-                    <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
-                    <div className="text-xs text-muted-foreground">{item.artista}</div>
-                  </div>
-                  {index === 0 && currentSongId === item.id && (
-                    <span className="text-[10px] bg-primary/20 text-primary rounded-full px-2 py-0.5 shrink-0">Tocando</span>
-                  )}
-                  {(item.addedBy === deviceId || !item.addedBy || item.addedBy === "anon") && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-primary shrink-0"
-                        onClick={() => setEditingItem(item)}
-                        title="Trocar música"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                        onClick={() => removeFromQueue(item.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
