@@ -59,7 +59,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
+                className="bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all"
                 onClick={() => handleStartTV("party")}
                 disabled={startingSession}
               >
@@ -68,8 +68,7 @@ export default function Home() {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                className="border-border/50 hover:bg-muted/50 transition-all"
+                className="bg-green-500 hover:bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
                 onClick={() => handleStartTV("home")}
                 disabled={startingSession}
               >
@@ -85,7 +84,7 @@ export default function Home() {
               disabled={startingSession}
             >
               <Monitor className="h-5 w-5 mr-2" />
-              {startingSession ? "Iniciando..." : "Continuar Sessão na TV"}
+              {startingSession ? "Iniciando..." : "Iniciar Sessão na TV"}
             </Button>
           )}
 
