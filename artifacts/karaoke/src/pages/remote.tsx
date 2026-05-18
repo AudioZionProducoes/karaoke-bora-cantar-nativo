@@ -11,58 +11,7 @@ import {
   Search, Mic2, ListMusic, Play, Plus, Check, UserRound,
   Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil, Shuffle
 } from "lucide-react";
-
-function AddToQueueDialog({
-  item, onConfirm, onCancel,
-}: {
-  item: { id: number; musica: string; artista: string } | null;
-  onConfirm: (name: string) => void;
-  onCancel: () => void;
-}) {
-  const [name, setName] = useState("");
-
-  useEffect(() => {
-    if (item) { setName(""); }
-  }, [item]);
-
-  if (!item) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-card border border-border/60 rounded-xl p-5 w-full max-w-sm shadow-2xl">
-        <h3 className="font-bold text-foreground mb-1">Adicionar à Fila</h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          <strong className="text-foreground">{item.musica}</strong> — {item.artista}
-        </p>
-        <div className="space-y-2 mb-4">
-          <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <UserRound className="h-3.5 w-3.5" />Nome de quem vai cantar
-          </label>
-          <Input
-            autoFocus
-            placeholder="Ex: João, Maria..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onConfirm(name.trim() || "Anônimo")}
-            className="border-border/60"
-            maxLength={40}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button variant="ghost" onClick={onCancel} className="flex-1 text-muted-foreground">
-            Cancelar
-          </Button>
-          <Button
-            onClick={() => onConfirm(name.trim() || "Anônimo")}
-            className="flex-1 bg-primary hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-1" />Adicionar
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { AddToQueueDialog } from "@/components/add-to-queue-dialog";
 
 export default function RemotePage() {
   const params = useParams();

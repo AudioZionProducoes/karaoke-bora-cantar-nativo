@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, Monitor, Settings, FolderOpen } from "lucide-react";
+import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,15 +10,18 @@ import { Layout } from "@/components/layout";
 import { useSession } from "@/hooks/use-session";
 import { useSearch } from "@/contexts/search-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
+import { toast } from "@/hooks/use-toast";
+import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 
 export default function Home() {
-  const { session, createSession, setMode } = useSession();
+  const { session, createSession, addToQueue, setMode } = useSession();
   const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
   const { searchTerm } = useSearch();
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [page, setPage] = useState(1);
   const [startingSession, setStartingSession] = useState(false);
+  const [pendingItem, setPendingItem] = useState<QueueCandidate | null>(null);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
@@ -41,8 +44,32 @@ export default function Home() {
     if (id) navigate(`/tv/${id}`);
   }
 
+  const handleAddToQueue = useCallback(async (singerName: string) => {
+    if (!pendingItem) return;
+    const ok = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
+    if (ok) {
+      toast({
+        title: "Adicionado à fila!",
+        description: `${pendingItem.musica} — ${pendingItem.artista} foi adicionada para ${singerName}.`,
+      });
+    } else {
+      toast({
+        title: "Erro ao adicionar",
+        description: "Não foi possível adicionar à fila. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+    setPendingItem(null);
+  }, [pendingItem, addToQueue]);
+
   return (
     <Layout>
+      <AddToQueueDialog
+        item={pendingItem}
+        onConfirm={handleAddToQueue}
+        onCancel={() => setPendingItem(null)}
+      />
+
       <div className="flex flex-col items-center pt-4 pb-4 max-w-3xl mx-auto text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-2 shadow-[0_0_15px_rgba(250,204,21,0.15)] dark:shadow-[0_0_15px_rgba(250,204,21,0.25)]">
           <span className="relative flex h-2 w-2">
@@ -184,13 +211,23 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="mt-4">
-                      <Link href={`/player/${musica.id}`} className="block">
+                    <div className={`mt-4 flex gap-2 ${session ? "flex-col" : ""}`}>
+                      <Link href={`/player/${musica.id}`} className={session ? "block" : "block w-full"}>
                         <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative">
                           <Play className="h-4 w-4 mr-2" />
                           Cantar Agora
                         </Button>
                       </Link>
+                      {session && (
+                        <Button
+                          variant="outline"
+                          className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/60 transition-all z-10 relative"
+                          onClick={() => setPendingItem({ id: musica.id, musica: musica.musica, artista: musica.artista })}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Adicionar à Fila
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
