@@ -60,10 +60,20 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col items-center gap-2">
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary/90 shadow-[0_0_20px_rgba(168,85,247,0.3)] dark:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
+            onClick={() => handleStartTV()}
+            disabled={startingSession}
+          >
+            <Monitor className="h-5 w-5 mr-2" />
+            {startingSession ? "Iniciando..." : session ? "Iniciar Sessão na TV" : "Nova Sessão na TV"}
+          </Button>
+
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <Button
               size="lg"
-              className="bg-red-500 hover:bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all"
+              className={`shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all ${session?.mode === "party" ? "ring-2 ring-white/50 bg-red-400" : "bg-red-500 hover:bg-red-600"} text-white`}
               onClick={() => handleStartTV("party")}
               disabled={startingSession}
             >
@@ -72,7 +82,7 @@ export default function Home() {
             </Button>
             <Button
               size="lg"
-              className="bg-green-500 hover:bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all"
+              className={`shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all ${session?.mode === "home" ? "ring-2 ring-white/50 bg-green-400" : "bg-green-500 hover:bg-green-600"} text-white`}
               onClick={() => handleStartTV("home")}
               disabled={startingSession}
             >
@@ -83,18 +93,8 @@ export default function Home() {
 
           {session && (
             <div className="text-xs text-muted-foreground text-center">
-              <p>
-                Sessão ativa:{" "}
-                <Link href={`/tv/${session.id}`} className="font-mono text-primary/80 dark:text-yellow-400/80 hover:underline">
-                  {session.id}
-                </Link>
-              </p>
-              <p className="mt-0.5">
-                Modo:{" "}
-                <span className="font-medium text-foreground">
-                  {session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}
-                </span>
-              </p>
+              <p>Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span></p>
+              <p className="mt-0.5">Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
             </div>
           )}
 
