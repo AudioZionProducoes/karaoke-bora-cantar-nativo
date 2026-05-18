@@ -215,6 +215,7 @@ export default function TVPage() {
 
   const [skipError, setSkipError] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionCountdown, setTransitionCountdown] = useState(10);
 
   const handleNext = useCallback(async () => {
     // TV acts as the owner of the current song so it can always advance
@@ -232,13 +233,24 @@ export default function TVPage() {
       }
       const data = await res.json();
       setShowScore(false);
-      // Smooth transition: show "Next Song" screen for 1.5s before starting
+      // Smooth transition: show "Next Song" screen for 10s with countdown before starting
       if (data.next) {
         setIsTransitioning(true);
+        setTransitionCountdown(10);
+        const interval = setInterval(() => {
+          setTransitionCountdown((c) => {
+            if (c <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return c - 1;
+          });
+        }, 1000);
         setTimeout(() => {
+          clearInterval(interval);
           setIsTransitioning(false);
           setVideoKey((k) => k + 1);
-        }, 5000);
+        }, 10000);
       } else {
         setVideoKey((k) => k + 1);
       }
@@ -365,7 +377,7 @@ export default function TVPage() {
               <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
               <span className="w-3 h-3 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
-            <p className="text-muted-foreground text-sm mt-4">Preparando...</p>
+            <p className="text-muted-foreground text-sm mt-4">Preparando em <span className="text-primary font-bold">{transitionCountdown}s</span>...</p>
           </div>
         ) : isLibraryConfigured && currentSongId ? (
           <iframe
@@ -423,7 +435,7 @@ export default function TVPage() {
           nextItem={nextItem}
           onNext={handleNext}
           onClose={() => setShowScore(false)}
-          autoAdvanceSeconds={10}
+          autoAdvanceSeconds={5}
         />
       )}
     </div>
