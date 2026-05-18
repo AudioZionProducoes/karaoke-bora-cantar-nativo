@@ -334,15 +334,15 @@ export default function TVPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                className={`h-7 px-2 text-[10px] rounded-full border transition-colors ${
+                className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
                   session.mode === "party"
-                    ? "bg-primary/20 border-primary/40 text-primary hover:bg-primary/30"
-                    : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10"
+                    ? "bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                    : "bg-green-500/20 border-green-500/50 text-green-400 hover:bg-green-500/30"
                 }`}
                 onClick={() => setMode(session.mode === "party" ? "home" : "party")}
                 title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
               >
-                {session.mode === "party" ? "Festa" : "Casa"}
+                {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
               </Button>
             )}
           </div>
