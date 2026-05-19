@@ -455,9 +455,11 @@ export default function TVPage() {
           </div>
         )}
 
+        {/* Logo watermark — top-right corner of video area */}
+        <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-4 right-4 z-10 h-12 w-12 object-contain rounded-lg opacity-40 hover:opacity-70 transition-opacity pointer-events-none" />
+
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
         <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
-          <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-20 w-20 object-contain rounded-xl ring-2 ring-black/20 shadow-lg" />
           <div className="bg-white rounded-md p-1">
             <QRCode value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#000000" />
           </div>
