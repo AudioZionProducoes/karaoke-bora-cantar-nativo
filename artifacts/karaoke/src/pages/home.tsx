@@ -148,7 +148,7 @@ export default function Home() {
               {startingSession ? "Iniciando..." : "Iniciar Sessão na TV Modo Festa"}
             </Button>
             <p className="text-xs text-muted-foreground text-center max-w-[220px] leading-relaxed">
-              <span className="font-medium text-foreground">Modo Festa:</span> cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.
+              <span className="font-medium text-foreground">Modo Festa:</span> Cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.
             </p>
           </div>
           <div className="flex flex-col items-center gap-2">
