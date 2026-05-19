@@ -46,6 +46,23 @@ export default function Home() {
 
   const handleAddToQueue = useCallback(async (singerName: string) => {
     if (!pendingItem) return;
+
+    // Se não houver sessão, cria automaticamente antes de adicionar
+    let activeSessionId = session?.id;
+    if (!activeSessionId) {
+      const newId = await createSession("Karaokê Bora Cantar", "home");
+      if (!newId) {
+        toast({
+          title: "Erro ao criar sessão",
+          description: "Não foi possível iniciar a sessão. Tente novamente.",
+          variant: "destructive",
+        });
+        setPendingItem(null);
+        return;
+      }
+      activeSessionId = newId;
+    }
+
     const ok = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
     if (ok) {
       toast({
@@ -60,7 +77,7 @@ export default function Home() {
       });
     }
     setPendingItem(null);
-  }, [pendingItem, addToQueue]);
+  }, [pendingItem, addToQueue, session, createSession]);
 
   return (
     <Layout>
