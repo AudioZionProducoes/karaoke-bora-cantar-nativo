@@ -491,21 +491,18 @@ export default function TVPage() {
         </div>
       </div>
 
-      {/* Search panel overlay */}
+      {/* Search dropdown — compact, below header */}
       {showSearch && (
-        <div className="absolute inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col p-4 animate-in fade-in duration-300">
-          <div className="flex items-center gap-2 mb-4">
-            <Button variant="ghost" size="sm" className="text-white/80 hover:bg-white/10 h-8 px-2" onClick={() => { setShowSearch(false); setSearchTerm(""); }}>
-              <X className="h-4 w-4" />
-            </Button>
+        <div className="absolute top-[52px] left-0 right-0 z-50 bg-[#0a0a0a]/98 border-b border-primary/30 shadow-[0_8px_32px_rgba(250,204,21,0.15)] flex flex-col max-h-[70vh]">
+          <div className="flex items-center gap-2 px-3 py-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/70" />
               <Input
                 autoFocus
                 placeholder="Buscar música, artista ou código..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/40 h-10"
+                className="pl-9 bg-black/50 border-primary/30 text-white placeholder:text-white/40 h-9 focus-visible:ring-primary/50"
               />
               {searchTerm && (
                 <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
@@ -513,27 +510,30 @@ export default function TVPage() {
                 </button>
               )}
             </div>
+            <Button variant="ghost" size="sm" className="text-white/80 hover:bg-white/10 h-8 px-2 shrink-0" onClick={() => { setShowSearch(false); setSearchTerm(""); }}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3">
             {searching && (
-              <div className="text-center py-8 text-white/50">Buscando...</div>
+              <div className="text-center py-4 text-white/50 text-sm">Buscando...</div>
             )}
-            {searchResults && searchResults.data.length === 0 && (
-              <div className="text-center py-8 text-white/50">Nenhuma música encontrada.</div>
+            {searchResults && searchResults.data.length === 0 && debouncedSearch && (
+              <div className="text-center py-4 text-white/50 text-sm">Nenhuma música encontrada.</div>
             )}
             {searchResults && searchResults.data.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="flex flex-col gap-1">
                 {searchResults.data.map((m) => (
-                  <div key={m.id} className="bg-white/5 border border-white/10 rounded-lg p-3 flex flex-col gap-2">
-                    <div>
-                      <div className="font-semibold text-sm text-white line-clamp-1">{m.musica}</div>
-                      <div className="text-xs text-white/60 line-clamp-1">{m.artista}</div>
+                  <div key={m.id} className="flex items-center gap-3 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 rounded-lg px-3 py-2 transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm text-white truncate">{m.musica}</div>
+                      <div className="text-xs text-white/60 truncate">{m.artista} <span className="text-primary/70 font-mono">#{m.id}</span></div>
                     </div>
-                    <div className="flex gap-2 mt-auto">
+                    <div className="flex gap-1.5 shrink-0">
                       <Button
                         size="sm"
-                        className="flex-1 bg-primary hover:bg-primary/90 text-xs h-8"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] h-7 px-2"
                         onClick={async () => {
                           const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
                           if (result.ok) {
@@ -548,7 +548,7 @@ export default function TVPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 border-white/20 text-white hover:bg-white/10 text-xs h-8"
+                        className="border-primary/40 text-primary hover:bg-primary/10 text-[10px] h-7 px-2"
                         onClick={async () => {
                           const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
                           if (result.ok) {
