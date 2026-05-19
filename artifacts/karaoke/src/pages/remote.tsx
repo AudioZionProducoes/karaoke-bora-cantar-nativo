@@ -16,7 +16,7 @@ import { AddToQueueDialog } from "@/components/add-to-queue-dialog";
 export default function RemotePage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap, setMode } = useSession();
+  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap } = useSession();
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +72,20 @@ export default function RemotePage() {
   const handlePlayNow = useCallback(async (id: number) => {
     await playSong(id);
   }, [playSong]);
+
+  const handleSetMode = useCallback(async (mode: "home" | "party") => {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode }),
+      });
+      if (!res.ok) return;
+    } catch {
+      // ignore
+    }
+  }, [sessionId]);
 
   const [skipError, setSkipError] = useState<string | null>(null);
 
@@ -270,7 +284,7 @@ export default function RemotePage() {
                     ? "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
                     : "bg-[hsl(142_70%_45%/0.2)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.3)]"
                 }`}
-                onClick={() => setMode(session.mode === "party" ? "home" : "party")}
+                onClick={() => handleSetMode(session.mode === "party" ? "home" : "party")}
                 title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
               >
                 {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
