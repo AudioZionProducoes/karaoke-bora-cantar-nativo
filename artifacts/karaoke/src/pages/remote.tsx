@@ -447,7 +447,7 @@ export default function RemotePage() {
                     {isMySong && !swapSelecting && (
                       <span className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5 shrink-0">Você</span>
                     )}
-                    {(isMySong || !item.addedBy || item.addedBy === "anon") && !swapSelecting && (
+                    {!swapSelecting && (
                       <>
                         <Button
                           variant="ghost"
