@@ -24,3 +24,9 @@ id = "WjCqpCgstKU0LjWDuf_gX"
 uri = "file://guides/guia-bunny-stream.pdf"
 type = "pdf"
 title = "Guia Bunny Stream - Karaoke CT"
+
+[[outputs]]
+id = "gUmlbT51sdbvamM2xw2y5"
+uri = "file://karaoke_bora_cantar_documentacao_completa.pdf"
+type = "pdf"
+title = "Karaokê Bora Cantar — Documentação Técnica Completa"
