@@ -16,7 +16,7 @@ import { AddToQueueDialog } from "@/components/add-to-queue-dialog";
 export default function RemotePage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap } = useSession();
+  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap, setMode } = useSession();
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -260,11 +260,23 @@ export default function RemotePage() {
               </div>
             </div>
           </div>
-          {currentSongId && session?.queue && (
-            <div className="flex items-center gap-2">
-              {session?.mode === "party" && (
-                <span className="text-[10px] bg-primary/20 text-primary rounded-full px-2 py-0.5">Festa</span>
-              )}
+          <div className="flex items-center gap-2">
+            {session && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
+                  session.mode === "party"
+                    ? "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
+                    : "bg-[hsl(142_70%_45%/0.2)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.3)]"
+                }`}
+                onClick={() => setMode(session.mode === "party" ? "home" : "party")}
+                title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+              >
+                {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
+              </Button>
+            )}
+            {currentSongId && session?.queue && (
               <Button
                 size="sm"
                 className="bg-primary hover:bg-primary/90 text-xs"
@@ -274,8 +286,8 @@ export default function RemotePage() {
               >
                 <Play className="h-3 w-3 mr-1" />Próxima
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Tab bar */}
