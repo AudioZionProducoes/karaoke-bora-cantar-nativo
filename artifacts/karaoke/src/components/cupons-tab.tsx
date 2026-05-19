@@ -81,6 +81,10 @@ function CountdownCell({ usedAt, durationMinutes, status }: { usedAt: string | n
     return <span className="text-muted-foreground text-xs">Aguardando resgate</span>;
   }
 
+  if (status === "used") {
+    return <span className="text-muted-foreground text-xs">-</span>;
+  }
+
   if (status === "expired" || remaining <= 0) {
     return <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20 text-xs">Expirado</Badge>;
   }
@@ -177,6 +181,8 @@ export function CuponsTab() {
 
   const statusBadge = (status: string) => {
     switch (status) {
+      case "active":
+        return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-semibold">Em Uso</Badge>;
       case "used":
         return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">Usado</Badge>;
       case "expired":

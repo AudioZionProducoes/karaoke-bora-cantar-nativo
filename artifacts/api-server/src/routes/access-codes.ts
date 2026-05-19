@@ -113,11 +113,13 @@ router.get("/access-codes", async (_req, res): Promise<void> => {
       }
 
       // Determine status:
-      // - If used: check if access expired (usedAt + durationMinutes < now)
-      // - If not used: check if code itself expired (codeExpiresAt < now)
+      // - If used and access still active: "active" (Em Uso)
+      // - If used and access expired: "used" (Usado)
+      // - If not used but code expired: "expired" (Expirado)
+      // - If not used and code not expired: "pending" (Aguardando resgate)
       let status: string;
       if (c.used) {
-        status = (c.expiresAt && c.expiresAt < now) ? "expired" : "used";
+        status = (c.expiresAt && c.expiresAt < now) ? "used" : "active";
       } else {
         status = isCodeExpired(c, now) ? "expired" : "pending";
       }
