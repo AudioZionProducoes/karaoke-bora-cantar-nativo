@@ -341,7 +341,7 @@ export default function TVPage() {
 
       {/* Top header bar — compact single row */}
       <header className="shrink-0 z-20 bg-black/70 backdrop-blur-sm border-b border-white/5">
-        <div className="flex items-center gap-1.5 px-3 py-1.5 flex-wrap">
+        <div className="flex items-center justify-between px-3 py-1.5 flex-wrap gap-2">
           {/* Left controls — minimal */}
           <div className="flex items-center gap-2 shrink-0">
             <Link href="/">
@@ -362,63 +362,93 @@ export default function TVPage() {
             </Button>
           </div>
 
-          {/* Queue — flows right after Sessão, wraps like notebook lines */}
-          {session && session.queue.length > 0 && (
-            <>
-              {/* Now playing badge */}
-              {currentSongId && currentSinger && (
-                <div className="shrink-0 flex items-center gap-2 bg-yellow-500/15 border border-yellow-400/40 rounded-lg px-3 py-1.5">
-                  <div className="bg-yellow-400/20 rounded-full p-1">
-                    <UserRound className="h-3 w-3 text-yellow-400" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora Cantando</div>
-                    <div className="text-xs font-bold text-white leading-tight">{currentSinger}</div>
-                    <div className="text-[10px] text-white/70 leading-tight">{musica?.musica ?? "Música " + currentSongId}</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Up next items */}
-              {session.queue.map((item, i) => (
-                <div
-                  key={item.id}
-                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 border ${
-                    i === 0 && currentSongId !== item.id
-                      ? "bg-primary/10 border-primary/30"
-                      : "bg-white/5 border-white/10"
-                  }`}
-                >
-                  <span className="text-[10px] font-mono text-muted-foreground shrink-0">{i + 1}</span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-bold text-white leading-tight truncate">{item.singerName}</div>
-                    <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
-                  </div>
-                  <button
-                    type="button"
-                    className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFromQueue(item.id);
-                    }}
-                    title="Remover da fila"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-            </>
-          )}
-
-          {/* Empty queue hint */}
-          {(!session?.queue || session.queue.length === 0) && (
-            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <ListMusic className="h-3 w-3" />
-              Fila vazia — escaneie o QR Code para adicionar músicas
-            </div>
-          )}
+          {/* Right controls — Scoring (top) + Mode (bottom, yellow) */}
+          <div className="flex flex-col gap-1 items-end">
+            <Button
+              size="sm"
+              variant="ghost"
+              className={`h-5 px-2 text-[10px] rounded-full border transition-colors ${
+                scoringEnabled
+                  ? "bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
+                  : "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
+              }`}
+              onClick={() => setScoringEnabled(!scoringEnabled)}
+              title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
+            >
+              {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
+            </Button>
+            {session && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-5 px-2 text-[10px] rounded-full border transition-colors bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
+                onClick={() => setMode(session.mode === "party" ? "home" : "party")}
+                title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+              >
+                {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
+              </Button>
+            )}
+          </div>
         </div>
       </header>
+
+      {/* Queue bar — below header */}
+      <div className="shrink-0 z-20 bg-black/60 border-b border-white/5 px-3 py-1.5 flex items-center gap-1.5 flex-wrap">
+        {session && session.queue.length > 0 && (
+          <>
+            {/* Now playing badge */}
+            {currentSongId && currentSinger && (
+              <div className="shrink-0 flex items-center gap-2 bg-yellow-500/15 border border-yellow-400/40 rounded-lg px-3 py-1.5">
+                <div className="bg-yellow-400/20 rounded-full p-1">
+                  <UserRound className="h-3 w-3 text-yellow-400" />
+                </div>
+                <div>
+                  <div className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora Cantando</div>
+                  <div className="text-xs font-bold text-white leading-tight">{currentSinger}</div>
+                  <div className="text-[10px] text-white/70 leading-tight">{musica?.musica ?? "Música " + currentSongId}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Up next items */}
+            {session.queue.map((item, i) => (
+              <div
+                key={item.id}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 border ${
+                  i === 0 && currentSongId !== item.id
+                    ? "bg-primary/10 border-primary/30"
+                    : "bg-white/5 border-white/10"
+                }`}
+              >
+                <span className="text-[10px] font-mono text-muted-foreground shrink-0">{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-white leading-tight truncate">{item.singerName}</div>
+                  <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
+                </div>
+                <button
+                  type="button"
+                  className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromQueue(item.id);
+                  }}
+                  title="Remover da fila"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </>
+        )}
+
+        {/* Empty queue hint */}
+        {(!session?.queue || session.queue.length === 0) && (
+          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <ListMusic className="h-3 w-3" />
+            Fila vazia — escaneie o QR Code para adicionar músicas
+          </div>
+        )}
+      </div>
 
       {/* Video Player */}
       <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
@@ -483,38 +513,6 @@ export default function TVPage() {
 
         {/* Logo watermark — top-right corner of video area */}
         <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 h-12 w-12 md:h-20 md:w-20 object-contain rounded-lg md:rounded-xl opacity-50 hover:opacity-80 transition-opacity pointer-events-none shadow-lg shadow-black/40" />
-
-        {/* Mode + Scoring buttons — stacked top-right below logo */}
-        <div className="absolute top-16 right-2 md:top-28 md:right-4 z-20 flex flex-col gap-1.5 items-end">
-          {session && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
-                session.mode === "party"
-                  ? "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
-                  : "bg-[hsl(142_70%_45%/0.25)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.35)]"
-              }`}
-              onClick={() => setMode(session.mode === "party" ? "home" : "party")}
-              title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
-            >
-              {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
-              scoringEnabled
-                ? "bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
-                : "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
-            }`}
-            onClick={() => setScoringEnabled(!scoringEnabled)}
-            title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
-          >
-            {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
-          </Button>
-        </div>
 
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
         <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
