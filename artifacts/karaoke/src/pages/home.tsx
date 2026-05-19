@@ -162,7 +162,7 @@ export default function Home() {
               {startingSession ? "Iniciando..." : "Iniciar Sessão na TV Modo Casa"}
             </Button>
             <p className="text-xs text-muted-foreground text-center max-w-[220px] leading-relaxed">
-              <span className="font-medium text-foreground">Modo Casa:</span> sem limites. Adicione quantas músicas quiser à fila.
+              <span className="font-medium text-foreground">Modo Casa:</span> Adicione quantas músicas quiser na fila, sem limites! para até 4 pessoas cantando.
             </p>
           </div>
         </div>
