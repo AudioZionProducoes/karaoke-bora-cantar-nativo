@@ -356,11 +356,11 @@ export default function TVPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-full bg-primary/15 border border-primary/40 text-primary hover:bg-primary/25 h-7 px-2 text-xs transition-colors"
+                className="rounded-full bg-primary border border-primary/80 text-black hover:bg-primary/80 h-7 px-2 text-xs transition-colors"
                 onClick={() => setShowSearch((s) => !s)}
                 title="Buscar músicas"
               >
-                <Search className="h-3 w-3 mr-1" />Buscar
+                <Search className="h-3 w-3 mr-1 text-black" />Buscar
               </Button>
             </div>
 
