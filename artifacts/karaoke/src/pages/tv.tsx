@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, Link } from "wouter";
-import { useGetMusica } from "@workspace/api-client-react";
+import { useGetMusica, useSearchMusicas } from "@workspace/api-client-react";
 import { useSession } from "@/hooks/use-session";
+import { useToast } from "@/hooks/use-toast";
 import type { SessionQueueItem } from "@/contexts/session-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import QRCode from "react-qr-code";
-import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X } from "lucide-react";
+import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus } from "lucide-react";
 
 function generateScore(singerName: string): { score: number; stars: number; label: string } {
   const score = Math.floor(Math.random() * 21) + 80;
@@ -172,7 +175,8 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, setMode } = useSession();
+  const { session, joinSession, addToQueue, playSong, setMode } = useSession();
+  const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
@@ -187,6 +191,14 @@ export default function TVPage() {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [showScore, setShowScore] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
+
+  // TV-side search panel
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 300);
+  const { data: searchResults, isLoading: searching } = useSearchMusicas({
+    q: debouncedSearch, page: 1, limit: 12,
+  });
 
   // Auto-join session on mount
   useEffect(() => {
@@ -330,6 +342,15 @@ export default function TVPage() {
             </Link>
             <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
             <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-7 px-2 text-xs"
+              onClick={() => setShowSearch((s) => !s)}
+              title="Buscar músicas"
+            >
+              <Search className="h-3 w-3 mr-1" />Buscar
+            </Button>
             {session && (
               <Button
                 size="sm"
@@ -469,6 +490,87 @@ export default function TVPage() {
           </div>
         </div>
       </div>
+
+      {/* Search panel overlay */}
+      {showSearch && (
+        <div className="absolute inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col p-4 animate-in fade-in duration-300">
+          <div className="flex items-center gap-2 mb-4">
+            <Button variant="ghost" size="sm" className="text-white/80 hover:bg-white/10 h-8 px-2" onClick={() => { setShowSearch(false); setSearchTerm(""); }}>
+              <X className="h-4 w-4" />
+            </Button>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Input
+                autoFocus
+                placeholder="Buscar música, artista ou código..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 bg-white/10 border-white/20 text-white placeholder:text-white/40 h-10"
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {searching && (
+              <div className="text-center py-8 text-white/50">Buscando...</div>
+            )}
+            {searchResults && searchResults.data.length === 0 && (
+              <div className="text-center py-8 text-white/50">Nenhuma música encontrada.</div>
+            )}
+            {searchResults && searchResults.data.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {searchResults.data.map((m) => (
+                  <div key={m.id} className="bg-white/5 border border-white/10 rounded-lg p-3 flex flex-col gap-2">
+                    <div>
+                      <div className="font-semibold text-sm text-white line-clamp-1">{m.musica}</div>
+                      <div className="text-xs text-white/60 line-clamp-1">{m.artista}</div>
+                    </div>
+                    <div className="flex gap-2 mt-auto">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-primary hover:bg-primary/90 text-xs h-8"
+                        onClick={async () => {
+                          const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
+                          if (result.ok) {
+                            toast({ title: "Adicionado à fila!", description: `${m.musica} — ${m.artista}` });
+                          } else {
+                            toast({ title: "Erro", description: result.error ?? "Não foi possível adicionar.", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />Fila
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 border-white/20 text-white hover:bg-white/10 text-xs h-8"
+                        onClick={async () => {
+                          const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
+                          if (result.ok) {
+                            await playSong(m.id);
+                            setShowSearch(false);
+                            setSearchTerm("");
+                            toast({ title: "Tocando agora!", description: `${m.musica} — ${m.artista}` });
+                          } else {
+                            toast({ title: "Erro", description: result.error ?? "Não foi possível adicionar.", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        <Play className="h-3 w-3 mr-1" />Tocar
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Score overlay */}
       {showScore && musica && currentSinger && (
