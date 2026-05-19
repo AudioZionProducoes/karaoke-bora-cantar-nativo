@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCreateAccessCodes, useListAccessCodes } from "@workspace/api-client-react";
+import { useCreateAccessCodes, useListAccessCodes, CreateAccessCodesBodyValidityType } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Copy, Check, Ticket, Clock, Calendar, Hash, Timer } from "lucide-react";
+import { Loader2, Copy, Check, Ticket, Clock, Calendar, Hash, Timer, Infinity } from "lucide-react";
 
 const DURATIONS = [
   { value: "15", label: "15 minutos" },
@@ -32,6 +32,8 @@ interface AccessCodeItem {
   redeemerEmail: string | null;
   redeemerWhatsapp: string | null;
   expiresAt: string | null;
+  validityType: string;
+  codeExpiresAt: string | null;
   createdAt: string | null;
   createdBy: number | null;
   status: string;
@@ -97,6 +99,8 @@ export function CuponsTab() {
   const [duration, setDuration] = useState("60");
   const [quantity, setQuantity] = useState(1);
   const [label, setLabel] = useState("");
+  const [validityType, setValidityType] = useState<"never" | "scheduled">("never");
+  const [codeExpiresAt, setCodeExpiresAt] = useState("");
   const [copied, setCopied] = useState<string | null>(null);
 
   const { data: codes, isLoading } = useListAccessCodes();
@@ -109,8 +113,25 @@ export function CuponsTab() {
       return;
     }
 
+    const payload: {
+      durationMinutes: number;
+      quantity: number;
+      label?: string;
+      validityType?: CreateAccessCodesBodyValidityType;
+      codeExpiresAt?: string;
+    } = {
+      durationMinutes: mins,
+      quantity,
+      label: label || undefined,
+      validityType,
+    };
+
+    if (validityType === "scheduled" && codeExpiresAt) {
+      payload.codeExpiresAt = new Date(codeExpiresAt).toISOString();
+    }
+
     createCodes.mutate(
-      { data: { durationMinutes: mins, quantity, label: label || undefined } },
+      { data: payload },
       {
         onSuccess: (result) => {
           toast({
@@ -119,6 +140,7 @@ export function CuponsTab() {
           });
           queryClient.invalidateQueries({ queryKey: ["/api/access-codes"] });
           setLabel("");
+          setCodeExpiresAt("");
         },
         onError: (error) => {
           toast({
@@ -156,13 +178,35 @@ export function CuponsTab() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "used":
-        return <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20">Em uso</Badge>;
+        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">Usado</Badge>;
       case "expired":
-        return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">Expirado</Badge>;
+        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">Expirado</Badge>;
       default:
-        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Pendente</Badge>;
+        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-semibold">Aguardando resgate</Badge>;
     }
   };
+
+  function formatValidity(code: AccessCodeItem) {
+    if (code.validityType === "never") {
+      return (
+        <div className="flex items-center gap-1 text-muted-foreground text-xs">
+          <Infinity className="h-3 w-3" />
+          <span>Nunca expira</span>
+        </div>
+      );
+    }
+    if (code.codeExpiresAt) {
+      const d = new Date(code.codeExpiresAt);
+      const isExpired = d.getTime() < Date.now();
+      return (
+        <div className={`flex items-center gap-1 text-xs ${isExpired ? "text-red-400" : "text-amber-400"}`}>
+          <Calendar className="h-3 w-3" />
+          <span>Até {d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+        </div>
+      );
+    }
+    return <span className="text-muted-foreground text-xs">-</span>;
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in-50 slide-in-from-bottom-2 duration-300">
@@ -176,7 +220,7 @@ export function CuponsTab() {
           <CardDescription>Crie códigos temporários para clientes testarem o Karaokê Bora Cantar</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
             <div className="space-y-2">
               <label className="text-sm font-medium">Duração do acesso</label>
               <Select value={duration} onValueChange={setDuration}>
@@ -216,9 +260,44 @@ export function CuponsTab() {
               />
             </div>
 
+            <div className="space-y-2 lg:col-span-2">
+              <label className="text-sm font-medium">Validade do cupom</label>
+              <div className="flex items-center gap-3">
+                <Select value={validityType} onValueChange={(v) => setValidityType(v as "never" | "scheduled")}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="never">
+                      <div className="flex items-center gap-2">
+                        <Infinity className="h-3.5 w-3.5" />
+                        Nunca expira
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="scheduled">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3.5 w-3.5" />
+                        Data programada
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {validityType === "scheduled" && (
+                  <Input
+                    type="datetime-local"
+                    value={codeExpiresAt}
+                    onChange={(e) => setCodeExpiresAt(e.target.value)}
+                    className="flex-1"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-4">
             <Button
               onClick={onGenerate}
-              disabled={createCodes.isPending}
+              disabled={createCodes.isPending || (validityType === "scheduled" && !codeExpiresAt)}
               className="bg-primary hover:bg-primary/90"
             >
               {createCodes.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -276,6 +355,7 @@ export function CuponsTab() {
                     <TableHead>Status</TableHead>
                     <TableHead>Duração</TableHead>
                     <TableHead>Identificação</TableHead>
+                    <TableHead>Validade do Cupom</TableHead>
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>WhatsApp</TableHead>
@@ -299,6 +379,9 @@ export function CuponsTab() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {c.label || "-"}
+                      </TableCell>
+                      <TableCell>
+                        {formatValidity(c)}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {c.redeemerName || "-"}

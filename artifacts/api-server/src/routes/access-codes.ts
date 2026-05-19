@@ -12,11 +12,19 @@ function addMinutes(date: Date, minutes: number): Date {
   return new Date(date.getTime() + minutes * 60_000);
 }
 
+function isCodeExpired(c: typeof accessCodesTable.$inferSelect, now: Date): boolean {
+  // Code expired if it has a scheduled expiry and that date has passed
+  if (c.validityType === "scheduled" && c.codeExpiresAt && c.codeExpiresAt < now) {
+    return true;
+  }
+  return false;
+}
+
 const router: IRouter = Router();
 
 // POST /access-codes — generate new code(s) (admin only)
 router.post("/access-codes", async (req, res): Promise<void> => {
-  const { durationMinutes, quantity, label } = req.body ?? {};
+  const { durationMinutes, quantity, label, validityType, codeExpiresAt } = req.body ?? {};
 
   if (!durationMinutes || typeof durationMinutes !== "number" || durationMinutes <= 0) {
     res.status(400).json({ error: "durationMinutes inválido" });
@@ -25,6 +33,16 @@ router.post("/access-codes", async (req, res): Promise<void> => {
 
   const qty = typeof quantity === "number" && quantity > 0 ? Math.min(quantity, 50) : 1;
   const createdBy = req.body?.createdBy ?? null;
+
+  // Validate validity type
+  const vType = validityType === "scheduled" ? "scheduled" : "never";
+  let vExpiresAt: Date | null = null;
+  if (vType === "scheduled" && codeExpiresAt) {
+    const parsed = new Date(codeExpiresAt);
+    if (!isNaN(parsed.getTime())) {
+      vExpiresAt = parsed;
+    }
+  }
 
   const results: { code: string; durationMinutes: number; label: string | null; expiresAt: string | null }[] = [];
 
@@ -55,6 +73,8 @@ router.post("/access-codes", async (req, res): Promise<void> => {
         durationMinutes,
         label: typeof label === "string" && label.trim() ? label.trim() : null,
         createdBy,
+        validityType: vType,
+        codeExpiresAt: vExpiresAt,
       })
       .returning();
 
@@ -92,6 +112,16 @@ router.get("/access-codes", async (_req, res): Promise<void> => {
         remainingMinutes = msRemaining > 0 ? Math.ceil(msRemaining / 60_000) : 0;
       }
 
+      // Determine status:
+      // - If used: check if access expired (usedAt + durationMinutes < now)
+      // - If not used: check if code itself expired (codeExpiresAt < now)
+      let status: string;
+      if (c.used) {
+        status = (c.expiresAt && c.expiresAt < now) ? "expired" : "used";
+      } else {
+        status = isCodeExpired(c, now) ? "expired" : "pending";
+      }
+
       return {
         id: c.id,
         code: c.code,
@@ -104,13 +134,11 @@ router.get("/access-codes", async (_req, res): Promise<void> => {
         redeemerEmail: c.redeemerEmail,
         redeemerWhatsapp: c.redeemerWhatsapp,
         expiresAt: c.expiresAt?.toISOString() ?? null,
+        validityType: c.validityType,
+        codeExpiresAt: c.codeExpiresAt?.toISOString() ?? null,
         createdAt: c.createdAt?.toISOString() ?? null,
         createdBy: c.createdBy,
-        status: c.used
-          ? c.expiresAt && c.expiresAt < now
-            ? "expired"
-            : "used"
-          : "pending",
+        status,
         remainingMinutes,
       };
     }),
@@ -136,12 +164,19 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
     return;
   }
 
+  const now = new Date();
+
+  // Check if the code itself has expired (before redeem)
+  if (isCodeExpired(code, now)) {
+    res.status(410).json({ error: "Código expirado. O prazo de validade foi ultrapassado." });
+    return;
+  }
+
   if (code.used) {
     res.status(409).json({ error: "Código já utilizado" });
     return;
   }
 
-  const now = new Date();
   const usedBy = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : null;
   const redeemerName = typeof req.body?.name === "string" ? req.body.name.trim() : null;
   const redeemerEmail = usedBy;
@@ -191,6 +226,12 @@ router.get("/access-codes/validate", async (req, res): Promise<void> => {
   }
 
   const now = new Date();
+
+  // Check if code itself expired before even being redeemed
+  if (isCodeExpired(code, now)) {
+    res.json({ valid: false, error: "Código expirado. O prazo de validade foi ultrapassado." });
+    return;
+  }
 
   if (!code.used) {
     res.json({ valid: false, error: "Código ainda não foi resgatado" });

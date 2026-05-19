@@ -455,6 +455,14 @@ paths:
                 createdBy:
                   type: integer
                   description: Admin user ID
+                validityType:
+                  type: string
+                  enum: [never, scheduled]
+                  default: never
+                  description: When the code itself expires (before redeem)
+                codeExpiresAt:
+                  type: string
+                  description: ISO datetime when the code expires (only for scheduled validity)
       responses:
         "201":
           description: Codes generated
@@ -747,6 +755,13 @@ components:
           type: ["string", "null"]
         expiresAt:
           type: ["string", "null"]
+        validityType:
+          type: string
+          enum: [never, scheduled]
+          description: When the code itself expires (before redeem)
+        codeExpiresAt:
+          type: ["string", "null"]
+          description: ISO datetime when the code expires (only for scheduled validity)
         createdAt:
           type: ["string", "null"]
         createdBy:

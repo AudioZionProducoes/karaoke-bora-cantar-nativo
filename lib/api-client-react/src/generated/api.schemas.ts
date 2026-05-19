@@ -89,6 +89,17 @@ export interface WebhookResult {
   message: string;
 }
 
+/**
+ * When the code itself expires (before redeem)
+ */
+export type AccessCodeValidityType = typeof AccessCodeValidityType[keyof typeof AccessCodeValidityType];
+
+
+export const AccessCodeValidityType = {
+  never: 'never',
+  scheduled: 'scheduled',
+} as const;
+
 export type AccessCodeStatus = typeof AccessCodeStatus[keyof typeof AccessCodeStatus];
 
 
@@ -117,6 +128,13 @@ export interface AccessCode {
   redeemerWhatsapp?: string | null;
   /** @nullable */
   expiresAt?: string | null;
+  /** When the code itself expires (before redeem) */
+  validityType?: AccessCodeValidityType;
+  /**
+     * ISO datetime when the code expires (only for scheduled validity)
+     * @nullable
+     */
+  codeExpiresAt?: string | null;
   /** @nullable */
   createdAt?: string | null;
   /** @nullable */
@@ -190,6 +208,17 @@ export type CreateUserPassword200 = {
   message?: string;
 };
 
+/**
+ * When the code itself expires (before redeem)
+ */
+export type CreateAccessCodesBodyValidityType = typeof CreateAccessCodesBodyValidityType[keyof typeof CreateAccessCodesBodyValidityType];
+
+
+export const CreateAccessCodesBodyValidityType = {
+  never: 'never',
+  scheduled: 'scheduled',
+} as const;
+
 export type CreateAccessCodesBody = {
   /** Access duration in minutes */
   durationMinutes: number;
@@ -199,6 +228,10 @@ export type CreateAccessCodesBody = {
   label?: string;
   /** Admin user ID */
   createdBy?: number;
+  /** When the code itself expires (before redeem) */
+  validityType?: CreateAccessCodesBodyValidityType;
+  /** ISO datetime when the code expires (only for scheduled validity) */
+  codeExpiresAt?: string;
 };
 
 export type CreateAccessCodes201CodesItem = {

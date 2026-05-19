@@ -270,6 +270,8 @@ export const ListAccessCodesResponseItem = zod.object({
   "redeemerEmail": zod.string().nullish(),
   "redeemerWhatsapp": zod.string().nullish(),
   "expiresAt": zod.string().nullish(),
+  "validityType": zod.enum(['never', 'scheduled']).optional().describe('When the code itself expires (before redeem)'),
+  "codeExpiresAt": zod.string().nullish().describe('ISO datetime when the code expires (only for scheduled validity)'),
   "createdAt": zod.string().nullish(),
   "createdBy": zod.number().nullish(),
   "status": zod.enum(['pending', 'used', 'expired']),
@@ -283,12 +285,15 @@ export const ListAccessCodesResponse = zod.array(ListAccessCodesResponseItem)
  * @summary Generate access codes
  */
 export const createAccessCodesBodyQuantityDefault = 1;
+export const createAccessCodesBodyValidityTypeDefault = `never`;
 
 export const CreateAccessCodesBody = zod.object({
   "durationMinutes": zod.number().describe('Access duration in minutes'),
   "quantity": zod.number().default(createAccessCodesBodyQuantityDefault).describe('Number of codes to generate (max 50)'),
   "label": zod.string().optional().describe('Optional label\/description'),
-  "createdBy": zod.number().optional().describe('Admin user ID')
+  "createdBy": zod.number().optional().describe('Admin user ID'),
+  "validityType": zod.enum(['never', 'scheduled']).default(createAccessCodesBodyValidityTypeDefault).describe('When the code itself expires (before redeem)'),
+  "codeExpiresAt": zod.string().optional().describe('ISO datetime when the code expires (only for scheduled validity)')
 })
 
 
