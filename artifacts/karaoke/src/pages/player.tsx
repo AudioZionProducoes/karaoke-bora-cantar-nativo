@@ -321,10 +321,10 @@ export default function Player() {
 
       {/* Warning banner when temporary access is about to expire */}
       {hasAccess && remainingMinutes <= 10 && (
-        <div className="absolute top-14 left-0 right-0 bg-amber-500/10 border-b border-amber-500/30 px-3 py-1.5 z-[100]">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+        <div className="absolute top-14 left-0 right-0 bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 z-[100]">
+          <div className="container mx-auto max-w-7xl flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
               <span className="text-amber-400 font-medium">
                 Seu tempo está acabando! Faltam apenas {remainingMinutes} minutos.
               </span>
@@ -332,10 +332,10 @@ export default function Player() {
             <Link href="/planos">
               <Button
                 size="sm"
-                className="h-6 text-[10px] bg-amber-500 hover:bg-amber-500/90 text-black font-bold shrink-0 px-2"
+                className="h-7 text-xs bg-amber-500 hover:bg-amber-500/90 text-black font-bold shrink-0"
               >
                 Assinar plano
-                <ArrowRight className="h-2.5 w-2.5 ml-1" />
+                <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </Link>
           </div>
