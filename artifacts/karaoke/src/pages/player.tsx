@@ -18,6 +18,33 @@ function randomScore() {
   return Math.floor(Math.random() * 21) + 80;
 }
 
+/* Banner shown when temporary access is about to expire */
+function TempAccessBanner() {
+  const { hasAccess, remainingMinutes } = useTemporaryAccess();
+  if (!hasAccess || remainingMinutes > 10) return null;
+  return (
+    <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 z-[100] relative">
+      <div className="container mx-auto max-w-7xl flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm">
+          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+          <span className="text-amber-400 font-medium">
+            Seu tempo está acabando! Faltam apenas {remainingMinutes} minutos.
+          </span>
+        </div>
+        <Link href="/planos">
+          <Button
+            size="sm"
+            className="h-7 text-xs bg-amber-500 hover:bg-amber-500/90 text-black font-bold shrink-0"
+          >
+            Assinar plano
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 /* Persistent search bar in player header — always visible */
 function PersistentSearchBar() {
   const [, navigate] = useLocation();
@@ -207,8 +234,6 @@ function ScoreScreen({
 export default function Player() {
   const params = useParams();
   const id = Number(params.id);
-  const { hasAccess, remainingMinutes } = useTemporaryAccess();
-
   const { data: musica, isLoading, isError } = useGetMusica(id, {
     query: { enabled: !!id, queryKey: getGetMusicaQueryKey(id) }
   });
@@ -255,6 +280,7 @@ export default function Player() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <TempAccessBanner />
         <div className="p-4 flex items-center justify-between z-10">
           <Skeleton className="h-10 w-24" />
           <div className="flex-1 flex justify-center"><Skeleton className="h-8 w-64" /></div>
@@ -273,6 +299,7 @@ export default function Player() {
   if (isError || !musica) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center text-center p-4">
+        <TempAccessBanner />
         <AlertCircle className="h-16 w-16 text-destructive mb-4" />
         <h1 className="text-2xl font-bold mb-2">Música não encontrada</h1>
         <p className="text-muted-foreground mb-8">A música que você tentou acessar não existe ou ocorreu um erro.</p>
@@ -319,28 +346,7 @@ export default function Player() {
         </div>
       </header>
 
-      {/* Warning banner when temporary access is about to expire */}
-      {hasAccess && remainingMinutes <= 10 && (
-        <div className="absolute top-14 left-0 right-0 bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 z-[100]">
-          <div className="container mx-auto max-w-7xl flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
-              <span className="text-amber-400 font-medium">
-                Seu tempo está acabando! Faltam apenas {remainingMinutes} minutos.
-              </span>
-            </div>
-            <Link href="/planos">
-              <Button
-                size="sm"
-                className="h-7 text-xs bg-amber-500 hover:bg-amber-500/90 text-black font-bold shrink-0"
-              >
-                Assinar plano
-                <ArrowRight className="h-3 w-3 ml-1" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
+      <TempAccessBanner />
 
       {/* Video */}
       <div className="flex h-screen pt-14">
