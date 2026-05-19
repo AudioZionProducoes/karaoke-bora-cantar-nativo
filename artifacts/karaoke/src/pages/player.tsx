@@ -23,7 +23,7 @@ function TempAccessBanner() {
   const { hasAccess, remainingMinutes } = useTemporaryAccess();
   if (!hasAccess || remainingMinutes > 10) return null;
   return (
-    <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 z-[100] relative">
+    <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2">
       <div className="container mx-auto max-w-7xl flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm">
           <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
@@ -309,11 +309,9 @@ export default function Player() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col relative overflow-hidden selection:bg-primary/30">
-      <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
-
-      {/* Header — always on top of video */}
-      <header className="p-3 flex items-center gap-3 z-[100] absolute top-0 left-0 right-0 bg-black/70 backdrop-blur-md border-b border-white/10">
+    <div className="h-screen bg-black text-white flex flex-col overflow-hidden selection:bg-primary/30">
+      {/* Header — always on top */}
+      <header className="p-3 flex items-center gap-3 z-[100] bg-black/70 backdrop-blur-md border-b border-white/10 shrink-0">
         {/* Left: Back + Title */}
         <div className="flex items-center gap-3 shrink-0">
           <Link href="/">
@@ -348,16 +346,15 @@ export default function Player() {
 
       <TempAccessBanner />
 
-      {/* Video */}
-      <div className="flex h-screen pt-14">
-        <main className="flex-1 relative flex items-center justify-center bg-black min-w-0">
-          {isLibraryConfigured ? (
-            <iframe
-              src={`https://iframe.mediadelivery.net/embed/${libraryId}/${musica.id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
-              className="absolute inset-0 w-full h-full border-0 z-10"
-              allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-              allowFullScreen
-            />
+      {/* Video — fills remaining height */}
+      <div className="flex-1 relative min-h-0">
+        {isLibraryConfigured ? (
+          <iframe
+            src={`https://iframe.mediadelivery.net/embed/${libraryId}/${musica.id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
+            className="absolute inset-0 w-full h-full border-0 z-10"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowFullScreen
+          />
           ) : localVideoUrl ? (
             <video
               key={`${localVideoUrl}-${videoKey}`}
@@ -410,7 +407,6 @@ export default function Player() {
               </div>
             </div>
           )}
-        </main>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent pointer-events-none z-10" />
