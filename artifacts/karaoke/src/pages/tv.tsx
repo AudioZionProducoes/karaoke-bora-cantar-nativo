@@ -360,34 +360,6 @@ export default function TVPage() {
             >
               <Search className="h-3 w-3 mr-1" />Buscar
             </Button>
-            {session && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
-                  session.mode === "party"
-                    ? "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
-                    : "bg-[hsl(142_70%_45%/0.2)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.3)]"
-                }`}
-                onClick={() => setMode(session.mode === "party" ? "home" : "party")}
-                title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
-              >
-                {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
-              </Button>
-            )}
-            <Button
-              size="sm"
-              variant="ghost"
-              className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
-                scoringEnabled
-                  ? "bg-[hsl(48_90%_50%/0.2)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.3)]"
-                  : "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
-              }`}
-              onClick={() => setScoringEnabled(!scoringEnabled)}
-              title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
-            >
-              {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
-            </Button>
           </div>
 
           {/* Queue — flows right after Sessão, wraps like notebook lines */}
@@ -511,6 +483,38 @@ export default function TVPage() {
 
         {/* Logo watermark — top-right corner of video area */}
         <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 h-12 w-12 md:h-20 md:w-20 object-contain rounded-lg md:rounded-xl opacity-50 hover:opacity-80 transition-opacity pointer-events-none shadow-lg shadow-black/40" />
+
+        {/* Mode + Scoring buttons — stacked top-right below logo */}
+        <div className="absolute top-16 right-2 md:top-28 md:right-4 z-20 flex flex-col gap-1.5 items-end">
+          {session && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
+                session.mode === "party"
+                  ? "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
+                  : "bg-[hsl(142_70%_45%/0.25)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.35)]"
+              }`}
+              onClick={() => setMode(session.mode === "party" ? "home" : "party")}
+              title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+            >
+              {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
+              scoringEnabled
+                ? "bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
+                : "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
+            }`}
+            onClick={() => setScoringEnabled(!scoringEnabled)}
+            title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
+          >
+            {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
+          </Button>
+        </div>
 
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
         <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">
