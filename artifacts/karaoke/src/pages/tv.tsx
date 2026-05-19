@@ -609,10 +609,20 @@ export default function TVPage() {
                       >
                         <Plus className="h-3 w-3 mr-1" />Fila
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-primary/40 text-primary hover:bg-primary/10 text-[10px] h-7 px-2"
+                      <div
+                        role="button"
+                        className="cursor-pointer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          borderRadius: '6px',
+                          backgroundColor: '#facc15',
+                          height: '28px',
+                          padding: '0 8px',
+                          fontSize: '10px',
+                          fontWeight: 500,
+                          gap: '4px'
+                        }}
                         onClick={async () => {
                           const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
                           if (result.ok) {
@@ -625,8 +635,9 @@ export default function TVPage() {
                           }
                         }}
                       >
-                        <Play className="h-3 w-3 mr-1" />Tocar
-                      </Button>
+                        <Play style={{ height: '12px', width: '12px', color: '#000000', flexShrink: 0 }} />
+                        <span style={{ color: '#000000' }}>Tocar</span>
+                      </div>
                     </div>
                   </div>
                 ))}

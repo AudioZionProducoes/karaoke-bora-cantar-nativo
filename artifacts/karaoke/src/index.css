@@ -337,15 +337,3 @@
   }
 }
 
-/* TV search button - force black text/icon on yellow background */
-.tv-search-btn {
-  position: relative;
-  z-index: 1;
-  color: #000000 !important;
-}
-.tv-search-btn svg,
-.tv-search-btn span {
-  position: relative;
-  z-index: 10;
-  color: #000000 !important;
-}
