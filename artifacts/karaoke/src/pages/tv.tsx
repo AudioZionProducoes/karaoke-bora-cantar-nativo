@@ -352,7 +352,7 @@ export default function TVPage() {
                 </Button>
               </Link>
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
-              <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
+              <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary" style={{ color: '#facc15' }}>{sessionId}</span></div>
               <div
                 role="button"
                 className="cursor-pointer"
