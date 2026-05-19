@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, UserRound, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export interface QueueCandidate {
   id: number;
@@ -18,95 +17,98 @@ interface AddToQueueDialogProps {
 export function AddToQueueDialog({ item, onConfirm, onCancel }: AddToQueueDialogProps) {
   const [name, setName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
 
+  // Reset name when item opens
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    if (item) {
-      setName("");
-      // Delay focus to let the panel animate in and avoid keyboard issues
-      timeoutId = setTimeout(() => {
-        inputRef.current?.focus();
-      }, 200);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [item]);
+    if (!item) return;
+    setName("");
+    const t = setTimeout(() => {
+      const el = inputRef.current;
+      if (el) {
+        el.focus();
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 100);
+    return () => clearTimeout(t);
+  }, [item?.id]);
 
-  function handleConfirm() {
+  const handleConfirm = useCallback(() => {
     onConfirm(name.trim() || "Anônimo");
-  }
+  }, [name, onConfirm]);
 
   if (!item) return null;
 
   return (
     <div
-      ref={overlayRef}
       className="fixed inset-0 z-[100] flex flex-col justify-end"
       onClick={(e) => {
-        if (e.target === overlayRef.current) onCancel();
+        if (e.target === e.currentTarget) onCancel();
       }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/70" />
 
-      {/* Bottom sheet panel */}
-      <div className="relative z-10 bg-[#0a0a0a] border-t border-primary/30 rounded-t-2xl shadow-[0_-8px_32px_rgba(250,204,21,0.12)] w-full max-w-lg mx-auto animate-in slide-in-from-bottom duration-300">
-        {/* Drag handle */}
+      {/* Bottom sheet */}
+      <div
+        className="relative z-10 bg-[#111] border-t border-yellow-500/40 rounded-t-2xl w-full max-w-lg mx-auto"
+        style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
+      >
+        {/* Handle bar */}
         <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div className="w-10 h-1 rounded-full bg-white/25" />
         </div>
 
-        <div className="px-4 pb-6 pt-2 space-y-4">
+        <div className="px-4 pb-4 pt-1 space-y-3">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-white">Adicionar à Fila</h3>
-              <p className="text-xs text-white/60 mt-0.5">
-                <strong className="text-white">{item.musica}</strong> — {item.artista}
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-white">Adicionar à Fila</h3>
+              <p className="text-xs text-white/50 mt-0.5 truncate">
+                <span className="text-white/70">{item.musica}</span> — {item.artista}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-white/60 hover:text-white hover:bg-white/10 shrink-0"
+            <button
+              type="button"
+              className="shrink-0 h-8 w-8 flex items-center justify-center rounded-full bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-colors"
               onClick={onCancel}
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
 
-          {/* Name input */}
-          <div className="space-y-2">
-            <label className="text-xs text-white/50 flex items-center gap-1.5">
-              <UserRound className="h-3.5 w-3.5" />
+          {/* Input field — large, touch-friendly */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-white/40 flex items-center gap-1">
+              <UserRound className="h-3 w-3" />
               Nome de quem vai cantar
             </label>
-            <Input
+            <input
               ref={inputRef}
+              type="text"
+              inputMode="text"
               placeholder="Ex: João, Maria..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleConfirm()}
+              onKeyDown={(e) => { if (e.key === "Enter") handleConfirm(); }}
               maxLength={40}
-              className="h-12 text-base bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-primary/50"
-              style={{ touchAction: "manipulation" }}
+              autoComplete="off"
+              autoCorrect="off"
+              className="w-full h-12 px-3 rounded-lg bg-white/8 border border-white/15 text-white text-base placeholder:text-white/25 focus:outline-none focus:border-yellow-500/60 focus:ring-1 focus:ring-yellow-500/30 transition-colors"
             />
           </div>
 
-          {/* Buttons */}
+          {/* Buttons — full width, large touch targets */}
           <div className="flex gap-2 pt-1">
             <Button
               variant="ghost"
               onClick={onCancel}
-              className="flex-1 text-white/60 hover:text-white hover:bg-white/10 h-12 text-sm"
+              className="flex-1 h-12 text-sm text-white/50 hover:text-white hover:bg-white/10"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleConfirm}
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-sm"
+              className="flex-1 h-12 text-sm bg-[hsl(55,100%,50%)] hover:bg-[hsl(55,100%,45%)] text-black font-semibold"
             >
               <Plus className="h-4 w-4 mr-1" />
               Adicionar
