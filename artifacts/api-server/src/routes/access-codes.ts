@@ -31,7 +31,7 @@ router.post("/access-codes", async (req, res): Promise<void> => {
     return;
   }
 
-  const qty = typeof quantity === "number" && quantity > 0 ? Math.min(quantity, 50) : 1;
+  const qty = typeof quantity === "number" && quantity > 0 ? quantity : 1;
   const createdBy = req.body?.createdBy ?? null;
 
   // Validate validity type

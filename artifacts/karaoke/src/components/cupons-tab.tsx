@@ -278,9 +278,8 @@ export function CuponsTab() {
               <Input
                 type="number"
                 min={1}
-                max={50}
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
               />
             </div>
 

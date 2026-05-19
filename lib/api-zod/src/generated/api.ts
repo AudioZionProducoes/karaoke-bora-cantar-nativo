@@ -290,7 +290,7 @@ export const createAccessCodesBodyValidityTypeDefault = `never`;
 
 export const CreateAccessCodesBody = zod.object({
   "durationMinutes": zod.number().describe('Access duration in minutes'),
-  "quantity": zod.number().default(createAccessCodesBodyQuantityDefault).describe('Number of codes to generate (max 50)'),
+  "quantity": zod.number().default(createAccessCodesBodyQuantityDefault).describe('Number of codes to generate'),
   "label": zod.string().optional().describe('Optional label\/description'),
   "createdBy": zod.number().optional().describe('Admin user ID'),
   "validityType": zod.enum(['never', 'scheduled']).default(createAccessCodesBodyValidityTypeDefault).describe('When the code itself expires (before redeem)'),

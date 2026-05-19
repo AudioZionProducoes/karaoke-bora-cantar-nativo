@@ -225,7 +225,7 @@ export const CreateAccessCodesBodyValidityType = {
 export type CreateAccessCodesBody = {
   /** Access duration in minutes */
   durationMinutes: number;
-  /** Number of codes to generate (max 50) */
+  /** Number of codes to generate */
   quantity?: number;
   /** Optional label/description */
   label?: string;
