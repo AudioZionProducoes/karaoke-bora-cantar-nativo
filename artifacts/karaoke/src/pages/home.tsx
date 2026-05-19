@@ -175,8 +175,8 @@ export default function Home() {
                 variant="ghost"
                 className={`h-6 px-2.5 text-[10px] rounded-full border transition-colors mt-1 ${
                   scoringEnabled
-                    ? "bg-primary/20 border-primary/50 text-primary hover:bg-primary/30"
-                    : "bg-white/5 border-white/20 text-white/60 hover:bg-white/10"
+                    ? "bg-neutral-950 border-yellow-500/60 text-yellow-400 hover:bg-neutral-900 dark:bg-primary/20 dark:border-primary/50 dark:text-primary dark:hover:bg-primary/30"
+                    : "bg-red-50 border-red-400 text-red-700 hover:bg-red-100 dark:bg-white/5 dark:border-white/20 dark:text-white/60 dark:hover:bg-white/10"
                 }`}
                 onClick={() => setScoringEnabled(!scoringEnabled)}
                 title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
