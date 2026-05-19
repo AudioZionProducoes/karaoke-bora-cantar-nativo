@@ -5,10 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCreateAccessCodes, useListAccessCodes, CreateAccessCodesBodyValidityType } from "@workspace/api-client-react";
+import { useCreateAccessCodes, useListAccessCodes, useDeleteAccessCode, CreateAccessCodesBodyValidityType } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Copy, Check, Ticket, Clock, Calendar, Hash, Timer, Infinity } from "lucide-react";
+import { Loader2, Copy, Check, Ticket, Clock, Calendar, Hash, Timer, Infinity, Trash2 } from "lucide-react";
 
 const DURATIONS = [
   { value: "15", label: "15 minutos" },
@@ -109,6 +109,27 @@ export function CuponsTab() {
 
   const { data: codes, isLoading } = useListAccessCodes();
   const createCodes = useCreateAccessCodes();
+  const deleteCode = useDeleteAccessCode();
+
+  function onDelete(id: number) {
+    if (!confirm("Tem certeza que deseja excluir este cupom?")) return;
+    deleteCode.mutate(
+      { id },
+      {
+        onSuccess: () => {
+          toast({ title: "Cupom excluído com sucesso!" });
+          queryClient.invalidateQueries({ queryKey: ["/api/access-codes"] });
+        },
+        onError: (error) => {
+          toast({
+            title: "Erro ao excluir cupom",
+            description: (error as { message?: string }).message || "Tente novamente.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
+  }
 
   function onGenerate() {
     const mins = parseInt(duration, 10);
@@ -192,7 +213,7 @@ export function CuponsTab() {
       case "used":
         return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">Usado</Badge>;
       case "expired":
-        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">Expirado</Badge>;
+        return <Badge variant="outline" className="bg-gray-500/10 text-gray-400 border-gray-500/20 font-semibold">Expirado</Badge>;
       default:
         return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-semibold">Aguardando resgate</Badge>;
     }
@@ -414,17 +435,28 @@ export function CuponsTab() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        {c.status === "pending" && (
+                        <div className="flex items-center justify-end gap-1">
+                          {c.status === "pending" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => copyCode(c.code)}
+                            >
+                              {copied === c.code ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                              Copiar
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => copyCode(c.code)}
+                            className="h-7 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            onClick={() => onDelete(c.id)}
+                            disabled={deleteCode.isPending}
                           >
-                            {copied === c.code ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                            Copiar
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
-                        )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

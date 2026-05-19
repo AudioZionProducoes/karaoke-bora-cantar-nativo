@@ -17,6 +17,7 @@ export const accessCodesTable = pgTable("access_codes", {
   // Cupom validity: when the code itself becomes unusable (before redeem)
   validityType: text("validity_type").notNull().default("never"), // 'never' | 'scheduled'
   codeExpiresAt: timestamp("code_expires_at", { withTimezone: true }),
+  marketingConsent: boolean("marketing_consent").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   createdBy: integer("created_by"), // admin user id
 });

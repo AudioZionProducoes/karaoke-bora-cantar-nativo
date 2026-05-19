@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [cEmail, setCEmail] = useState("");
   const [cWhatsapp, setCWhatsapp] = useState("");
   const [cCode, setCCode] = useState("");
+  const [cConsent, setCConsent] = useState(false);
 
   const { login, loading, error, user } = useAuth();
   const { redeemCode, hasAccess } = useTemporaryAccess();
@@ -42,7 +43,7 @@ export default function LoginPage() {
       return;
     }
     setRedeeming(true);
-    const result = await redeemCode(cCode.trim(), cName.trim(), cEmail.trim(), cWhatsapp.trim());
+    const result = await redeemCode(cCode.trim(), cName.trim(), cEmail.trim(), cWhatsapp.trim(), cConsent);
     setRedeeming(false);
     if (result.success) {
       toast({ title: "Cupom ativado!", description: result.message || "Acesso liberado com sucesso." });
@@ -52,7 +53,7 @@ export default function LoginPage() {
     }
   }
 
-  const canRedeem = cName.trim() && cEmail.trim() && cWhatsapp.trim() && cCode.trim().length >= 4;
+  const canRedeem = cName.trim() && cEmail.trim() && cWhatsapp.trim() && cCode.trim().length >= 4 && cConsent;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -177,6 +178,18 @@ export default function LoginPage() {
                     maxLength={8}
                   />
                 </div>
+
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={cConsent}
+                    onChange={(e) => setCConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-border bg-background text-primary focus:ring-primary"
+                  />
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    Aceito receber promoções pelo meu e-mail e WhatsApp. <span className="text-red-400">*</span>
+                  </span>
+                </label>
               </div>
 
               <Button

@@ -1397,6 +1397,77 @@ export const useRedeemAccessCode = <TError = ErrorType<ErrorResponse>,
       return useMutation(getRedeemAccessCodeMutationOptions(options));
     }
 
+export const getDeleteAccessCodeUrl = (id: number,) => {
+
+
+
+
+  return `/api/access-codes/${id}`
+}
+
+/**
+ * Deletes an access code by ID
+ * @summary Delete access code
+ */
+export const deleteAccessCode = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteAccessCodeUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteAccessCodeMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAccessCode>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAccessCode>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteAccessCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAccessCode>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAccessCode(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAccessCodeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAccessCode>>>
+
+    export type DeleteAccessCodeMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Delete access code
+ */
+export const useDeleteAccessCode = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAccessCode>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAccessCode>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteAccessCodeMutationOptions(options));
+    }
+
 export const getValidateAccessCodeUrl = (params: ValidateAccessCodeParams,) => {
   const normalizedParams = new URLSearchParams();
 

@@ -105,6 +105,7 @@ export type AccessCodeStatus = typeof AccessCodeStatus[keyof typeof AccessCodeSt
 
 export const AccessCodeStatus = {
   pending: 'pending',
+  active: 'active',
   used: 'used',
   expired: 'expired',
 } as const;
@@ -139,6 +140,8 @@ export interface AccessCode {
   createdAt?: string | null;
   /** @nullable */
   createdBy?: number | null;
+  /** @nullable */
+  marketingConsent?: boolean | null;
   status: AccessCodeStatus;
   /**
      * Minutes left for used (not expired) codes. Null for pending.
@@ -253,6 +256,8 @@ export type RedeemAccessCodeBody = {
   email: string;
   /** WhatsApp number for contact */
   whatsapp: string;
+  /** Consent to receive promotions via email and WhatsApp (mandatory) */
+  marketingConsent?: boolean;
 };
 
 export type RedeemAccessCode200 = {

@@ -274,7 +274,8 @@ export const ListAccessCodesResponseItem = zod.object({
   "codeExpiresAt": zod.string().nullish().describe('ISO datetime when the code expires (only for scheduled validity)'),
   "createdAt": zod.string().nullish(),
   "createdBy": zod.number().nullish(),
-  "status": zod.enum(['pending', 'used', 'expired']),
+  "marketingConsent": zod.boolean().nullish(),
+  "status": zod.enum(['pending', 'active', 'used', 'expired']),
   "remainingMinutes": zod.number().nullish().describe('Minutes left for used (not expired) codes. Null for pending.')
 })
 export const ListAccessCodesResponse = zod.array(ListAccessCodesResponseItem)
@@ -308,7 +309,8 @@ export const RedeemAccessCodeParams = zod.object({
 export const RedeemAccessCodeBody = zod.object({
   "name": zod.string().describe('Full name of the person redeeming'),
   "email": zod.string().describe('Email address for contact'),
-  "whatsapp": zod.string().describe('WhatsApp number for contact')
+  "whatsapp": zod.string().describe('WhatsApp number for contact'),
+  "marketingConsent": zod.boolean().optional().describe('Consent to receive promotions via email and WhatsApp (mandatory)')
 })
 
 export const RedeemAccessCodeResponse = zod.object({
@@ -316,6 +318,15 @@ export const RedeemAccessCodeResponse = zod.object({
   "message": zod.string().optional(),
   "durationMinutes": zod.number().optional(),
   "accessExpiresAt": zod.string().optional()
+})
+
+
+/**
+ * Deletes an access code by ID
+ * @summary Delete access code
+ */
+export const DeleteAccessCodeParams = zod.object({
+  "id": zod.coerce.number()
 })
 
 

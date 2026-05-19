@@ -517,6 +517,9 @@ paths:
                 whatsapp:
                   type: string
                   description: WhatsApp number for contact
+                marketingConsent:
+                  type: boolean
+                  description: Consent to receive promotions via email and WhatsApp (mandatory)
       responses:
         "200":
           description: Code redeemed successfully
@@ -533,6 +536,12 @@ paths:
                     type: integer
                   accessExpiresAt:
                     type: string
+        "400":
+          description: Invalid input (bad email, phone, or missing consent)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Code not found
           content:
@@ -547,6 +556,28 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "410":
           description: Code expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /access-codes/{id}:
+    delete:
+      operationId: deleteAccessCode
+      tags: [access-codes]
+      summary: Delete access code
+      description: Deletes an access code by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
           content:
             application/json:
               schema:
@@ -766,9 +797,11 @@ components:
           type: ["string", "null"]
         createdBy:
           type: ["integer", "null"]
+        marketingConsent:
+          type: ["boolean", "null"]
         status:
           type: string
-          enum: [pending, used, expired]
+          enum: [pending, active, used, expired]
         remainingMinutes:
           type: ["integer", "null"]
           description: Minutes left for used (not expired) codes. Null for pending.

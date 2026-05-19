@@ -138,6 +138,7 @@ router.get("/access-codes", async (_req, res): Promise<void> => {
         expiresAt: c.expiresAt?.toISOString() ?? null,
         validityType: c.validityType,
         codeExpiresAt: c.codeExpiresAt?.toISOString() ?? null,
+        marketingConsent: c.marketingConsent,
         createdAt: c.createdAt?.toISOString() ?? null,
         createdBy: c.createdBy,
         status,
@@ -183,6 +184,28 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
   const redeemerName = typeof req.body?.name === "string" ? req.body.name.trim() : null;
   const redeemerEmail = usedBy;
   const redeemerWhatsapp = typeof req.body?.whatsapp === "string" ? req.body.whatsapp.trim() : null;
+  const marketingConsent = req.body?.marketingConsent === true;
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!usedBy || !emailRegex.test(usedBy)) {
+    res.status(400).json({ error: "Email inválido. Verifique o formato." });
+    return;
+  }
+
+  // Validate WhatsApp (Brazilian format: 11-13 digits)
+  const phoneDigits = (redeemerWhatsapp || "").replace(/\D/g, "");
+  if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 13) {
+    res.status(400).json({ error: "Número de WhatsApp inválido. Use formato brasileiro (ex: 11999999999)." });
+    return;
+  }
+
+  // Marketing consent is mandatory
+  if (!marketingConsent) {
+    res.status(400).json({ error: "Você precisa aceitar receber promoções para continuar." });
+    return;
+  }
+
   const accessExpiresAt = addMinutes(now, code.durationMinutes);
 
   await db
@@ -194,6 +217,7 @@ router.post("/access-codes/:code/redeem", async (req, res): Promise<void> => {
       redeemerName,
       redeemerEmail,
       redeemerWhatsapp,
+      marketingConsent,
       expiresAt: accessExpiresAt,
     })
     .where(eq(accessCodesTable.id, code.id));
@@ -255,6 +279,28 @@ router.get("/access-codes/validate", async (req, res): Promise<void> => {
     remainingMinutes,
     accessExpiresAt: accessExpiresAt.toISOString(),
   });
+});
+
+// DELETE /access-codes/:id — delete a code (admin only)
+router.delete("/access-codes/:id", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "ID inválido" });
+    return;
+  }
+
+  const [deleted] = await db
+    .delete(accessCodesTable)
+    .where(eq(accessCodesTable.id, id))
+    .returning();
+
+  if (!deleted) {
+    res.status(404).json({ error: "Código não encontrado" });
+    return;
+  }
+
+  req.log?.info({ id, code: deleted.code }, "Access code deleted");
+  res.status(204).send();
 });
 
 export default router;
