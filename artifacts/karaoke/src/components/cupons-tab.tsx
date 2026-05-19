@@ -182,7 +182,7 @@ export function CuponsTab() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20 font-semibold">Em Uso</Badge>;
+        return <Badge variant="outline" className="bg-yellow-400/10 text-yellow-400 border-yellow-400/20 font-semibold">Em Uso</Badge>;
       case "used":
         return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 font-semibold">Usado</Badge>;
       case "expired":
