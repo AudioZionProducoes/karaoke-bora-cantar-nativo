@@ -444,7 +444,7 @@ export default function TVPage() {
           </div>
         ) : (
           <div className="text-center p-8">
-            <ListMusic className="h-16 w-16 text-primary/30 mx-auto mb-4" />
+            <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-48 w-48 object-contain mx-auto mb-6 rounded-2xl ring-2 ring-primary/30 shadow-[0_0_60px_rgba(250,204,21,0.25)]" />
             <h2 className="text-xl font-bold mb-2">Aguardando músicas</h2>
             <p className="text-muted-foreground mb-4 text-sm max-w-sm">
               Use o celular para escanear o QR Code e adicionar músicas à fila.
