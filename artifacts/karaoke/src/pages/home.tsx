@@ -170,7 +170,6 @@ export default function Home() {
           {session && (
             <div className="text-xs text-muted-foreground text-center space-y-1">
               <p>Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span></p>
-              <p>Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
               <Button
                 size="sm"
                 variant="ghost"
