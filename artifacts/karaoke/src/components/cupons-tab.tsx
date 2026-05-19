@@ -176,7 +176,13 @@ export function CuponsTab() {
   function formatDate(iso: string | null) {
     if (!iso) return "-";
     const d = new Date(iso);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   const statusBadge = (status: string) => {
