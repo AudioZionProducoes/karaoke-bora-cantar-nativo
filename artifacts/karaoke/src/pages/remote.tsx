@@ -73,20 +73,6 @@ export default function RemotePage() {
     await playSong(id);
   }, [playSong]);
 
-  const handleSetMode = useCallback(async (mode: "home" | "party") => {
-    if (!sessionId) return;
-    try {
-      const res = await fetch(`/api/sessions/${sessionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode }),
-      });
-      if (!res.ok) return;
-    } catch {
-      // ignore
-    }
-  }, [sessionId]);
-
   const [skipError, setSkipError] = useState<string | null>(null);
 
   const handleNext = useCallback(async () => {
@@ -276,19 +262,16 @@ export default function RemotePage() {
           </div>
           <div className="flex items-center gap-2">
             {session && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
+              <span
+                className={`inline-flex items-center h-7 px-2.5 text-[10px] rounded-full border ${
                   session.mode === "party"
-                    ? "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
-                    : "bg-[hsl(142_70%_45%/0.2)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.3)]"
+                    ? "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)]"
+                    : "bg-[hsl(142_70%_45%/0.2)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)]"
                 }`}
-                onClick={() => handleSetMode(session.mode === "party" ? "home" : "party")}
-                title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+                title={session.mode === "party" ? "Modo Festa (TV)" : "Modo Casa (TV)"}
               >
                 {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
-              </Button>
+              </span>
             )}
             {currentSongId && session?.queue && (
               <Button
