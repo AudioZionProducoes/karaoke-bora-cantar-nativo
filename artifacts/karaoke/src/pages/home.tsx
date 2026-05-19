@@ -86,25 +86,35 @@ export default function Home() {
           Busque no maior catálogo de karaokê. Músicas de alta qualidade, sem espera.
         </p>
 
-        <div className="flex flex-col items-center gap-3">
-          <Button
-            size="lg"
-            className={`shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all ${session?.mode === "party" ? "ring-2 ring-white/50 bg-red-400" : "bg-red-500 hover:bg-red-600"} text-white px-6`}
-            onClick={() => handleStartTV("party")}
-            disabled={startingSession}
-          >
-            <Monitor className="h-5 w-5 mr-2" />
-            {startingSession ? "Iniciando..." : "Iniciar Sessão na TV Modo Festa"}
-          </Button>
-          <Button
-            size="lg"
-            className={`shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all ${session?.mode === "home" ? "ring-2 ring-white/50 bg-green-400" : "bg-green-500 hover:bg-green-600"} text-white px-6`}
-            onClick={() => handleStartTV("home")}
-            disabled={startingSession}
-          >
-            <Monitor className="h-5 w-5 mr-2" />
-            {startingSession ? "Iniciando..." : "Iniciar Sessão na TV Modo Casa"}
-          </Button>
+        <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
+          <div className="flex flex-col items-center gap-2">
+            <Button
+              size="lg"
+              className={`shadow-[0_0_20px_rgba(239,68,68,0.3)] transition-all ${session?.mode === "party" ? "ring-2 ring-white/50 bg-red-400" : "bg-red-500 hover:bg-red-600"} text-white px-6`}
+              onClick={() => handleStartTV("party")}
+              disabled={startingSession}
+            >
+              <Monitor className="h-5 w-5 mr-2" />
+              {startingSession ? "Iniciando..." : "Iniciar Sessão na TV Modo Festa"}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center max-w-[220px] leading-relaxed">
+              <span className="font-medium text-foreground">Modo Festa:</span> cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <Button
+              size="lg"
+              className={`shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all ${session?.mode === "home" ? "ring-2 ring-white/50 bg-green-400" : "bg-green-500 hover:bg-green-600"} text-white px-6`}
+              onClick={() => handleStartTV("home")}
+              disabled={startingSession}
+            >
+              <Monitor className="h-5 w-5 mr-2" />
+              {startingSession ? "Iniciando..." : "Iniciar Sessão na TV Modo Casa"}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center max-w-[220px] leading-relaxed">
+              <span className="font-medium text-foreground">Modo Casa:</span> sem limites. Adicione quantas músicas quiser à fila.
+            </p>
+          </div>
         </div>
 
           {session && (
@@ -113,15 +123,6 @@ export default function Home() {
               <p className="mt-0.5">Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
             </div>
           )}
-
-          <div className="flex flex-col gap-1 text-[10px] text-muted-foreground text-center max-w-xs">
-            <p>
-              <span className="font-medium text-foreground">Modo Festa:</span> cada pessoa só pode colocar 1 música por vez. Todos cantam na mesma rodada.
-            </p>
-            <p>
-              <span className="font-medium text-foreground">Modo Casa:</span> sem limites. Adicione quantas músicas quiser à fila.
-            </p>
-          </div>
       </div>
 
       <div className="mt-2 space-y-4">
