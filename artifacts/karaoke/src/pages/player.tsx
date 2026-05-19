@@ -2,13 +2,14 @@ import { useParams, Link, useLocation } from "wouter";
 import {
   ArrowLeft, Play, Music, AlertCircle, FolderOpen,
   Star, RotateCcw, Trophy, Search, X, Mic2,
-  Smartphone
+  Smartphone, AlertTriangle, ArrowRight
 } from "lucide-react";
 import { useGetMusica, getGetMusicaQueryKey, useSearchMusicas } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useSession } from "@/hooks/use-session";
+import { useTemporaryAccess } from "@/contexts/temporary-access-context";
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import QRCodeLib from "react-qr-code";
@@ -206,6 +207,7 @@ function ScoreScreen({
 export default function Player() {
   const params = useParams();
   const id = Number(params.id);
+  const { hasAccess, remainingMinutes } = useTemporaryAccess();
 
   const { data: musica, isLoading, isError } = useGetMusica(id, {
     query: { enabled: !!id, queryKey: getGetMusicaQueryKey(id) }
@@ -316,6 +318,29 @@ export default function Player() {
           )}
         </div>
       </header>
+
+      {/* Warning banner when temporary access is about to expire */}
+      {hasAccess && remainingMinutes <= 10 && (
+        <div className="absolute top-14 left-0 right-0 bg-amber-500/10 border-b border-amber-500/30 px-3 py-1.5 z-[100]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span className="text-amber-400 font-medium">
+                Seu tempo está acabando! Faltam apenas {remainingMinutes} minutos.
+              </span>
+            </div>
+            <Link href="/planos">
+              <Button
+                size="sm"
+                className="h-6 text-[10px] bg-amber-500 hover:bg-amber-500/90 text-black font-bold shrink-0 px-2"
+              >
+                Assinar plano
+                <ArrowRight className="h-2.5 w-2.5 ml-1" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Video */}
       <div className="flex h-screen pt-14">
