@@ -444,19 +444,13 @@ export default function TVPage() {
           </div>
         ) : (
           <div className="text-center p-8">
-            <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-48 w-48 object-contain mx-auto mb-6 rounded-2xl ring-2 ring-primary/30 shadow-[0_0_60px_rgba(250,204,21,0.25)]" />
+            <ListMusic className="h-16 w-16 text-primary/30 mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Aguardando músicas</h2>
             <p className="text-muted-foreground mb-4 text-sm max-w-sm">
               Use o celular para escanear o QR Code e adicionar músicas à fila.
             </p>
-            <div className="flex flex-col items-center">
-              <div className="relative inline-block">
-                <QRCode value={remoteUrl} size={180} bgColor="transparent" fgColor="#fff" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-14 w-14 object-contain rounded-lg ring-2 ring-primary/50 shadow-lg" />
-                </div>
-              </div>
-              <p className="mt-2 text-sm font-bold text-white tracking-tight">Karaokê Bora Cantar</p>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 inline-block">
+              <QRCode value={remoteUrl} size={160} bgColor="transparent" fgColor="#fff" />
             </div>
           </div>
         )}
