@@ -9,7 +9,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import QRCode from "react-qr-code";
-import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus } from "lucide-react";
+import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus, Trash2 } from "lucide-react";
 
 function generateScore(singerName: string): { score: number; stars: number; label: string } {
   const score = Math.floor(Math.random() * 21) + 80;
@@ -175,7 +175,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, addToQueue, playSong, setMode } = useSession();
+  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue } = useSession();
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
 
@@ -396,10 +396,21 @@ export default function TVPage() {
                   }`}
                 >
                   <span className="text-[10px] font-mono text-muted-foreground shrink-0">{i + 1}</span>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-white leading-tight truncate">{item.singerName}</div>
                     <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
                   </div>
+                  <button
+                    type="button"
+                    className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFromQueue(item.id);
+                    }}
+                    title="Remover da fila"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
                 </div>
               ))}
             </>
