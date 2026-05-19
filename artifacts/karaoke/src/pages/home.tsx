@@ -14,7 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 
 export default function Home() {
-  const { session, createSession, addToQueue, setMode } = useSession();
+  const { session, createSession, addToQueue, setMode, playSong } = useSession();
   const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
   const { searchTerm } = useSearch();
@@ -63,8 +63,8 @@ export default function Home() {
       activeSessionId = newId;
     }
 
-    const ok = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
-    if (ok) {
+    const result = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
+    if (result.ok) {
       toast({
         title: "Adicionado à fila!",
         description: `${pendingItem.musica} — ${pendingItem.artista} foi adicionada para ${singerName}.`,
@@ -72,12 +72,43 @@ export default function Home() {
     } else {
       toast({
         title: "Erro ao adicionar",
-        description: "Não foi possível adicionar à fila. Tente novamente.",
+        description: result.error ?? "Não foi possível adicionar à fila. Tente novamente.",
         variant: "destructive",
       });
     }
     setPendingItem(null);
   }, [pendingItem, addToQueue, session, createSession]);
+
+  const handleCantarAgora = useCallback(async (item: QueueCandidate) => {
+    // Se não houver sessão, cria automaticamente
+    let activeSessionId = session?.id;
+    if (!activeSessionId) {
+      const newId = await createSession("Karaokê Bora Cantar", "home");
+      if (!newId) {
+        toast({
+          title: "Erro ao criar sessão",
+          description: "Não foi possível iniciar a sessão. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+      activeSessionId = newId;
+    }
+
+    // Adiciona à fila com nome "Anônimo" e toca imediatamente
+    const result = await addToQueue(item.id, item.musica, item.artista, "Anônimo");
+    if (!result.ok) {
+      toast({
+        title: "Erro ao adicionar",
+        description: result.error ?? "Não foi possível adicionar à fila.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await playSong(item.id);
+    navigate(`/tv/${activeSessionId}`);
+  }, [session, createSession, addToQueue, playSong, navigate]);
 
   return (
     <Layout>
@@ -217,23 +248,22 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className={`mt-4 flex gap-2 ${session ? "flex-col" : ""}`}>
-                      <Link href={`/player/${musica.id}`} className={session ? "block" : "block w-full"}>
-                        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative">
-                          <Play className="h-4 w-4 mr-2" />
-                          Cantar Agora
-                        </Button>
-                      </Link>
-                      {session && (
-                        <Button
-                          variant="outline"
-                          className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/60 transition-all z-10 relative"
-                          onClick={() => setPendingItem({ id: musica.id, musica: musica.musica, artista: musica.artista })}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Adicionar à Fila
-                        </Button>
-                      )}
+                    <div className="mt-4 flex gap-2 flex-col">
+                      <Button
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 group-hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] dark:group-hover:shadow-[0_0_15px_rgba(250,204,21,0.4)] transition-all z-10 relative"
+                        onClick={() => handleCantarAgora({ id: musica.id, musica: musica.musica, artista: musica.artista })}
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Cantar Agora
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/60 transition-all z-10 relative"
+                        onClick={() => setPendingItem({ id: musica.id, musica: musica.musica, artista: musica.artista })}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Adicionar à Fila
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
