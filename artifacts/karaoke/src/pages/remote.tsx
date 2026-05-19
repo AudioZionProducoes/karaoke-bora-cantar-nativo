@@ -345,17 +345,15 @@ export default function RemotePage() {
                     <div className="text-xs text-muted-foreground">{m.artista}</div>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
-                    {(!currentSongId || session?.currentSongAddedBy === deviceId || session?.currentSongAddedBy === null) && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
-                        onClick={() => handlePlayNow(m.id)}
-                        title="Tocar agora"
-                      >
-                        <Play className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                      onClick={() => handlePlayNow(m.id)}
+                      title="Tocar agora"
+                    >
+                      <Play className="h-4 w-4" />
+                    </Button>
                     <Button
                       size="sm"
                       variant={inQueueIds.has(m.id) ? "default" : "outline"}
