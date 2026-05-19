@@ -449,8 +449,14 @@ export default function TVPage() {
             <p className="text-muted-foreground mb-4 text-sm max-w-sm">
               Use o celular para escanear o QR Code e adicionar músicas à fila.
             </p>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 inline-block">
-              <QRCode value={remoteUrl} size={160} bgColor="transparent" fgColor="#fff" />
+            <div className="flex flex-col items-center">
+              <div className="relative inline-block">
+                <QRCode value={remoteUrl} size={180} bgColor="transparent" fgColor="#fff" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-14 w-14 object-contain rounded-lg ring-2 ring-primary/50 shadow-lg" />
+                </div>
+              </div>
+              <p className="mt-2 text-sm font-bold text-white tracking-tight">Karaokê Bora Cantar</p>
             </div>
           </div>
         )}
