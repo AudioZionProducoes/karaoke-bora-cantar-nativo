@@ -14,8 +14,10 @@ const DURATIONS = [
   { value: "15", label: "15 minutos" },
   { value: "30", label: "30 minutos" },
   { value: "60", label: "1 hora" },
+  { value: "120", label: "2 horas" },
   { value: "240", label: "4 horas" },
   { value: "360", label: "6 horas" },
+  { value: "480", label: "8 horas" },
   { value: "720", label: "12 horas" },
   { value: "1440", label: "24 horas" },
 ];
@@ -100,7 +102,7 @@ function CountdownCell({ usedAt, durationMinutes, status }: { usedAt: string | n
 export function CuponsTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [duration, setDuration] = useState("60");
+  const [duration, setDuration] = useState("15");
   const [quantity, setQuantity] = useState(1);
   const [label, setLabel] = useState("");
   const [validityType, setValidityType] = useState<"never" | "scheduled">("never");
