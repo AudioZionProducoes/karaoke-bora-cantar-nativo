@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus } from "lucide-react";
+import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Layout } from "@/components/layout";
 import { useSession } from "@/hooks/use-session";
 import { useSearch } from "@/contexts/search-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
+import { useScoringEnabled } from "@/hooks/use-scoring";
 import { toast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 
@@ -22,6 +23,7 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [startingSession, setStartingSession] = useState(false);
   const [pendingItem, setPendingItem] = useState<QueueCandidate | null>(null);
+  const [scoringEnabled, setScoringEnabled] = useScoringEnabled();
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
@@ -166,9 +168,23 @@ export default function Home() {
         </div>
 
           {session && (
-            <div className="text-xs text-muted-foreground text-center">
+            <div className="text-xs text-muted-foreground text-center space-y-1">
               <p>Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span></p>
-              <p className="mt-0.5">Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
+              <p>Modo: <span className="font-medium text-foreground">{session.mode === "party" ? "Festa (1 música por pessoa)" : "Casa (sem limites)"}</span></p>
+              <Button
+                size="sm"
+                variant="ghost"
+                className={`h-6 px-2.5 text-[10px] rounded-full border transition-colors mt-1 ${
+                  scoringEnabled
+                    ? "bg-primary/20 border-primary/50 text-primary hover:bg-primary/30"
+                    : "bg-white/5 border-white/20 text-white/60 hover:bg-white/10"
+                }`}
+                onClick={() => setScoringEnabled(!scoringEnabled)}
+                title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
+              >
+                <Trophy className="h-3 w-3 mr-1" />
+                {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
+              </Button>
             </div>
           )}
       </div>

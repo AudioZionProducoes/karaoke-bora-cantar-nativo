@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { SessionQueueItem } from "@/contexts/session-context";
 import { useLocalMusic } from "@/contexts/local-music-context";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useScoringEnabled } from "@/hooks/use-scoring";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import QRCode from "react-qr-code";
@@ -192,6 +193,9 @@ export default function TVPage() {
   const [showScore, setShowScore] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
 
+  // Scoring toggle
+  const [scoringEnabled, setScoringEnabled] = useScoringEnabled();
+
   // TV-side search panel
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -222,8 +226,13 @@ export default function TVPage() {
   }, [session?.currentSongId]);
 
   const handleVideoEnd = useCallback(() => {
-    setShowScore(true);
-  }, []);
+    if (scoringEnabled) {
+      setShowScore(true);
+    } else {
+      // Skip score, go straight to transition countdown
+      handleNext();
+    }
+  }, [scoringEnabled]);
 
   const [skipError, setSkipError] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -366,6 +375,19 @@ export default function TVPage() {
                 {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
               </Button>
             )}
+            <Button
+              size="sm"
+              variant="ghost"
+              className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
+                scoringEnabled
+                  ? "bg-primary/20 border-primary/50 text-primary hover:bg-primary/30"
+                  : "bg-white/5 border-white/20 text-white/60 hover:bg-white/10"
+              }`}
+              onClick={() => setScoringEnabled(!scoringEnabled)}
+              title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
+            >
+              {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
+            </Button>
           </div>
 
           {/* Queue — flows right after Sessão, wraps like notebook lines */}
