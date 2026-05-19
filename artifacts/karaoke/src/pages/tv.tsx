@@ -353,15 +353,39 @@ export default function TVPage() {
               </Link>
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
               <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary">{sessionId}</span></div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="rounded-full bg-primary border border-primary/80 text-black hover:bg-primary/80 h-7 px-2 text-xs transition-colors"
+              <div
+                role="button"
+                className="cursor-pointer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: '9999px',
+                  backgroundColor: '#facc15',
+                  border: '1px solid rgba(250,204,21,0.8)',
+                  height: '28px',
+                  padding: '0 8px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  gap: '4px',
+                  position: 'relative'
+                }}
                 onClick={() => setShowSearch((s) => !s)}
                 title="Buscar músicas"
               >
-                <Search className="h-3 w-3 mr-1 text-black" />Buscar
-              </Button>
+                <style>{`.tv-search-txt { color: #000000 !important; }`}</style>
+                <div
+                  className="tv-search-txt flex items-center gap-1"
+                  style={{ lineHeight: '28px' }}
+                >
+                  <Search
+                    size={12}
+                    color="#000000"
+                    strokeWidth={2.5}
+                    style={{ flexShrink: 0 }}
+                  />
+                  <span className="tv-search-txt">Buscar</span>
+                </div>
+              </div>
             </div>
 
             {/* Queue — flows right after Sessão, wraps like notebook lines */}
