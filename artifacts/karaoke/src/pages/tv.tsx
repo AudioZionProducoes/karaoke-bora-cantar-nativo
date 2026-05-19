@@ -380,8 +380,8 @@ export default function TVPage() {
               variant="ghost"
               className={`h-7 px-2.5 text-[10px] rounded-full border transition-colors ${
                 scoringEnabled
-                  ? "bg-primary/20 border-primary/50 text-primary hover:bg-primary/30"
-                  : "bg-white/5 border-white/20 text-white/60 hover:bg-white/10"
+                  ? "bg-[hsl(48_90%_50%/0.2)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.3)]"
+                  : "bg-[hsl(0_70%_50%/0.2)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.3)]"
               }`}
               onClick={() => setScoringEnabled(!scoringEnabled)}
               title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
