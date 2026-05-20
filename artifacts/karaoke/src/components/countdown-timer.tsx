@@ -9,7 +9,7 @@ function formatHHMMSS(totalSeconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export function CountdownTimer({ className = "" }: { className?: string }) {
+export function CountdownTimer({ className = "", alwaysShow = false }: { className?: string; alwaysShow?: boolean }) {
   const { hasAccess, remainingMinutes, access } = useTemporaryAccess();
   const [seconds, setSeconds] = useState(0);
 
@@ -40,7 +40,25 @@ export function CountdownTimer({ className = "" }: { className?: string }) {
   const isUrgent = seconds <= 600; // 10 minutes
   const isCritical = seconds <= 60; // 1 minute
 
-  if (!hasAccess) return null;
+  if (!hasAccess && !alwaysShow) return null;
+
+  // When alwaysShow is true but no active access, show unlimited session state
+  if (!hasAccess && alwaysShow) {
+    return (
+      <div
+        className={`
+          flex items-center gap-2 font-mono text-sm font-bold tracking-wider
+          rounded-lg px-3 py-1.5 border backdrop-blur-sm
+          text-emerald-400 bg-emerald-500/10 border-emerald-500/20
+          ${className}
+        `}
+      >
+        <Clock className="w-4 h-4" />
+        <span>24:00:00</span>
+        <span className="text-[10px] uppercase tracking-wide opacity-70">Ilimitado</span>
+      </div>
+    );
+  }
 
   return (
     <div

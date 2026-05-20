@@ -511,37 +511,39 @@ export default function TVPage() {
             )}
           </div>
 
-          {/* Right side — Timer + Mode + Scoring buttons pinned top-right, all in one row */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <CountdownTimer />
-            {isHost && session && (
+          {/* Right side — Mode + Scoring buttons on top, Timer below */}
+          <div className="flex flex-col gap-1 shrink-0 items-end">
+            <div className="flex items-center gap-1.5">
+              {isHost && session && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
+                    session.mode === "party"
+                      ? "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
+                      : "bg-[hsl(142_70%_45%/0.25)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.35)]"
+                  }`}
+                  onClick={() => setMode(session.mode === "party" ? "home" : "party")}
+                  title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+                >
+                  {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"
                 className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
-                  session.mode === "party"
-                    ? "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
-                    : "bg-[hsl(142_70%_45%/0.25)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.35)]"
+                  scoringEnabled
+                    ? "bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
+                    : "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
                 }`}
-                onClick={() => setMode(session.mode === "party" ? "home" : "party")}
-                title={session.mode === "party" ? "Trocar para Modo Casa" : "Trocar para Modo Festa"}
+                onClick={() => setScoringEnabled(!scoringEnabled)}
+                title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
               >
-                {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
+                {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
               </Button>
-            )}
-            <Button
-              size="sm"
-              variant="ghost"
-              className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
-                scoringEnabled
-                  ? "bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
-                  : "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
-              }`}
-              onClick={() => setScoringEnabled(!scoringEnabled)}
-              title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
-            >
-              {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
-            </Button>
+            </div>
+            <CountdownTimer alwaysShow />
           </div>
         </div>
       </header>
