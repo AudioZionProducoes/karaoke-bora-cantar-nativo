@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus, Trophy } from "lucide-react";
+import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus, Trophy, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { useScoringEnabled } from "@/hooks/use-scoring";
 import { toast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 import { CountdownTimerLarge } from "@/components/countdown-timer";
+import { getStoredSessionId } from "@/contexts/session-context";
 
 export default function Home() {
   const { session, createSession, addToQueue, setMode, playSong, isHost } = useSession();
@@ -25,6 +26,11 @@ export default function Home() {
   const [startingSession, setStartingSession] = useState(false);
   const [pendingItem, setPendingItem] = useState<QueueCandidate | null>(null);
   const [scoringEnabled, setScoringEnabled] = useScoringEnabled();
+  const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStoredSessionId(getStoredSessionId());
+  }, [session]);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
@@ -186,6 +192,23 @@ export default function Home() {
               >
                 <Trophy className="h-3 w-3 mr-1" />
                 {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
+              </Button>
+            </div>
+          )}
+
+          {/* Show rejoin button when session is stored but not loaded in context (user exited TV screen) */}
+          {!session && storedSessionId && (
+            <div className="flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <p className="text-xs text-muted-foreground text-center">
+                Sessão <span className="font-mono text-yellow-400/80">{storedSessionId}</span> em andamento
+              </p>
+              <Button
+                size="lg"
+                className="bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-6 shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
+                onClick={() => navigate(`/tv/${storedSessionId}`)}
+              >
+                <ArrowRight className="h-5 w-5 mr-2" />
+                Voltar para Sessão
               </Button>
             </div>
           )}

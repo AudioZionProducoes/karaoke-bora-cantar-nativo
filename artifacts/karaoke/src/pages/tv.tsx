@@ -179,7 +179,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost, leaveSession } = useSession();
+  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost, leaveSession, exitSession } = useSession();
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
 
@@ -384,12 +384,27 @@ export default function TVPage() {
                 size="sm"
                 className="text-white/80 hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-7 px-2 text-xs"
                 onClick={() => {
-                  leaveSession();
+                  exitSession();
                   window.location.href = "/";
                 }}
               >
-                <ArrowLeft className="h-3 w-3 mr-1" />Sair
+                <ArrowLeft className="h-3 w-3 mr-1" />Voltar
               </Button>
+              {isHost && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400/80 hover:bg-red-500/20 hover:text-red-300 rounded-full bg-red-500/10 border border-red-500/20 h-7 px-2 text-xs"
+                  onClick={() => {
+                    if (confirm("Encerrar a sessão? Todos os convidados serão desconectados.")) {
+                      leaveSession();
+                      window.location.href = "/";
+                    }
+                  }}
+                >
+                  <X className="h-3 w-3 mr-1" />Encerrar
+                </Button>
+              )}
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
               <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary" style={{ color: '#facc15' }}>{sessionId}</span></div>
               <div

@@ -52,6 +52,7 @@ interface SessionContextType {
   acceptSwap: () => Promise<{ ok: boolean; error?: string }>;
   declineSwap: () => Promise<{ ok: boolean; error?: string }>;
   leaveSession: () => void;
+  exitSession: () => void;
 }
 
 export const SessionContext = createContext<SessionContextType | null>(null);
@@ -59,7 +60,7 @@ export const SessionContext = createContext<SessionContextType | null>(null);
 const STORAGE_KEY = "karaoke-ct-session-id";
 const DEVICE_KEY = "karaoke-ct-device-id";
 
-function getStoredSessionId(): string | null {
+export function getStoredSessionId(): string | null {
   try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
 }
 
@@ -242,6 +243,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [sessionId]);
 
+  // Exit session screen without destroying — allows returning later
+  const exitSession = useCallback(() => {
+    setSession(null);
+    // Intentionally keep sessionId and localStorage intact
+    // so the user can rejoin the same session later
+  }, []);
+
   const leaveSession = useCallback(async () => {
     // If host, destroy the session on the server so guests can't keep using it
     if (sessionId && isHost) {
@@ -354,7 +362,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     session, loading, error, deviceId, isHost,
     createSession, joinSession, addToQueue,
     removeFromQueue, updateQueueItem, advanceQueue, playSong, setMode,
-    requestSwap, acceptSwap, declineSwap, leaveSession,
+    requestSwap, acceptSwap, declineSwap, leaveSession, exitSession,
   };
 
   return (
