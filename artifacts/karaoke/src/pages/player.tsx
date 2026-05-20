@@ -397,6 +397,11 @@ export default function Player() {
             />
           )}
 
+          {/* Timer overlay — inside video area, bottom center, above watermark */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
+            <CountdownTimer />
+          </div>
+
           {/* QR Code overlay — inside video area, bottom-right */}
           {sessionId && remoteUrl && (
             <div className="absolute bottom-4 right-4 z-30 bg-primary/80 backdrop-blur-sm border border-primary/50 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-primary/20">
@@ -409,13 +414,6 @@ export default function Player() {
               </div>
             </div>
           )}
-      </div>
-
-      {/* Fixed bottom bar with timer — always visible above watermark */}
-      <div className="fixed bottom-6 left-0 right-0 z-[60] flex justify-center pointer-events-none">
-        <div className="pointer-events-auto">
-          <CountdownTimer />
-        </div>
       </div>
     </div>
   );
