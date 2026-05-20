@@ -183,19 +183,31 @@ router.delete("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promi
   }
 
   const deviceId = getDeviceId(req);
-  if (item.addedBy && item.addedBy !== "anon" && item.addedBy !== deviceId) {
+  const isHost = session.hostDeviceId && session.hostDeviceId === deviceId;
+  if (!isHost && item.addedBy && item.addedBy !== "anon" && item.addedBy !== deviceId) {
     res.status(403).json({ error: "Você só pode apagar músicas que você adicionou" });
     return;
   }
 
+  // If removing the currently playing song, also clear current song state
+  const isCurrentSong = session.currentSongId === String(songId);
   const updatedQueue = queue.filter((q) => q.id !== songId);
 
   await db
     .update(sessionsTable)
-    .set({ queue: updatedQueue, updatedAt: new Date() })
+    .set({
+      queue: updatedQueue,
+      ...(isCurrentSong ? {
+        currentSongId: null,
+        currentSingerName: null,
+        currentSongAddedBy: null,
+        currentSongStartedAt: null,
+      } : {}),
+      updatedAt: new Date(),
+    })
     .where(eq(sessionsTable.id, id));
 
-  res.json({ queue: updatedQueue });
+  res.json({ queue: updatedQueue, removedCurrentSong: isCurrentSong });
 });
 
 router.post("/sessions/:id/play", async (req: ExpressReq, res): Promise<void> => {

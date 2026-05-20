@@ -177,7 +177,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue } = useSession();
+  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost } = useSession();
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
 
@@ -410,11 +410,24 @@ export default function TVPage() {
                     <div className="bg-yellow-400/20 rounded-full p-1">
                       <UserRound className="h-3 w-3 text-yellow-400" />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <div className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora Cantando</div>
                       <div className="text-xs font-bold text-white leading-tight">{currentSinger}</div>
                       <div className="text-[10px] text-white/70 leading-tight">{musica?.musica ?? "Música " + currentSongId}</div>
                     </div>
+                    {isHost && (
+                      <button
+                        type="button"
+                        className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFromQueue(currentSongId);
+                        }}
+                        title="Remover música atual"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
                 )}
 
