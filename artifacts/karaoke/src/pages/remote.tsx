@@ -228,9 +228,9 @@ export default function RemotePage() {
                 Aguardando <span className="text-white text-base">{session.swapRequest.targetName}</span>
               </div>
               <div className="text-xs text-yellow-300/80 mb-2">aceitar a troca de lugar...</div>
-              <Button size="sm" variant="outline" className="h-7 text-xs px-4 border-yellow-500/50 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 hover:border-yellow-400" onClick={handleDeclineSwap}>
-                <X className="h-3.5 w-3.5 mr-1" />
-                Cancelar pedido
+              <Button size="sm" className="h-8 text-sm px-5 bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/30" onClick={handleDeclineSwap}>
+                <X className="h-4 w-4 mr-1.5" />
+                Cancelar Pedido
               </Button>
             </div>
           )}
