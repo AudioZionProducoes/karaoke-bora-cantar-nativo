@@ -273,17 +273,6 @@ export default function RemotePage() {
                 {session.mode === "party" ? "Modo Festa" : "Modo Casa"}
               </span>
             )}
-            {currentSongId && session?.queue && (
-              <Button
-                size="sm"
-                className="bg-primary hover:bg-primary/90 text-xs"
-                onClick={handleNext}
-                disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
-                title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
-              >
-                <Play className="h-3 w-3 mr-1" />Próxima
-              </Button>
-            )}
           </div>
         </div>
 
