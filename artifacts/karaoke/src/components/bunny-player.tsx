@@ -6,10 +6,16 @@ interface BunnyPlayerProps {
   onEnded: () => void;
 }
 
+const BUNNY_ORIGIN = "https://iframe.mediadelivery.net";
+
 export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const onEndedRef = useRef(onEnded);
   const hasSubscribedRef = useRef(false);
+  const lastTimeRef = useRef(0);
+  const stallCountRef = useRef(0);
+  const durationRef = useRef(0);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Keep latest onEnded reference
   useEffect(() => {
@@ -19,15 +25,49 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
   // Listen for Bunny Stream Player API messages
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      if (e.data && typeof e.data === "object") {
-        // Bunny Stream Player API events
-        if (e.data.method === "ended" || e.data.event === "ended") {
-          onEndedRef.current();
+      // Only accept messages from Bunny Stream origin
+      if (e.origin !== BUNNY_ORIGIN) return;
+      if (!e.data || typeof e.data !== "object") return;
+
+      // Log all messages for debugging (development only)
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.log("[BunnyPlayer] message:", JSON.stringify(e.data));
+      }
+
+      // Bunny Stream Player API event format: { method: "event", value: "ended", data: {} }
+      if (e.data.method === "event" && e.data.value === "ended") {
+        onEndedRef.current();
+        return;
+      }
+      // Alternative formats (older API versions)
+      if (e.data.method === "ended" || e.data.event === "ended" || e.data.type === "ended") {
+        onEndedRef.current();
+        return;
+      }
+
+      // Track current time for end-of-video detection (fallback)
+      if (e.data.method === "currentTime" || e.data.method === "getCurrentTime") {
+        const time = typeof e.data.value === "number" ? e.data.value : 0;
+        if (time === lastTimeRef.current && time > 0) {
+          stallCountRef.current++;
+          // If time hasn't advanced for 3 consecutive polls (~15s) and we're past 30s, video likely ended
+          if (stallCountRef.current >= 3 && time > 30) {
+            if (import.meta.env.DEV) {
+              // eslint-disable-next-line no-console
+              console.log("[BunnyPlayer] Video appears ended (stall detected)");
+            }
+            onEndedRef.current();
+          }
+        } else {
+          stallCountRef.current = 0;
         }
-        // Alternative format Bunny might use
-        if (e.data.type === "ended" || e.data.name === "ended") {
-          onEndedRef.current();
-        }
+        lastTimeRef.current = time;
+      }
+
+      // Track duration for end-of-video detection
+      if (e.data.method === "duration" || e.data.method === "getDuration") {
+        durationRef.current = typeof e.data.value === "number" ? e.data.value : 0;
       }
     };
 
@@ -35,7 +75,7 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
     return () => window.removeEventListener("message", handleMessage);
   }, []);
 
-  // Subscribe to ended event when iframe loads
+  // Subscribe to ended event + start time polling when iframe loads
   const handleLoad = () => {
     const iframe = iframeRef.current;
     if (!iframe?.contentWindow) return;
@@ -46,7 +86,7 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
         // Bunny Stream Player API: subscribe to 'ended' event
         iframe.contentWindow?.postMessage(
           { method: "addEventListener", value: "ended" },
-          "*"
+          BUNNY_ORIGIN
         );
         hasSubscribedRef.current = true;
       } catch {
@@ -59,7 +99,34 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
     setTimeout(subscribeToEnded, 1000);
     setTimeout(subscribeToEnded, 3000);
     setTimeout(subscribeToEnded, 5000);
+
+    // Fallback: poll current time + duration every 5s to detect video end
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    lastTimeRef.current = 0;
+    stallCountRef.current = 0;
+    durationRef.current = 0;
+    pollIntervalRef.current = setInterval(() => {
+      try {
+        iframe.contentWindow?.postMessage(
+          { method: "getCurrentTime" },
+          BUNNY_ORIGIN
+        );
+        iframe.contentWindow?.postMessage(
+          { method: "getDuration" },
+          BUNNY_ORIGIN
+        );
+      } catch {
+        // ignore
+      }
+    }, 5000);
   };
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, []);
 
   return (
     <iframe
