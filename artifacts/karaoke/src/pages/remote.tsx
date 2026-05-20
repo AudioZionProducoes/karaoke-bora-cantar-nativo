@@ -420,7 +420,7 @@ export default function RemotePage() {
               <Button
                 size="sm"
                 variant={swapSelecting ? "default" : "outline"}
-                className={`w-full text-xs ${swapSelecting ? "bg-red-500 hover:bg-red-600 text-white" : "bg-green-500 hover:bg-green-600 text-white"}`}
+                className={`w-full text-sm font-bold ${swapSelecting ? "bg-red-500 hover:bg-red-600 text-white" : "bg-green-500 hover:bg-green-600 text-black"}`}
                 onClick={() => setSwapSelecting((s) => !s)}
               >
                 <Shuffle className="h-3.5 w-3.5 mr-1.5" />
