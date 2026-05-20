@@ -541,7 +541,7 @@ export default function TVPage() {
         )}
 
         {/* Logo watermark — top-right corner of video area */}
-        <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 h-12 w-12 md:h-20 md:w-20 object-contain rounded-lg md:rounded-xl opacity-50 hover:opacity-80 transition-opacity pointer-events-none shadow-lg shadow-black/40" />
+        <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 h-12 w-12 md:h-20 md:w-20 object-contain rounded-lg md:rounded-xl opacity-40 pointer-events-none" />
 
         {/* QR Code overlay — inside video area, bottom-right with purple highlight */}
         <div className="absolute bottom-4 right-4 z-30 bg-[#f5c800] backdrop-blur-sm border border-black/20 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-black/30">

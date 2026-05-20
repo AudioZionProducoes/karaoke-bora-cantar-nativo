@@ -16,7 +16,7 @@ import { AddToQueueDialog } from "@/components/add-to-queue-dialog";
 export default function RemotePage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, deviceId, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap } = useSession();
+  const { session, deviceId, isHost, joinSession, addToQueue, removeFromQueue, updateQueueItem, playSong, advanceQueue, requestSwap, acceptSwap, declineSwap } = useSession();
   const [, navigate] = useLocation();
 
   const [searchTerm, setSearchTerm] = useState("");

@@ -24,6 +24,7 @@ export interface Session {
   id: string;
   name: string;
   mode: "home" | "party";
+  hostDeviceId: string | null;
   queue: SessionQueueItem[];
   currentSongId: string | null;
   currentSingerName: string | null;
@@ -38,6 +39,7 @@ interface SessionContextType {
   loading: boolean;
   error: string | null;
   deviceId: string;
+  isHost: boolean;
   createSession: (name?: string, mode?: "home" | "party") => Promise<string | null>;
   joinSession: (id: string) => Promise<boolean>;
   addToQueue: (songId: number, musica: string, artista: string, singerName: string) => Promise<{ ok: boolean; error?: string }>;
@@ -84,6 +86,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(getStoredSessionId);
   const deviceId = getDeviceId();
+  const isHost = !!session?.hostDeviceId && session.hostDeviceId === deviceId;
 
   const fetchSession = useCallback(async (id: string) => {
     const res = await fetch(`/api/sessions/${id}`, { headers: { "X-Device-Id": deviceId } });
@@ -116,7 +119,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch("/api/sessions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Device-Id": deviceId },
         body: JSON.stringify({ name: name ?? "Sessão", mode: mode ?? "home" }),
       });
       if (!res.ok) {
@@ -266,7 +269,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const res = await fetch(`/api/sessions/${sessionId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "X-Device-Id": deviceId },
         body: JSON.stringify({ mode }),
       });
       if (!res.ok) return false;
@@ -276,7 +279,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch {
       return false;
     }
-  }, [sessionId]);
+  }, [sessionId, deviceId]);
 
   const requestSwap = useCallback(async (targetIndex: number): Promise<{ ok: boolean; error?: string }> => {
     if (!sessionId) return { ok: false };
@@ -336,7 +339,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [sessionId, deviceId]);
 
   const value: SessionContextType = {
-    session, loading, error, deviceId,
+    session, loading, error, deviceId, isHost,
     createSession, joinSession, addToQueue,
     removeFromQueue, updateQueueItem, advanceQueue, playSong, setMode,
     requestSwap, acceptSwap, declineSwap, leaveSession,

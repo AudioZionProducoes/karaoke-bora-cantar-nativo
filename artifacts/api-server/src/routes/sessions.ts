@@ -29,6 +29,7 @@ router.post("/sessions", async (req, res): Promise<void> => {
     ? req.body.name.trim()
     : "Sessão";
   const mode = req.body?.mode === "party" ? "party" : "home";
+  const hostDeviceId = getDeviceId(req);
 
   // Try up to 10 times to get a unique ID
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -36,9 +37,9 @@ router.post("/sessions", async (req, res): Promise<void> => {
     try {
       const [session] = await db
         .insert(sessionsTable)
-        .values({ id, name, mode, queue: [] })
+        .values({ id, name, mode, hostDeviceId, queue: [] })
         .returning();
-      res.status(201).json({ id: session.id, name: session.name, mode: session.mode });
+      res.status(201).json({ id: session.id, name: session.name, mode: session.mode, hostDeviceId: session.hostDeviceId });
       return;
     } catch {
       // ID collision, try again
@@ -47,7 +48,7 @@ router.post("/sessions", async (req, res): Promise<void> => {
   res.status(500).json({ error: "Não foi possível criar uma sessão. Tente novamente." });
 });
 
-router.patch("/sessions/:id", async (req, res): Promise<void> => {
+router.patch("/sessions/:id", async (req: ExpressReq, res): Promise<void> => {
   const id = String(req.params.id ?? "").toUpperCase();
   if (!id || id.length !== 6) {
     res.status(400).json({ error: "ID de sessão inválido" });
@@ -64,6 +65,12 @@ router.patch("/sessions/:id", async (req, res): Promise<void> => {
     const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
     if (!session) {
       res.status(404).json({ error: "Sessão não encontrada" });
+      return;
+    }
+
+    const deviceId = getDeviceId(req);
+    if (session.hostDeviceId && session.hostDeviceId !== deviceId) {
+      res.status(403).json({ error: "Apenas o host pode alterar o modo da sessão" });
       return;
     }
 
