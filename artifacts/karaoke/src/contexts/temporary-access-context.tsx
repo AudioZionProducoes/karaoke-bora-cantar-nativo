@@ -11,6 +11,7 @@ interface TemporaryAccessContextType {
   access: TemporaryAccess | null;
   hasAccess: boolean;
   remainingMinutes: number;
+  ready: boolean;
   redeemCode: (code: string, name: string, email: string, whatsapp: string, marketingConsent?: boolean) => Promise<{ success: boolean; message?: string; error?: string }>;
   clearAccess: () => void;
 }
@@ -42,7 +43,14 @@ const TemporaryAccessContext = createContext<TemporaryAccessContextType | null>(
 
 export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
   const [access, setAccess] = useState<TemporaryAccess | null>(loadAccess);
-  const [remaining, setRemaining] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [remaining, setRemaining] = useState(() => {
+    const initialAccess = loadAccess();
+    if (!initialAccess) return 0;
+    const expires = new Date(initialAccess.accessExpiresAt).getTime();
+    const now = Date.now();
+    return Math.max(0, Math.ceil((expires - now) / 60_000));
+  });
 
   // Recalculate remaining time every 30 seconds
   useEffect(() => {
@@ -60,6 +68,7 @@ export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
       }
     }
     updateRemaining();
+    setReady(true);
     const id = setInterval(updateRemaining, 30_000);
     return () => clearInterval(id);
   }, [access]);
@@ -104,6 +113,7 @@ export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
         access,
         hasAccess: !!access && remaining > 0,
         remainingMinutes: remaining,
+        ready,
         redeemCode,
         clearAccess,
       }}

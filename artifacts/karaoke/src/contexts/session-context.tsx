@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 
 export interface SessionQueueItem {
   id: number;
@@ -59,13 +59,29 @@ export const SessionContext = createContext<SessionContextType | null>(null);
 
 const STORAGE_KEY = "karaoke-ct-session-id";
 const DEVICE_KEY = "karaoke-ct-device-id";
+const EXITED_KEY = "karaoke-ct-session-exited";
 
 export function getStoredSessionId(): string | null {
-  try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+  try {
+    if (localStorage.getItem(EXITED_KEY) === "1") return null;
+    return localStorage.getItem(STORAGE_KEY);
+  } catch { return null; }
 }
 
 function setStoredSessionId(id: string | null) {
   try { if (id) localStorage.setItem(STORAGE_KEY, id); else localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+}
+
+function markExited() {
+  try { localStorage.setItem(EXITED_KEY, "1"); } catch { /* ignore */ }
+}
+
+function clearExited() {
+  try { localStorage.removeItem(EXITED_KEY); } catch { /* ignore */ }
+}
+
+function isExited(): boolean {
+  try { return localStorage.getItem(EXITED_KEY) === "1"; } catch { return false; }
 }
 
 function getDeviceId(): string {
@@ -85,7 +101,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(getStoredSessionId);
+  const [sessionId, setSessionId] = useState<string | null>(isExited() ? null : getStoredSessionId());
+  const sessionIdRef = useRef(sessionId);
+  useEffect(() => { sessionIdRef.current = sessionId; }, [sessionId]);
   const deviceId = getDeviceId();
   // Sessões criadas antes da migração não têm hostDeviceId — neste caso todos têm permissão
   const isHost = !session?.hostDeviceId || session.hostDeviceId === deviceId;
@@ -94,25 +112,28 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const res = await fetch(`/api/sessions/${id}`, { headers: { "X-Device-Id": deviceId } });
     if (!res.ok) return false;
     const data = await res.json();
-    setSession(data);
+    // Ignore stale responses if sessionId changed since request started
+    if (sessionIdRef.current === id) {
+      setSession(data);
+    }
     return true;
   }, [deviceId]);
 
-  // Polling loop
+  // Polling loop — uses setInterval for immediate cleanup on exit
   useEffect(() => {
     if (!sessionId) return;
-    let active = true;
+    let intervalId: ReturnType<typeof setInterval>;
     async function poll() {
-      if (!active || !sessionId) return;
+      if (!sessionId) return;
       try {
         await fetchSession(sessionId);
       } catch {
         // silently ignore polling errors
       }
-      setTimeout(poll, 2000);
     }
-    poll();
-    return () => { active = false; };
+    poll(); // immediate first fetch
+    intervalId = setInterval(poll, 2000);
+    return () => clearInterval(intervalId);
   }, [sessionId, fetchSession]);
 
   const createSession = useCallback(async (name?: string, mode?: "home" | "party"): Promise<string | null> => {
@@ -154,6 +175,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
       setSessionId(id);
       setStoredSessionId(id);
+      clearExited(); // Rejoined — clear exited flag
       return true;
     } catch {
       setError("Erro de rede");
@@ -246,8 +268,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // Exit session screen without destroying — allows returning later
   const exitSession = useCallback(() => {
     setSession(null);
-    // Intentionally keep sessionId and localStorage intact
-    // so the user can rejoin the same session later
+    setSessionId(null); // Stop polling so home page detects exited state
+    markExited(); // Flag so provider won't auto-rejoin on next mount
+    // Keep localStorage intact so user can rejoin same session later
   }, []);
 
   const leaveSession = useCallback(async () => {

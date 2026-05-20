@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useGetMusica, useSearchMusicas } from "@workspace/api-client-react";
 import { useSession } from "@/hooks/use-session";
 import { useToast } from "@/hooks/use-toast";
@@ -179,6 +179,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
+  const [, navigate] = useLocation();
   const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost, leaveSession, exitSession } = useSession();
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
@@ -381,7 +382,7 @@ export default function TVPage() {
               className="text-white/40 hover:text-white/80 transition-colors p-1 rounded-full hover:bg-white/10"
               onClick={() => {
                 exitSession();
-                window.location.href = "/";
+                navigate("/");
               }}
               title="Voltar para home"
             >

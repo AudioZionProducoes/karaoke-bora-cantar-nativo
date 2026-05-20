@@ -30,7 +30,7 @@ export default function Home() {
 
   useEffect(() => {
     setStoredSessionId(getStoredSessionId());
-  }, [session]);
+  }, []);
 
   useMemo(() => { setPage(1); }, [debouncedSearch]);
 
@@ -176,28 +176,8 @@ export default function Home() {
           </div>
         </div>
 
-          {session && (
-            <div className="text-xs text-muted-foreground text-center space-y-1">
-              <p>Sessão ativa: <span className="font-mono text-primary/80 dark:text-yellow-400/80">{session.id}</span></p>
-              <Button
-                size="sm"
-                variant="ghost"
-                className={`h-6 px-2.5 text-[10px] rounded-full border transition-colors mt-1 ${
-                  scoringEnabled
-                    ? "bg-neutral-950 border-yellow-500/60 text-yellow-400 hover:bg-neutral-900 dark:bg-primary/20 dark:border-primary/50 dark:text-primary dark:hover:bg-primary/30"
-                    : "bg-red-50 border-red-400 text-red-700 hover:bg-red-100 dark:bg-white/5 dark:border-white/20 dark:text-white/60 dark:hover:bg-white/10"
-                }`}
-                onClick={() => setScoringEnabled(!scoringEnabled)}
-                title={scoringEnabled ? "Desativar pontuação" : "Ativar pontuação"}
-              >
-                <Trophy className="h-3 w-3 mr-1" />
-                {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
-              </Button>
-            </div>
-          )}
-
-          {/* Show rejoin button when session is stored but not loaded in context (user exited TV screen) */}
-          {!session && storedSessionId && (
+          {/* Show rejoin button when a session is stored in localStorage */}
+          {storedSessionId && (
             <div className="flex flex-col items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
               <p className="text-xs text-muted-foreground text-center">
                 Sessão <span className="font-mono text-yellow-400/80">{storedSessionId}</span> em andamento

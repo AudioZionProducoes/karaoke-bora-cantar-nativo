@@ -9,9 +9,16 @@ function formatHHMMSS(totalSeconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+function calcSeconds(access: { accessExpiresAt: string } | null): number {
+  if (!access) return 0;
+  const expires = new Date(access.accessExpiresAt).getTime();
+  const now = Date.now();
+  return Math.max(0, Math.ceil((expires - now) / 1000));
+}
+
 export function CountdownTimer({ className = "", alwaysShow = false, size = "sm" }: { className?: string; alwaysShow?: boolean; size?: "sm" | "lg" }) {
-  const { hasAccess, remainingMinutes, access } = useTemporaryAccess();
-  const [seconds, setSeconds] = useState(0);
+  const { hasAccess, remainingMinutes, access, ready } = useTemporaryAccess();
+  const [seconds, setSeconds] = useState(() => calcSeconds(access));
 
   // Calculate exact remaining seconds from the stored expiresAt
   useEffect(() => {
@@ -20,13 +27,8 @@ export function CountdownTimer({ className = "", alwaysShow = false, size = "sm"
       return;
     }
 
-    const expiresAt = access.accessExpiresAt;
-
     function update() {
-      const expires = new Date(expiresAt).getTime();
-      const now = Date.now();
-      const remaining = Math.max(0, Math.ceil((expires - now) / 1000));
-      setSeconds(remaining);
+      setSeconds(calcSeconds(access));
     }
 
     update();
@@ -45,6 +47,9 @@ export function CountdownTimer({ className = "", alwaysShow = false, size = "sm"
   const iconSize = isLarge ? "w-5 h-5" : "w-4 h-4";
   const padSize = isLarge ? "px-4 py-2" : "px-3 py-1.5";
   const labelSize = isLarge ? "text-xs" : "text-[10px]";
+
+  // Wait for provider to finish initial load before deciding to show "Ilimitado"
+  if (!ready) return null;
 
   if (!hasAccess && !alwaysShow) return null;
 
@@ -90,8 +95,8 @@ export function CountdownTimer({ className = "", alwaysShow = false, size = "sm"
 
 /* Large variant for hero/player overlay */
 export function CountdownTimerLarge({ className = "" }: { className?: string }) {
-  const { hasAccess, access } = useTemporaryAccess();
-  const [seconds, setSeconds] = useState(0);
+  const { hasAccess, access, ready } = useTemporaryAccess();
+  const [seconds, setSeconds] = useState(() => calcSeconds(access));
 
   useEffect(() => {
     if (!hasAccess || !access) {
@@ -99,13 +104,8 @@ export function CountdownTimerLarge({ className = "" }: { className?: string }) 
       return;
     }
 
-    const expiresAt = access.accessExpiresAt;
-
     function update() {
-      const expires = new Date(expiresAt).getTime();
-      const now = Date.now();
-      const remaining = Math.max(0, Math.ceil((expires - now) / 1000));
-      setSeconds(remaining);
+      setSeconds(calcSeconds(access));
     }
 
     update();
@@ -118,7 +118,7 @@ export function CountdownTimerLarge({ className = "" }: { className?: string }) 
   const isUrgent = seconds <= 600;
   const isCritical = seconds <= 60;
 
-  if (!hasAccess) return null;
+  if (!ready || !hasAccess) return null;
 
   return (
     <div
