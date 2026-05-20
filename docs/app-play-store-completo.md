@@ -114,6 +114,29 @@ Qualquer celular Android consegue espelhar para quase qualquer Smart TV:
 
 **O app roda no celular** e a TV so mostra a tela. Nao precisa instalar nada na TV.
 
+### iPhone - Como funciona?
+
+O iPhone **nao precisa do app** para usar o Karaoke. O controle remoto ja funciona perfeitamente pelo navegador:
+
+| Quem | Dispositivo | Como acessa |
+|------|-------------|-------------|
+| **Dono do bar** | Android (Play Store) | App nativo -> conecta na TV |
+| **Cantor com Android** | Android | Pode usar app OU navegador (QR code) |
+| **Cantor com iPhone** | iPhone | **Navegador Safari** -> escaneia QR -> controle remoto web |
+
+**Fluxo iPhone:**
+1. Abre a camera do iPhone
+2. Aponta para o QR code na TV
+3. Safari abre automaticamente
+4. Usa a fila, busca musicas, vota - tudo pelo navegador
+
+**Se precisar espelhar iPhone na TV:**
+- Cabo Lightning -> HDMI (adaptador Apple)
+- AirPlay (TVs novas 2018+ com AirPlay)
+- Apple TV conectado na TV
+
+**Conclusao:** O Karaoke funciona para todo mundo - Android tem app, iPhone usa navegador. Nenhum cantor fica de fora.
+
 ---
 
 ## Decisao Tomada

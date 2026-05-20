@@ -48,3 +48,9 @@ id = "iV7JPrucuQVsMIsK4489K"
 uri = "file://docs/Karaoke-Bora-Cantar-App-Play-Store-Completo.pdf"
 type = "pdf"
 title = "Resumo Completo - App Play Store (Atualizado)"
+
+[[outputs]]
+id = "_1_hOFBVbBdMpF1lPhryO"
+uri = "file://docs/Karaoke-Bora-Cantar-App-Play-Store-Completo-v2.pdf"
+type = "pdf"
+title = "Resumo Completo Atualizado (com iPhone e modelo de negocio)"

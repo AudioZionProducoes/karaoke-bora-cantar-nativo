@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
+<html><head><meta charset="UTF-8">
 <style>
 body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; line-height: 1.6; color: #333; }
 h1 { color: #1a1a2e; border-bottom: 2px solid #1a1a2e; padding-bottom: 10px; }
@@ -13,17 +11,13 @@ th { background: #1a1a2e; color: white; }
 tr:nth-child(even) { background: #f9f9f9; }
 code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
 hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
-</style>
-</head>
-<body>
-<h1>Karaoke Bora Cantar - App Mobile (Play Store)</h1>
-
+</style></head><body><h1>Karaoke Bora Cantar - App Mobile (Play Store)</h1>
 <h2>Resumo Completo da Conversa</h2>
 <p>Data: 20 de Maio de 2026</p>
-
+<hr />
 <h2>O que e possivel?</h2>
 <p>Sim, e totalmente viavel criar um app nativo Android para o Karaoke Bora Cantar na Google Play Store. O backend (API + banco de dados com 80k musicas) ja esta pronto e seria 100% reutilizado.</p>
-
+<hr />
 <h2>Vantagens do App na Play Store</h2>
 <ol>
 <li><strong>Alcance enorme</strong> - bilhoes de usuarios Android podem encontrar e instalar</li>
@@ -34,7 +28,7 @@ hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
 <li><strong>Notificacoes push</strong> - "Sua vez esta chegando", "Musica pausada", etc.</li>
 <li><strong>QR Code continua</strong> - o controle remoto via QR funciona do mesmo jeito</li>
 </ol>
-
+<hr />
 <h2>Tecnologia: Expo + React Native</h2>
 <ul>
 <li>Aproveita todo o React que ja existe no web app</li>
@@ -43,32 +37,81 @@ hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
 <li>Player Bunny Stream funciona via WebView nativo</li>
 <li>QR Code via camera do Expo</li>
 </ul>
-
-<h2>Telas do App</h2>
+<hr />
+<h2>Telas do App (Mockups ja criados no Canvas)</h2>
 <ol>
 <li><strong>Buscar Musicas</strong> - Busca com filtros, lista com botao "+" para adicionar</li>
 <li><strong>Fila da Sessao</strong> - Quem esta tocando, proximos, trocar de lugar, remover</li>
 <li><strong>Controle Remoto</strong> - Player com play/pause/pular, barra de progresso</li>
 </ol>
-
+<hr />
 <h2>Tempo Estimado de Desenvolvimento</h2>
 <table>
-<tr><th>Fase</th><th>Descricao</th><th>Tempo</th></tr>
-<tr><td>Setup + telas principais</td><td>Busca, fila, navegacao</td><td>2-3 dias</td></tr>
-<tr><td>Player Bunny Stream</td><td>Video em tela cheia, controles</td><td>2-3 dias</td></tr>
-<tr><td>QR Code + sessao</td><td>Ler QR, conectar, controle</td><td>1-2 dias</td></tr>
-<tr><td>Branding + Play Store</td><td>Logo, icone, splash, APK</td><td>2-3 dias</td></tr>
-<tr><td><strong>Total</strong></td><td></td><td><strong>7 a 10 dias</strong></td></tr>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Descricao</th>
+<th>Tempo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Setup + telas principais</td>
+<td>Busca, fila, navegacao</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td>Player Bunny Stream</td>
+<td>Video em tela cheia, controles</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td>QR Code + sessao</td>
+<td>Ler QR, conectar, controle</td>
+<td>1-2 dias</td>
+</tr>
+<tr>
+<td>Branding + Play Store</td>
+<td>Logo, icone, splash, APK</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>7 a 10 dias</strong></td>
+</tr>
+</tbody>
 </table>
-
+<hr />
 <h2>Custos Google Play Store</h2>
 <table>
-<tr><th>Item</th><th>Valor</th><th>Observacao</th></tr>
-<tr><td>Taxa de desenvolvedor Google</td><td><strong>$25 (USD)</strong></td><td>Paga uma vez so, valida para sempre</td></tr>
-<tr><td>Atualizacoes do app</td><td><strong>GRATIS</strong></td><td>Nao paga nada para enviar updates</td></tr>
-<tr><td>Taxa sobre vendas in-app</td><td>15-30%</td><td>So se vender assinatura/pacote pelo app</td></tr>
+<thead>
+<tr>
+<th>Item</th>
+<th>Valor</th>
+<th>Observacao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Taxa de desenvolvedor Google</td>
+<td><strong>$25 (USD)</strong></td>
+<td><strong>Paga uma vez so, valida para sempre</strong></td>
+</tr>
+<tr>
+<td>Atualizacoes do app</td>
+<td><strong>GRATIS</strong></td>
+<td>Nao paga nada para enviar updates</td>
+</tr>
+<tr>
+<td>Taxa sobre vendas in-app</td>
+<td>15-30%</td>
+<td>So se vender assinatura/pacote pelo app</td>
+</tr>
+</tbody>
 </table>
-
+<p><strong>Observacao importante</strong>: Atualizar musicas no Bunny.net NAO exige atualizar o app. O app le do seu backend/API, que por sua vez le do Bunny.net. As musicas sao dinamicas.</p>
+<hr />
 <h2>Codigo - Quem e o Dono?</h2>
 <p><strong>O codigo e 100% seu. O Replit nao disponibiliza para outras pessoas.</strong></p>
 <ul>
@@ -77,72 +120,176 @@ hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
 <li>App na Play Store: <strong>seu APK</strong>, sua marca, ninguem mais tem acesso</li>
 <li>Sem marca d'agua do Replit no app publicado</li>
 </ul>
-
+<hr />
 <h2>Modelo de Negocio para Comercio (Bares, Restaurantes)</h2>
-
 <h3>Como o dono do bar ativa o app:</h3>
 <table>
-<tr><th>Opcao</th><th>Como funciona</th></tr>
-<tr><td>WooCommerce (online)</td><td>Paga no seu site -> recebe cupom/codigo -> digita no app</td></tr>
-<tr><td>Voce pessoalmente</td><td>Voce vai no local, recebe em dinheiro/pix -> gera cupom no admin</td></tr>
-<tr><td>Assinatura recorrente</td><td>Paga mensal -> sistema ativa automaticamente via webhook</td></tr>
+<thead>
+<tr>
+<th>Opcao</th>
+<th>Como funciona</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>WooCommerce</strong> (online)</td>
+<td>Paga no seu site -&gt; recebe cupom/codigo -&gt; digita no app</td>
+</tr>
+<tr>
+<td><strong>Voce pessoalmente</strong></td>
+<td>Voce vai no local, recebe em dinheiro/pix -&gt; gera cupom no admin</td>
+</tr>
+<tr>
+<td><strong>Assinatura recorrente</strong></td>
+<td>Paga mensal -&gt; sistema ativa automaticamente via webhook</td>
+</tr>
+</tbody>
 </table>
-
 <h3>Fluxo completo:</h3>
 <ol>
 <li>Dono do bar <strong>baixa o app gratis</strong> na Play Store</li>
-<li>Abre o app -> tela de "ativar acesso"</li>
+<li>Abre o app -&gt; tela de "ativar acesso"</li>
 <li>Digita o <strong>cupom de ativacao</strong> (recebido via WooCommerce ou voce)</li>
 <li>Acesso liberado pelo <strong>tempo pago</strong> (1 mes, 3 meses, 1 ano)</li>
 <li>Abre na TV e os clientes escaneiam QR para entrar na fila</li>
 </ol>
-
 <h3>Compatibilidade com TVs:</h3>
 <table>
-<tr><th>Tipo de TV</th><th>O que acontece</th></tr>
-<tr><td>TV com Android TV (Sony, TCL, Philips)</td><td>App roda <strong>diretamente na TV</strong> - ideal!</td></tr>
-<tr><td>TV Samsung (Tizen)</td><td>Baixa no celular e <strong>espelha</strong> a tela para a TV</td></tr>
-<tr><td>TV comum + Chromecast</td><td>App no celular + Chromecast - transmite com um toque</td></tr>
-<tr><td>TV + TV Box Android</td><td>Instala no TV Box -> TV vira um "celular grande"</td></tr>
+<thead>
+<tr>
+<th>Tipo de TV</th>
+<th>O que acontece</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TV com Android TV</strong> (Sony, TCL, Philips)</td>
+<td>App roda <strong>diretamente na TV</strong> - ideal!</td>
+</tr>
+<tr>
+<td><strong>TV Samsung (Tizen)</strong></td>
+<td>Baixa no celular e <strong>espelha</strong> a tela para a TV</td>
+</tr>
+<tr>
+<td><strong>TV comum + Chromecast</strong></td>
+<td>App no celular + Chromecast - transmite com um toque</td>
+</tr>
+<tr>
+<td><strong>TV + TV Box Android</strong></td>
+<td>Instala no TV Box -&gt; TV vira um "celular grande"</td>
+</tr>
+</tbody>
 </table>
-
 <h3>Espelhamento (quando a TV nao e Android):</h3>
-<p>Qualquer celular Android consegue espelhar para quase qualquer Smart TV:</p>
-<ul>
-<li><strong>Smart View</strong> (Samsung) - nativo Samsung -> Samsung</li>
-<li><strong>Chromecast</strong> - botao "Transmitir" no celular -> TV com Chromecast</li>
-<li><strong>Miracast</strong> - padrao universal, funciona em varias TVs</li>
-<li><strong>Cabo HDMI</strong> - USB-C -> HDMI direto na TV</li>
-</ul>
+<p>Qualquer celular Android consegue espelhar para quase qualquer Smart TV:
+- <strong>Smart View</strong> (Samsung) - nativo Samsung -&gt; Samsung
+- <strong>Chromecast</strong> - botao "Transmitir" no celular -&gt; TV com Chromecast
+- <strong>Miracast</strong> - padrao universal, funciona em varias TVs
+- <strong>Cabo HDMI</strong> - USB-C -&gt; HDMI direto na TV</p>
 <p><strong>O app roda no celular</strong> e a TV so mostra a tela. Nao precisa instalar nada na TV.</p>
-
+<h3>iPhone - Como funciona?</h3>
+<p>O iPhone <strong>nao precisa do app</strong> para usar o Karaoke. O controle remoto ja funciona perfeitamente pelo navegador:</p>
+<table>
+<thead>
+<tr>
+<th>Quem</th>
+<th>Dispositivo</th>
+<th>Como acessa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dono do bar</strong></td>
+<td>Android (Play Store)</td>
+<td>App nativo -&gt; conecta na TV</td>
+</tr>
+<tr>
+<td><strong>Cantor com Android</strong></td>
+<td>Android</td>
+<td>Pode usar app OU navegador (QR code)</td>
+</tr>
+<tr>
+<td><strong>Cantor com iPhone</strong></td>
+<td>iPhone</td>
+<td><strong>Navegador Safari</strong> -&gt; escaneia QR -&gt; controle remoto web</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fluxo iPhone:</strong>
+1. Abre a camera do iPhone
+2. Aponta para o QR code na TV
+3. Safari abre automaticamente
+4. Usa a fila, busca musicas, vota - tudo pelo navegador</p>
+<p><strong>Se precisar espelhar iPhone na TV:</strong>
+- Cabo Lightning -&gt; HDMI (adaptador Apple)
+- AirPlay (TVs novas 2018+ com AirPlay)
+- Apple TV conectado na TV</p>
+<p><strong>Conclusao:</strong> O Karaoke funciona para todo mundo - Android tem app, iPhone usa navegador. Nenhum cantor fica de fora.</p>
+<hr />
 <h2>Decisao Tomada</h2>
 <p><strong>Projeto mobile e ADIADO</strong> ate o web app estar 100% pronto, testado e funcionando.</p>
-<p><strong>Codigo de ativacao:</strong> "App Play Store" ou "Aplicativo Play Store"</p>
-
+<p><strong>Codigo de ativacao</strong>: "App Play Store" ou "Aplicativo Play Store"</p>
+<p>Quando o usuario falar essa frase, iniciar a Task #11 do projeto e comecar a construir o app nativo Expo/React Native.</p>
+<hr />
 <h2>Tarefas do Projeto Relacionadas</h2>
 <ul>
 <li><strong>Task #11</strong>: "Add a mobile app so singers can browse and queue songs from their phone" (status: Rascunho)</li>
 <li><strong>Task #14</strong>: "Push codebase to GitHub" (status: CONCLUIDA)</li>
 </ul>
-
+<hr />
+<h2>Proximos Passos (quando ativar)</h2>
+<ol>
+<li>Aceitar Task #11</li>
+<li>Criar artefato Expo no projeto</li>
+<li>Reaproveitar API existente</li>
+<li>Adaptar telas do mockup para React Native</li>
+<li>Testar player Bunny Stream em WebView</li>
+<li>Implementar scanner de QR</li>
+<li>Gerar APK e publicar na Play Store</li>
+</ol>
+<hr />
 <h2>Links Importantes</h2>
 <ul>
 <li>Repositorio GitHub: https://github.com/AudioZionProducoes/karaoke-Bora-Cantar</li>
 <li>Mockups no Canvas: 3 telas mobile ja criadas (Buscar, Fila, Player)</li>
 </ul>
-
+<hr />
 <h2>Resumo Final</h2>
 <table>
-<tr><th>Pergunta</th><th>Resposta</th></tr>
-<tr><td>Quanto custa publicar?</td><td>$25 USD (uma vez)</td></tr>
-<tr><td>Precisa pagar Replit?</td><td>Nao</td></tr>
-<tr><td>Codigo e meu?</td><td>Sim, 100%</td></tr>
-<tr><td>Tem marca d'agua?</td><td>Nao</td></tr>
-<tr><td>Atualizar musicas requer update?</td><td>Nao</td></tr>
-<tr><td>Funciona em todas as TVs?</td><td>Sim (direto ou espelhando)</td></tr>
-<tr><td>Modelo de pagamento?</td><td>WooCommerce + cupom de ativacao</td></tr>
-</table>
-
-</body>
-</html>
+<thead>
+<tr>
+<th>Pergunta</th>
+<th>Resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quanto custa publicar?</td>
+<td>$25 USD (uma vez)</td>
+</tr>
+<tr>
+<td>Precisa pagar Replit?</td>
+<td>Nao</td>
+</tr>
+<tr>
+<td>Codigo e meu?</td>
+<td>Sim, 100%</td>
+</tr>
+<tr>
+<td>Tem marca d'agua?</td>
+<td>Nao</td>
+</tr>
+<tr>
+<td>Atualizar musicas requer update?</td>
+<td>Nao</td>
+</tr>
+<tr>
+<td>Funciona em todas as TVs?</td>
+<td>Sim (direto ou espelhando)</td>
+</tr>
+<tr>
+<td>Modelo de pagamento?</td>
+<td>WooCommerce + cupom de ativacao</td>
+</tr>
+</tbody>
+</table></body></html>
