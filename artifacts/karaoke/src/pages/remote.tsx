@@ -438,7 +438,7 @@ export default function RemotePage() {
             <div className="space-y-2">
               {session.queue.map((item, index) => {
                 const isMySong = item.addedBy === deviceId;
-                const isTargetable = swapSelecting && !isMySong && index > 0;
+                const isTargetable = swapSelecting && !isMySong;
                 return (
                   <div
                     key={item.id}
