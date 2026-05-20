@@ -371,22 +371,22 @@ export default function RemotePage() {
         )}
 
         {/* Tab bar */}
-        <div className="flex">
+        <div className="flex mt-2">
           <button
             onClick={() => setTab("search")}
-            className={`flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
+            className={`flex-1 py-3.5 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${
               tab === "search" ? "border-primary text-primary" : "border-transparent text-muted-foreground"
             }`}
           >
-            <Search className="h-3.5 w-3.5" />Buscar
+            <Search className="h-5 w-5" />Buscar
           </button>
           <button
             onClick={() => setTab("queue")}
-            className={`flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-1.5 border-b-2 transition-colors ${
+            className={`flex-1 py-3.5 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${
               tab === "queue" ? "border-primary text-primary" : "border-transparent text-muted-foreground"
             }`}
           >
-            <ListMusic className="h-3.5 w-3.5" />
+            <ListMusic className="h-5 w-5" />
             Fila {session?.queue?.length ? `(${session.queue.length})` : ""}
           </button>
         </div>
