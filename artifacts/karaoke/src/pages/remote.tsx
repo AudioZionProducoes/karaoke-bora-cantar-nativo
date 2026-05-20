@@ -453,6 +453,17 @@ export default function RemotePage() {
                     {index === 0 && currentSongId === item.id && (
                       <span className="text-[10px] bg-primary/20 text-primary rounded-full px-2 py-0.5 shrink-0">Tocando</span>
                     )}
+                    {index === 0 && !currentSongId && item.addedBy === deviceId && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-primary hover:text-yellow-300 shrink-0"
+                        onClick={(e) => { e.stopPropagation(); handlePlayNow(item.id); }}
+                        title="Tocar agora"
+                      >
+                        <Play className="h-3.5 w-3.5 fill-primary" />
+                      </Button>
+                    )}
                     {isMySong && !swapSelecting && (
                       <span className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5 shrink-0">Você</span>
                     )}
