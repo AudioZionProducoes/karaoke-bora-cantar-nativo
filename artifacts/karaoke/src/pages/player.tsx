@@ -4,6 +4,7 @@ import {
   Star, RotateCcw, Trophy, Search, X, Mic2,
   Smartphone, AlertTriangle, ArrowRight
 } from "lucide-react";
+import { CountdownTimer } from "@/components/countdown-timer";
 import { useGetMusica, getGetMusicaQueryKey, useSearchMusicas } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -332,8 +333,9 @@ export default function Player() {
           <PersistentSearchBar />
         </div>
 
-        {/* Right: Score button */}
+        {/* Right: Score button + Timer */}
         <div className="flex items-center gap-2 shrink-0">
+          <CountdownTimer className="hidden sm:flex" />
           {isLibraryConfigured && !score && (
             <Button variant="ghost" size="sm"
               className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs h-8 px-3"

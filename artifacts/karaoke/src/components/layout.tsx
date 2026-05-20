@@ -1,9 +1,10 @@
 import { Link } from "wouter";
-import { Sun, Moon, LogIn, LogOut, Clock, AlertTriangle, ArrowRight, Search } from "lucide-react";
+import { Sun, Moon, LogIn, LogOut, AlertTriangle, ArrowRight, Search } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/contexts/auth-context";
 import { useTemporaryAccess } from "@/contexts/temporary-access-context";
 import { useSearch } from "@/contexts/search-context";
+import { CountdownTimer } from "@/components/countdown-timer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -56,14 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {hasAccess ? (
               <div className="flex items-center gap-2">
-                <div className={`flex items-center gap-1.5 text-xs font-medium rounded-full px-3 py-1 border ${
-                  remainingMinutes <= 10
-                    ? "text-amber-400 bg-amber-500/10 border-amber-500/30 animate-pulse"
-                    : "text-primary bg-primary/10 border-primary/20"
-                }`}>
-                  <Clock className="h-3 w-3" />
-                  <span>{remainingMinutes}min</span>
-                </div>
+                <CountdownTimer />
                 <Button
                   variant="ghost"
                   size="sm"

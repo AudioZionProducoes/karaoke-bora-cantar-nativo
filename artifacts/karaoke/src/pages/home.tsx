@@ -13,6 +13,7 @@ import { useLocalMusic } from "@/contexts/local-music-context";
 import { useScoringEnabled } from "@/hooks/use-scoring";
 import { toast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
+import { CountdownTimerLarge } from "@/components/countdown-timer";
 
 export default function Home() {
   const { session, createSession, addToQueue, setMode, playSong, isHost } = useSession();
@@ -133,6 +134,10 @@ export default function Home() {
         <p className="text-lg text-muted-foreground max-w-xl">
           Busque no maior catálogo de karaokê. Músicas de alta qualidade, sem espera.
         </p>
+
+        <div className="flex justify-center w-full">
+          <CountdownTimerLarge />
+        </div>
 
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
           <div className="flex flex-col items-center gap-2">
