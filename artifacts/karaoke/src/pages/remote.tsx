@@ -296,7 +296,7 @@ export default function RemotePage() {
                 {session.swapRequest.requesterName} quer trocar de lugar com você!
               </div>
               <div className="flex gap-2 justify-center mt-1">
-                <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white h-6 text-[10px] px-3" onClick={handleAcceptSwap}>
+                <Button size="sm" className="bg-green-500 hover:bg-green-600 text-black h-6 text-[10px] px-3 font-bold" onClick={handleAcceptSwap}>
                   Sim, trocar
                 </Button>
                 <Button size="sm" className="bg-red-500 hover:bg-red-600 text-white h-6 text-[10px] px-3" onClick={handleDeclineSwap}>
