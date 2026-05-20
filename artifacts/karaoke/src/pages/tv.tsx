@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import QRCode from "react-qr-code";
 import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus, Trash2 } from "lucide-react";
+import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 
 function generateScore(singerName: string): { score: number; stars: number; label: string } {
   const score = Math.floor(Math.random() * 21) + 80;
@@ -192,6 +193,7 @@ export default function TVPage() {
   const [joinError, setJoinError] = useState<string | null>(null);
   const [showScore, setShowScore] = useState(false);
   const [videoKey, setVideoKey] = useState(0);
+  const [pendingItem, setPendingItem] = useState<QueueCandidate | null>(null);
 
   // Scoring toggle
   const [scoringEnabled, setScoringEnabled] = useScoringEnabled();
@@ -261,6 +263,17 @@ export default function TVPage() {
     nextSongRef.current = null;
     setVideoKey((k) => k + 1);
   }, []);
+
+  const handleAddToQueue = useCallback(async (singerName: string) => {
+    if (!pendingItem) return;
+    const result = await addToQueue(pendingItem.id, pendingItem.musica, pendingItem.artista, singerName);
+    if (result.ok) {
+      toast({ title: "Adicionado à fila!", description: `${pendingItem.musica} — ${pendingItem.artista} para ${singerName}` });
+    } else {
+      toast({ title: "Erro", description: result.error ?? "Não foi possível adicionar.", variant: "destructive" });
+    }
+    setPendingItem(null);
+  }, [pendingItem, addToQueue]);
 
   const handleNext = useCallback(async () => {
     // TV acts as the owner of the current song so it can always advance
@@ -598,14 +611,7 @@ export default function TVPage() {
                       <Button
                         size="sm"
                         className="bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] h-7 px-2"
-                        onClick={async () => {
-                          const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
-                          if (result.ok) {
-                            toast({ title: "Adicionado à fila!", description: `${m.musica} — ${m.artista}` });
-                          } else {
-                            toast({ title: "Erro", description: result.error ?? "Não foi possível adicionar.", variant: "destructive" });
-                          }
-                        }}
+                        onClick={() => setPendingItem({ id: m.id, musica: m.musica, artista: m.artista })}
                       >
                         <Plus className="h-3 w-3 mr-1" />Fila
                       </Button>
@@ -624,6 +630,7 @@ export default function TVPage() {
                           gap: '4px'
                         }}
                         onClick={async () => {
+                          // Play immediately with "Anônimo" as singer (TV direct play)
                           const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
                           if (result.ok) {
                             await playSong(m.id);
@@ -646,6 +653,9 @@ export default function TVPage() {
           </div>
         </div>
       )}
+
+      {/* Add to queue dialog */}
+      <AddToQueueDialog item={pendingItem} onConfirm={handleAddToQueue} onCancel={() => setPendingItem(null)} />
 
       {/* Score overlay */}
       {showScore && musica && currentSinger && (
