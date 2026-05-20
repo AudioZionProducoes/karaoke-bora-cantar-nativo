@@ -333,9 +333,9 @@ export default function Player() {
           <PersistentSearchBar />
         </div>
 
-        {/* Right: Score button + Timer */}
+        {/* Right: Timer + Score button */}
         <div className="flex items-center gap-2 shrink-0">
-          <CountdownTimer className="hidden sm:flex" />
+          <CountdownTimer />
           {isLibraryConfigured && !score && (
             <Button variant="ghost" size="sm"
               className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs h-8 px-3"
@@ -396,6 +396,11 @@ export default function Player() {
               onBack={() => window.history.back()}
             />
           )}
+
+          {/* Countdown overlay — inside video area, top-right */}
+          <div className="absolute top-4 right-4 z-30">
+            <CountdownTimer />
+          </div>
 
           {/* QR Code overlay — inside video area, bottom-right */}
           {sessionId && remoteUrl && (
