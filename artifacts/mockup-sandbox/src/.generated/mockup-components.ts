@@ -4,5 +4,6 @@ export const modules: ModuleMap = {
   "./components/mockups/mobile-app/Player.tsx": () => import("../components/mockups/mobile-app/Player.tsx"),
   "./components/mockups/mobile-app/Queue.tsx": () => import("../components/mockups/mobile-app/Queue.tsx"),
   "./components/mockups/mobile-app/Search.tsx": () => import("../components/mockups/mobile-app/Search.tsx"),
+  "./components/mockups/timer-demo/TVTimerPreview.tsx": () => import("../components/mockups/timer-demo/TVTimerPreview.tsx"),
   "./components/mockups/timer-demo/TimerPreview.tsx": () => import("../components/mockups/timer-demo/TimerPreview.tsx")
 };

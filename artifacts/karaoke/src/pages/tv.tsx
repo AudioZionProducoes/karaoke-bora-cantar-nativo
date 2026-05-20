@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import QRCode from "react-qr-code";
 import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus, Trash2 } from "lucide-react";
+import { CountdownTimer } from "@/components/countdown-timer";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 import { BunnyPlayer } from "@/components/bunny-player";
 
@@ -616,6 +617,11 @@ export default function TVPage() {
             Próxima música
           </button>
         )}
+
+        {/* Timer — top-right corner of video area */}
+        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20">
+          <CountdownTimer />
+        </div>
 
         {/* Logo watermark — top-right corner of video area */}
         <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 h-20 w-20 md:h-28 md:w-28 object-contain rounded-lg md:rounded-xl opacity-60 pointer-events-none shadow-lg shadow-black/40" />

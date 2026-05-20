@@ -60,3 +60,9 @@ id = "jyTEOUkGf0Fg_vQ8CKtvv"
 uri = "file://screenshots/home-with-timer.jpg"
 type = "image"
 title = "Tela Inicial"
+
+[[outputs]]
+id = "qqi4qmlJ4dqc8YRQuUk4A"
+uri = "file://screenshots/player-fixed-timer.jpg"
+type = "image"
+title = "Tela do Player"
