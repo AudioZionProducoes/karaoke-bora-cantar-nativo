@@ -543,7 +543,7 @@ export default function TVPage() {
                 {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
               </Button>
             </div>
-            <CountdownTimer alwaysShow className="w-full justify-center" />
+            <CountdownTimer alwaysShow size="lg" className="w-full justify-center" />
           </div>
         </div>
       </header>

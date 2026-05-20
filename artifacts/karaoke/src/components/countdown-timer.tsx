@@ -9,7 +9,7 @@ function formatHHMMSS(totalSeconds: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export function CountdownTimer({ className = "", alwaysShow = false }: { className?: string; alwaysShow?: boolean }) {
+export function CountdownTimer({ className = "", alwaysShow = false, size = "sm" }: { className?: string; alwaysShow?: boolean; size?: "sm" | "lg" }) {
   const { hasAccess, remainingMinutes, access } = useTemporaryAccess();
   const [seconds, setSeconds] = useState(0);
 
@@ -40,6 +40,12 @@ export function CountdownTimer({ className = "", alwaysShow = false }: { classNa
   const isUrgent = seconds <= 600; // 10 minutes
   const isCritical = seconds <= 60; // 1 minute
 
+  const isLarge = size === "lg";
+  const textSize = isLarge ? "text-lg" : "text-sm";
+  const iconSize = isLarge ? "w-5 h-5" : "w-4 h-4";
+  const padSize = isLarge ? "px-4 py-2" : "px-3 py-1.5";
+  const labelSize = isLarge ? "text-xs" : "text-[10px]";
+
   if (!hasAccess && !alwaysShow) return null;
 
   // When alwaysShow is true but no active access, show unlimited session state
@@ -47,15 +53,15 @@ export function CountdownTimer({ className = "", alwaysShow = false }: { classNa
     return (
       <div
         className={`
-          flex items-center gap-2 font-mono text-sm font-bold tracking-wider
-          rounded-lg px-3 py-1.5 border backdrop-blur-sm
+          flex items-center gap-2 font-mono ${textSize} font-bold tracking-wider
+          rounded-lg ${padSize} border backdrop-blur-sm
           text-emerald-400 bg-emerald-500/10 border-emerald-500/20
           ${className}
         `}
       >
-        <Clock className="w-4 h-4" />
+        <Clock className={iconSize} />
         <span>24:00:00</span>
-        <span className="text-[10px] uppercase tracking-wide opacity-70">Ilimitado</span>
+        <span className={`${labelSize} uppercase tracking-wide opacity-70`}>Ilimitado</span>
       </div>
     );
   }
@@ -63,8 +69,8 @@ export function CountdownTimer({ className = "", alwaysShow = false }: { classNa
   return (
     <div
       className={`
-        flex items-center gap-2 font-mono text-sm font-bold tracking-wider
-        rounded-lg px-3 py-1.5 border backdrop-blur-sm
+        flex items-center gap-2 font-mono ${textSize} font-bold tracking-wider
+        rounded-lg ${padSize} border backdrop-blur-sm
         ${
           isCritical
             ? "text-red-400 bg-red-500/10 border-red-500/40 animate-pulse"
@@ -75,9 +81,9 @@ export function CountdownTimer({ className = "", alwaysShow = false }: { classNa
         ${className}
       `}
     >
-      <Clock className={`w-4 h-4 ${isCritical ? "animate-spin" : ""}`} />
+      <Clock className={`${iconSize} ${isCritical ? "animate-spin" : ""}`} />
       <span>{formatted}</span>
-      {isCritical && <span className="text-[10px] uppercase tracking-wide">Acabando!</span>}
+      {isCritical && <span className={`${labelSize} uppercase tracking-wide`}>Acabando!</span>}
     </div>
   );
 }
