@@ -223,7 +223,10 @@ export default function RemotePage() {
         <>
           {session.swapRequest.requesterDeviceId === deviceId && (
             <div className="bg-yellow-500/15 text-yellow-400 text-xs text-center py-2 px-4 border-b border-yellow-500/20 animate-pulse">
-              Aguardando <strong>{session.swapRequest.targetName}</strong> aceitar a troca de lugar...
+              <div>Aguardando <strong>{session.swapRequest.targetName}</strong> aceitar a troca de lugar...</div>
+              <Button size="sm" variant="ghost" className="h-5 text-[10px] px-2 mt-1 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/10" onClick={handleDeclineSwap}>
+                Cancelar pedido
+              </Button>
             </div>
           )}
           {session.swapRequest.targetDeviceId === deviceId && (
