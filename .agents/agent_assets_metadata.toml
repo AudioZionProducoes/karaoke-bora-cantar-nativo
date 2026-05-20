@@ -35,10 +35,16 @@ title = "Karaokê Bora Cantar — Documentação Técnica Completa"
 id = "ktShGQOSp_bZZA9SJNMkV"
 uri = "file://docs/Karaoke-App-Play-Store-Resumo.pdf"
 type = "pdf"
-title = "Resumo Completo - App Play Store"
+title = "Resumo - App Play Store (Primeira Versao)"
 
 [[outputs]]
 id = "ZL5cjqWBkC0Wiwtk4Ox3H"
 uri = "file://docs/Karaoke-Custos-Play-Store.pdf"
 type = "pdf"
 title = "Custos Google Play Store"
+
+[[outputs]]
+id = "iV7JPrucuQVsMIsK4489K"
+uri = "file://docs/Karaoke-Bora-Cantar-App-Play-Store-Completo.pdf"
+type = "pdf"
+title = "Resumo Completo - App Play Store (Atualizado)"
