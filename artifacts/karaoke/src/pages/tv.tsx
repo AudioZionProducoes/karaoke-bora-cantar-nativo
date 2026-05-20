@@ -177,7 +177,7 @@ function ScoreOverlay({
 export default function TVPage() {
   const params = useParams();
   const sessionId = params.sessionId?.toUpperCase() ?? "";
-  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost } = useSession();
+  const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost, leaveSession } = useSession();
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
 
@@ -359,11 +359,17 @@ export default function TVPage() {
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* Left controls — minimal */}
             <div className="flex items-center gap-2 shrink-0">
-              <Link href="/">
-                <Button variant="ghost" size="sm" className="text-white/80 hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-7 px-2 text-xs">
-                  <ArrowLeft className="h-3 w-3 mr-1" />Sair
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white/80 hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-7 px-2 text-xs"
+                onClick={() => {
+                  leaveSession();
+                  window.location.href = "/";
+                }}
+              >
+                <ArrowLeft className="h-3 w-3 mr-1" />Sair
+              </Button>
               <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
               <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary" style={{ color: '#facc15' }}>{sessionId}</span></div>
               <div
