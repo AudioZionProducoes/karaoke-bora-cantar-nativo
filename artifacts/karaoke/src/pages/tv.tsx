@@ -592,14 +592,14 @@ export default function TVPage() {
             <p className="text-muted-foreground">Carregando música...</p>
           </div>
         ) : (
-          <div className="text-center p-8">
-            <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-48 w-48 object-contain mx-auto mb-6 rounded-2xl ring-2 ring-primary/30 shadow-[0_0_60px_rgba(250,204,21,0.25)]" />
-            <h2 className="text-xl font-bold mb-2">Aguardando músicas</h2>
-            <p className="text-muted-foreground mb-4 text-sm max-w-sm">
-              Use o celular para escanear o QR Code e adicionar músicas à fila.
+          <div className="text-center p-8 flex flex-col items-center justify-center h-full">
+            <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-72 w-72 md:h-96 md:w-96 object-contain mx-auto mb-8 rounded-3xl ring-4 ring-primary/40 shadow-[0_0_120px_rgba(250,204,21,0.35)] animate-pulse" />
+            <h2 className="text-3xl md:text-4xl font-black mb-3 tracking-tight">Bora Cantar!</h2>
+            <p className="text-muted-foreground mb-6 text-base md:text-lg max-w-md">
+              Escaneie o QR Code com seu celular e adicione músicas à fila.
             </p>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 inline-block">
-              <QRCode value={remoteUrl} size={160} bgColor="transparent" fgColor="#fff" />
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 inline-block shadow-[0_0_40px_rgba(250,204,21,0.15)]">
+              <QRCode value={remoteUrl} size={180} bgColor="transparent" fgColor="#fff" />
             </div>
           </div>
         )}
