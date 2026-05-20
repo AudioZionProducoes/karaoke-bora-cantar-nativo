@@ -511,14 +511,14 @@ export default function TVPage() {
             )}
           </div>
 
-          {/* Right side — Mode + Scoring buttons on top, Timer below */}
-          <div className="flex flex-col gap-1 shrink-0 items-end">
+          {/* Right side — Mode + Scoring buttons on top, Timer below (same width) */}
+          <div className="flex flex-col gap-1 shrink-0">
             <div className="flex items-center gap-1.5">
               {isHost && session && (
                 <Button
                   size="sm"
                   variant="ghost"
-                  className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
+                  className={`h-6 px-2 text-[10px] rounded-full border transition-colors flex-1 ${
                     session.mode === "party"
                       ? "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
                       : "bg-[hsl(142_70%_45%/0.25)] border-[hsl(142_70%_45%/0.5)] text-[hsl(142_70%_55%)] hover:bg-[hsl(142_70%_45%/0.35)]"
@@ -532,7 +532,7 @@ export default function TVPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                className={`h-6 px-2 text-[10px] rounded-full border transition-colors ${
+                className={`h-6 px-2 text-[10px] rounded-full border transition-colors flex-1 ${
                   scoringEnabled
                     ? "bg-[hsl(48_90%_50%/0.25)] border-[hsl(48_90%_50%/0.6)] text-[hsl(48_90%_60%)] hover:bg-[hsl(48_90%_50%/0.35)]"
                     : "bg-[hsl(0_70%_50%/0.25)] border-[hsl(0_70%_50%/0.5)] text-[hsl(0_70%_60%)] hover:bg-[hsl(0_70%_50%/0.35)]"
@@ -543,7 +543,7 @@ export default function TVPage() {
                 {scoringEnabled ? "Com Pontuação" : "Sem Pontuação"}
               </Button>
             </div>
-            <CountdownTimer alwaysShow />
+            <CountdownTimer alwaysShow className="w-full justify-center" />
           </div>
         </div>
       </header>
