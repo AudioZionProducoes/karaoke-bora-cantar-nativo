@@ -54,3 +54,9 @@ id = "_1_hOFBVbBdMpF1lPhryO"
 uri = "file://docs/Karaoke-Bora-Cantar-App-Play-Store-Completo-v2.pdf"
 type = "pdf"
 title = "Resumo Completo Atualizado (com iPhone e modelo de negocio)"
+
+[[outputs]]
+id = "jyTEOUkGf0Fg_vQ8CKtvv"
+uri = "file://screenshots/home-with-timer.jpg"
+type = "image"
+title = "Tela Inicial"
