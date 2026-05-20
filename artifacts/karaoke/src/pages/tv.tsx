@@ -372,161 +372,49 @@ export default function TVPage() {
       {/* Subtle top glow */}
       <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/20 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
 
-      {/* Top header bar — left: controls + queue, right: buttons pinned */}
-      <header className="shrink-0 z-20 bg-black/70 backdrop-blur-sm border-b border-white/5">
-        <div className="flex items-start justify-between px-3 py-1.5 gap-2">
-          {/* Left side — controls + queue, wraps freely */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Left controls — minimal */}
-            <div className="flex items-center gap-2 shrink-0">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white/80 hover:bg-white/10 rounded-full bg-white/5 border border-white/10 h-7 px-2 text-xs"
-                onClick={() => {
-                  exitSession();
-                  window.location.href = "/";
-                }}
-              >
-                <ArrowLeft className="h-3 w-3 mr-1" />Voltar
-              </Button>
-              {isHost && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-400/80 hover:bg-red-500/20 hover:text-red-300 rounded-full bg-red-500/10 border border-red-500/20 h-7 px-2 text-xs"
-                  onClick={() => {
-                    if (confirm("Encerrar a sessão? Todos os convidados serão desconectados.")) {
-                      leaveSession();
-                      window.location.href = "/";
-                    }
-                  }}
-                >
-                  <X className="h-3 w-3 mr-1" />Encerrar
-                </Button>
-              )}
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">TV</div>
-              <div className="font-bold text-xs shrink-0">Sessão: <span className="text-primary" style={{ color: '#facc15' }}>{sessionId}</span></div>
-              <div
-                role="button"
-                className="cursor-pointer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  borderRadius: '9999px',
-                  backgroundColor: '#facc15',
-                  border: '1px solid rgba(250,204,21,0.8)',
-                  height: '28px',
-                  padding: '0 8px',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  gap: '4px',
-                  position: 'relative'
-                }}
-                onClick={() => setShowSearch((s) => !s)}
-                title="Buscar músicas"
-              >
-                <style>{`.tv-search-txt { color: #000000 !important; }`}</style>
-                <div
-                  className="tv-search-txt flex items-center gap-1"
-                  style={{ lineHeight: '28px' }}
-                >
-                  <Search
-                    size={12}
-                    color="#000000"
-                    strokeWidth={2.5}
-                    style={{ flexShrink: 0 }}
-                  />
-                  <span className="tv-search-txt">Buscar</span>
-                </div>
-              </div>
+      {/* Top header — clean single-row, minimal */}
+      <header className="shrink-0 z-20 bg-black/60 backdrop-blur-sm border-b border-white/5">
+        <div className="flex items-center justify-between px-3 py-1.5 gap-3">
+          {/* Left — back + session code + search icon */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              className="text-white/40 hover:text-white/80 transition-colors p-1 rounded-full hover:bg-white/10"
+              onClick={() => {
+                exitSession();
+                window.location.href = "/";
+              }}
+              title="Voltar para home"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-white/30 uppercase tracking-wider">TV</span>
+              <span className="text-xs font-mono font-semibold text-yellow-400">{sessionId}</span>
             </div>
-
-            {/* Queue — flows right after Sessão, wraps like notebook lines */}
-            {session && session.queue.length > 0 && (
-              <>
-                {/* Now playing badge */}
-                {currentSongId && currentSinger && (
-                  <div className="shrink-0 flex items-center gap-2 bg-yellow-500/15 border border-yellow-400/40 rounded-lg px-3 py-1.5">
-                    <div className="bg-yellow-400/20 rounded-full p-1">
-                      <UserRound className="h-3 w-3 text-yellow-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora Cantando</div>
-                      <div className="text-xs font-bold text-white leading-tight">{currentSinger}</div>
-                      <div className="text-[10px] text-white/70 leading-tight">{musica?.musica ?? "Música " + currentSongId}</div>
-                    </div>
-                    {isHost && (
-                      <button
-                        type="button"
-                        className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFromQueue(currentSongId);
-                        }}
-                        title="Remover música atual"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Up next items */}
-                {session.queue.map((item, i) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 border ${
-                      i === 0 && currentSongId !== item.id
-                        ? "bg-primary/10 border-primary/30"
-                        : "bg-white/5 border-white/10"
-                    }`}
-                  >
-                    <span className="text-[10px] font-mono text-muted-foreground shrink-0">{i + 1}</span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs font-bold text-white leading-tight truncate">{item.singerName}</div>
-                      <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
-                    </div>
-                    {/* Play button on first item when nothing is playing */}
-                    {!currentSongId && i === 0 && (
-                      <button
-                        type="button"
-                        className="shrink-0 text-primary hover:text-yellow-300 transition-colors p-0.5"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playSong(item.id);
-                        }}
-                        title="Tocar agora"
-                      >
-                        <Play className="h-3 w-3" />
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromQueue(item.id);
-                      }}
-                      title="Remover da fila"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Empty queue hint */}
-            {(!session?.queue || session.queue.length === 0) && (
-              <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <ListMusic className="h-3 w-3" />
-                Fila vazia — escaneie o QR Code para adicionar músicas
-              </div>
-            )}
+            <button
+              className="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-400/90 hover:bg-yellow-300 text-black transition-colors"
+              onClick={() => setShowSearch((s) => !s)}
+              title="Buscar músicas"
+            >
+              <Search className="h-3 w-3" strokeWidth={2.5} />
+            </button>
           </div>
 
-          {/* Right side — Timer + Mode + Scoring in single horizontal row */}
+          {/* Center — Now playing (compact) */}
+          {session && currentSongId && currentSinger && (
+            <div className="hidden md:flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-lg px-3 py-1">
+              <div className="bg-yellow-400/20 rounded-full p-1">
+                <UserRound className="h-3 w-3 text-yellow-400" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora Cantando</div>
+                <div className="text-xs font-bold text-white leading-tight">{currentSinger}</div>
+                <div className="text-[10px] text-white/60 leading-tight">{musica?.musica ?? "Música " + currentSongId}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Right — Mode + Scoring + Timer */}
           <div className="flex items-center gap-1.5 shrink-0">
             {isHost && session && (
               <Button
