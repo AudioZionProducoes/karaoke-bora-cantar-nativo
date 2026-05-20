@@ -503,31 +503,6 @@ export default function RemotePage() {
             </div>
           )}
 
-          {/* Now playing card */}
-          {currentSongId && (
-            <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
-              <div className="text-[10px] text-primary uppercase tracking-wider mb-1">Agora na TV</div>
-              <div className="font-bold text-sm">
-                {session?.currentSingerName ? (
-                  <span className="flex items-center gap-1.5">
-                    <UserRound className="h-3.5 w-3.5 text-primary" />
-                    {session.currentSingerName}
-                  </span>
-                ) : (
-                  `Música #${currentSongId}`
-                )}
-              </div>
-              <Button
-                size="sm"
-                className="mt-2 w-full bg-primary hover:bg-primary/90"
-                onClick={handleNext}
-                disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
-                title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
-              >
-                <Play className="h-3.5 w-3.5 mr-1.5" />Próxima música
-              </Button>
-            </div>
-          )}
         </div>
       )}
     </div>
