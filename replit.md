@@ -57,6 +57,10 @@ Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player in
 - Interface em Português (PT/BR)
 - Design dark mode premium (padrão Spotify/Netflix)
 - Suporte a ~80.000 músicas simultâneas
+- **Próximo projeto:** App nativo para Play Store (código de ativação: "App Play Store" ou "Aplicativo Play Store")
+  - Só iniciar quando o web app estiver 100% pronto e testado
+  - Usar Expo/React Native, mesma API e banco de dados
+  - Task #11 já registrada no projeto
 
 ## Gotchas
 
