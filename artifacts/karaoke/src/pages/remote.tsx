@@ -423,7 +423,7 @@ export default function RemotePage() {
                 className={`w-full text-base font-bold ${swapSelecting ? "bg-red-500 hover:bg-red-600 text-white" : "bg-green-500 hover:bg-green-600 text-black"}`}
                 onClick={() => setSwapSelecting((s) => !s)}
               >
-                <Shuffle className="h-3.5 w-3.5 mr-1.5" />
+                <Shuffle className="h-5 w-5 mr-2" />
                 {swapSelecting ? "Cancelar Troca" : "Troca a Fila"}
               </Button>
               {swapSelecting && (
