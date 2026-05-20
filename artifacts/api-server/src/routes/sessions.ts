@@ -3,6 +3,19 @@ import { eq } from "drizzle-orm";
 import { db, sessionsTable } from "@workspace/db";
 import type { QueueEntry } from "@workspace/db";
 
+const SWAP_EXPIRY_MS = 15000; // 15 segundos
+
+function isSwapExpired(swap: { requestedAt?: string | null }): boolean {
+  const requestedAt = swap.requestedAt ? new Date(swap.requestedAt).getTime() : 0;
+  return Date.now() - requestedAt > SWAP_EXPIRY_MS;
+}
+
+async function clearExpiredSwap(sessionId: string, swap: { requestedAt?: string | null }): Promise<boolean> {
+  if (!isSwapExpired(swap)) return false;
+  await db.update(sessionsTable).set({ swapRequest: null, updatedAt: new Date() }).where(eq(sessionsTable.id, sessionId));
+  return true;
+}
+
 function generateId(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let id = "";
@@ -121,10 +134,17 @@ router.get("/sessions/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+  let [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
   if (!session) {
     res.status(404).json({ error: "Sessão não encontrada" });
     return;
+  }
+
+  // Auto-clear expired swap requests (15s timeout)
+  if (session.swapRequest && typeof session.swapRequest === "object" && isSwapExpired(session.swapRequest)) {
+    await clearExpiredSwap(id, session.swapRequest);
+    const [refreshed] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+    session = refreshed;
   }
 
   res.json(session);
