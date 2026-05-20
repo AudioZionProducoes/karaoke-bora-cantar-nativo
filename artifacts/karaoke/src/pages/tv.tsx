@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import QRCode from "react-qr-code";
 import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus, Trash2 } from "lucide-react";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
+import { BunnyPlayer } from "@/components/bunny-player";
 
 function generateScore(singerName: string): { score: number; stars: number; label: string } {
   const score = Math.floor(Math.random() * 21) + 80;
@@ -227,14 +228,27 @@ export default function TVPage() {
     setVideoKey((k) => k + 1);
   }, [session?.currentSongId]);
 
+  // Ref to hold latest handleNext for event listeners (declared before handleNext)
+  const handleNextRef = useRef<() => void>(() => {});
+
   const handleVideoEnd = useCallback(() => {
     if (scoringEnabled) {
       setShowScore(true);
     } else {
-      // Skip score, go straight to transition countdown
-      handleNext();
+      handleNextRef.current();
     }
   }, [scoringEnabled]);
+
+  // Listen for Bunny Stream iframe postMessage events
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data && typeof e.data === "object" && (e.data.method === "ended" || e.data.event === "ended")) {
+        handleVideoEnd();
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => window.removeEventListener("message", handler);
+  }, [handleVideoEnd]);
 
   const [skipError, setSkipError] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -326,6 +340,11 @@ export default function TVPage() {
       setTimeout(() => setSkipError(null), 3000);
     }
   }, [session?.currentSongAddedBy, sessionId]);
+
+  // Keep handleNextRef always pointing to the latest handleNext
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  }, [handleNext]);
 
   if (!joined) {
     return (
@@ -554,12 +573,11 @@ export default function TVPage() {
             </div>
           </div>
         ) : isLibraryConfigured && currentSongId ? (
-          <iframe
-            key={`iframe-${currentSongId}`}
-            src={`https://iframe.mediadelivery.net/embed/${libraryId}/${currentSongId}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
-            className="w-full h-full border-0"
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-            allowFullScreen
+          <BunnyPlayer
+            key={`bunny-${currentSongId}`}
+            libraryId={libraryId}
+            videoId={currentSongId}
+            onEnded={handleVideoEnd}
           />
         ) : localVideoUrl ? (
           <video
@@ -584,6 +602,19 @@ export default function TVPage() {
               <QRCode value={remoteUrl} size={160} bgColor="transparent" fgColor="#fff" />
             </div>
           </div>
+        )}
+
+        {/* Next song button — visible during playback for manual advance */}
+        {currentSongId && session?.queue && session.queue.length > 0 && (
+          <button
+            type="button"
+            className="absolute bottom-4 left-4 z-30 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-white/80 hover:text-white transition-colors"
+            onClick={handleVideoEnd}
+            title="Pular para próxima música"
+          >
+            <Play className="h-3 w-3 fill-white" />
+            Próxima música
+          </button>
         )}
 
         {/* Logo watermark — top-right corner of video area */}

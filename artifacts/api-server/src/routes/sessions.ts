@@ -339,8 +339,15 @@ router.post("/sessions/:id/next", async (req: ExpressReq, res): Promise<void> =>
   }
 
   const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
-  const next = queue.length > 0 ? queue[0] : null;
-  const updatedQueue = queue.slice(1);
+
+  // Remove the current song from the queue (if it's still there) before advancing
+  const currentSongIdNum = session.currentSongId ? Number(session.currentSongId) : null;
+  const queueWithoutCurrent = currentSongIdNum
+    ? queue.filter((q) => q.id !== currentSongIdNum)
+    : queue;
+
+  const next = queueWithoutCurrent.length > 0 ? queueWithoutCurrent[0] : null;
+  const updatedQueue = queueWithoutCurrent.slice(1);
 
   await db
     .update(sessionsTable)
