@@ -287,6 +287,26 @@ export default function RemotePage() {
           </div>
         </div>
 
+        {/* Now playing banner — visible on both tabs */}
+        {currentSongId && session?.currentSingerName && (
+          <div className="bg-primary/10 border-y border-primary/20 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <UserRound className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="text-xs text-primary font-bold">{session.currentSingerName}</span>
+              <span className="text-[10px] text-muted-foreground">está cantando</span>
+            </div>
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-xs h-6 px-2"
+              onClick={handleNext}
+              disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
+              title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
+            >
+              <Play className="h-3 w-3 mr-1" />Próxima
+            </Button>
+          </div>
+        )}
+
         {/* Tab bar */}
         <div className="flex">
           <button
@@ -499,7 +519,14 @@ export default function RemotePage() {
             <div className="mt-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
               <div className="text-[10px] text-primary uppercase tracking-wider mb-1">Agora na TV</div>
               <div className="font-bold text-sm">
-                Música #{currentSongId}
+                {session?.currentSingerName ? (
+                  <span className="flex items-center gap-1.5">
+                    <UserRound className="h-3.5 w-3.5 text-primary" />
+                    {session.currentSingerName}
+                  </span>
+                ) : (
+                  `Música #${currentSongId}`
+                )}
               </div>
               <Button
                 size="sm"
