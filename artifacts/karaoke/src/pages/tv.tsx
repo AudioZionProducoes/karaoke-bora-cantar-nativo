@@ -449,6 +449,68 @@ export default function TVPage() {
         </div>
       </header>
 
+      {/* Queue bar — horizontal scrolling list of upcoming songs */}
+      {session && session.queue.length > 0 && (
+        <div className="shrink-0 bg-black/40 backdrop-blur-sm border-b border-white/5 overflow-x-auto">
+          <div className="flex items-center gap-1 px-3 py-1 min-w-0">
+            {/* Now playing */}
+            {currentSongId && currentSinger && (
+              <div className="shrink-0 flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-md px-2.5 py-1">
+                <div className="bg-yellow-400/20 rounded-full p-0.5">
+                  <UserRound className="h-2.5 w-2.5 text-yellow-400" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[9px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora</div>
+                  <div className="text-[11px] font-bold text-white leading-tight truncate max-w-[100px]">{currentSinger}</div>
+                </div>
+                {isHost && (
+                  <button
+                    className="text-white/20 hover:text-red-400 transition-colors"
+                    onClick={() => removeFromQueue(currentSongId)}
+                    title="Remover"
+                  >
+                    <Trash2 className="h-2.5 w-2.5" />
+                  </button>
+                )}
+              </div>
+            )}
+            {/* Up next */}
+            {session.queue.map((item, i) => {
+              const isCurrent = currentSongId === item.id;
+              if (isCurrent) return null;
+              return (
+                <div
+                  key={item.id}
+                  className="shrink-0 flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-md px-2 py-1 hover:bg-white/10 transition-colors"
+                >
+                  <span className="text-[9px] font-mono text-white/30">{i + 1}</span>
+                  <div className="min-w-0">
+                    <div className="text-[11px] font-semibold text-white leading-tight truncate max-w-[100px]">{item.singerName}</div>
+                    <div className="text-[9px] text-white/50 leading-tight truncate max-w-[100px]">{item.musica}</div>
+                  </div>
+                  {!currentSongId && i === 0 && (
+                    <button
+                      className="text-primary hover:text-yellow-300 transition-colors"
+                      onClick={() => playSong(item.id)}
+                      title="Tocar"
+                    >
+                      <Play className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+                  <button
+                    className="text-white/20 hover:text-red-400 transition-colors"
+                    onClick={() => removeFromQueue(item.id)}
+                    title="Remover"
+                  >
+                    <Trash2 className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Video Player */}
       <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
         {isTransitioning && nextSongRef.current ? (
