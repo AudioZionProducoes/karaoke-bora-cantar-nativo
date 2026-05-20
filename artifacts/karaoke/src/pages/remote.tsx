@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, Mic2, ListMusic, Play, Plus, Check, UserRound,
-  Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil, Shuffle
+  Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil, Shuffle,
+  Sun, Moon, Eye
 } from "lucide-react";
 import { AddToQueueDialog } from "@/components/add-to-queue-dialog";
 
@@ -33,6 +34,7 @@ export default function RemotePage() {
   const [editSearching, setEditSearching] = useState(false);
   const [swapSelecting, setSwapSelecting] = useState(false);
   const [swapError, setSwapError] = useState<string | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light" | "contrast">("dark");
 
   const { data: searchResults, isLoading } = useSearchMusicas({
     q: debouncedSearch, page, limit: 12,
@@ -150,7 +152,60 @@ export default function RemotePage() {
   const currentSongId = session?.currentSongId ? Number(session.currentSongId) : null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div
+      className="min-h-screen flex flex-col"
+      style={
+        theme === "light"
+          ? ({
+              "--background": "0 0% 100%",
+              "--foreground": "0 0% 5%",
+              "--card": "0 0% 96%",
+              "--card-foreground": "0 0% 5%",
+              "--popover": "0 0% 100%",
+              "--popover-foreground": "0 0% 5%",
+              "--primary": "220 90% 56%",
+              "--primary-foreground": "0 0% 100%",
+              "--secondary": "0 0% 90%",
+              "--secondary-foreground": "0 0% 10%",
+              "--muted": "0 0% 90%",
+              "--muted-foreground": "0 0% 40%",
+              "--accent": "0 0% 90%",
+              "--accent-foreground": "0 0% 10%",
+              "--destructive": "0 84% 60%",
+              "--destructive-foreground": "0 0% 100%",
+              "--border": "0 0% 80%",
+              "--input": "0 0% 80%",
+              "--ring": "220 90% 56%",
+              backgroundColor: "hsl(0 0% 100%)",
+              color: "hsl(0 0% 5%)",
+            } as React.CSSProperties)
+          : theme === "contrast"
+            ? ({
+                "--background": "0 0% 0%",
+                "--foreground": "60 100% 50%",
+                "--card": "0 0% 10%",
+                "--card-foreground": "60 100% 50%",
+                "--popover": "0 0% 5%",
+                "--popover-foreground": "60 100% 50%",
+                "--primary": "60 100% 50%",
+                "--primary-foreground": "0 0% 0%",
+                "--secondary": "0 0% 15%",
+                "--secondary-foreground": "60 100% 50%",
+                "--muted": "0 0% 15%",
+                "--muted-foreground": "60 100% 60%",
+                "--accent": "0 0% 15%",
+                "--accent-foreground": "60 100% 50%",
+                "--destructive": "0 100% 50%",
+                "--destructive-foreground": "0 0% 100%",
+                "--border": "60 100% 40%",
+                "--input": "60 100% 30%",
+                "--ring": "60 100% 50%",
+                backgroundColor: "hsl(0 0% 0%)",
+                color: "hsl(60 100% 50%)",
+              } as React.CSSProperties)
+            : undefined
+      }
+    >
       <AddToQueueDialog item={pendingItem} onConfirm={handleAdd} onCancel={() => setPendingItem(null)} />
 
       {/* Edit Song Dialog — swap song in queue */}
@@ -268,7 +323,18 @@ export default function RemotePage() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 border-border/60 bg-card/50 hover:bg-card hover:text-primary"
+              onClick={() => setTheme((t) => (t === "dark" ? "light" : t === "light" ? "contrast" : "dark"))}
+              title={theme === "dark" ? "Tema escuro — clique para claro" : theme === "light" ? "Tema claro — clique para alto contraste" : "Alto contraste — clique para escuro"}
+            >
+              {theme === "dark" && <Moon className="h-4 w-4" />}
+              {theme === "light" && <Sun className="h-4 w-4" />}
+              {theme === "contrast" && <Eye className="h-4 w-4" />}
+            </Button>
             {session && (
               <span
                 className={`inline-flex items-center h-7 px-2.5 text-[10px] rounded-full border ${
@@ -461,7 +527,7 @@ export default function RemotePage() {
                       <UserRound className="h-3.5 w-3.5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className={`font-bold text-xs line-clamp-1 ${isTargetable ? "text-red-400 animate-pulse" : "text-white"}`}>
+                      <div className={`font-bold text-xs line-clamp-1 ${isTargetable ? "text-red-400 animate-pulse" : "text-foreground"}`}>
                         {item.singerName}
                       </div>
                       <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
