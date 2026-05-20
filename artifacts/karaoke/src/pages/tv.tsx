@@ -473,7 +473,7 @@ export default function TVPage() {
 
           {/* Right side — Mode + Scoring buttons pinned top-right */}
           <div className="flex flex-col gap-1.5 shrink-0">
-            {session && (
+            {isHost && session && (
               <Button
                 size="sm"
                 variant="ghost"

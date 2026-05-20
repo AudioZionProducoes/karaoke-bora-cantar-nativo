@@ -183,7 +183,7 @@ router.delete("/sessions/:id/queue/:songId", async (req: ExpressReq, res): Promi
   }
 
   const deviceId = getDeviceId(req);
-  const isHost = session.hostDeviceId && session.hostDeviceId === deviceId;
+  const isHost = !session.hostDeviceId || session.hostDeviceId === deviceId;
   if (!isHost && item.addedBy && item.addedBy !== "anon" && item.addedBy !== deviceId) {
     res.status(403).json({ error: "Você só pode apagar músicas que você adicionou" });
     return;

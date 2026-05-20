@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 
 export default function Home() {
-  const { session, createSession, addToQueue, setMode, playSong } = useSession();
+  const { session, createSession, addToQueue, setMode, playSong, isHost } = useSession();
   const { selectFolder } = useLocalMusic();
   const [, navigate] = useLocation();
   const { searchTerm } = useSearch();
@@ -33,9 +33,17 @@ export default function Home() {
   async function handleStartTV(mode?: "home" | "party") {
     if (session) {
       if (mode && mode !== session.mode) {
-        setStartingSession(true);
-        await setMode(mode);
-        setStartingSession(false);
+        if (isHost) {
+          setStartingSession(true);
+          await setMode(mode);
+          setStartingSession(false);
+        } else {
+          toast({
+            title: "Apenas o host pode mudar o modo",
+            description: `A TV está no modo ${session.mode === "party" ? "Festa" : "Casa"}.`,
+            variant: "destructive",
+          });
+        }
       }
       navigate(`/tv/${session.id}`);
       return;

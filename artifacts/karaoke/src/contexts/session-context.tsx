@@ -86,7 +86,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(getStoredSessionId);
   const deviceId = getDeviceId();
-  const isHost = !!session?.hostDeviceId && session.hostDeviceId === deviceId;
+  // Sessões criadas antes da migração não têm hostDeviceId — neste caso todos têm permissão
+  const isHost = !session?.hostDeviceId || session.hostDeviceId === deviceId;
 
   const fetchSession = useCallback(async (id: string) => {
     const res = await fetch(`/api/sessions/${id}`, { headers: { "X-Device-Id": deviceId } });
