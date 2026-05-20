@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; line-height: 1.6; color: #333; }
+h1 { color: #1a1a2e; border-bottom: 2px solid #1a1a2e; padding-bottom: 10px; }
+h2 { color: #16213e; margin-top: 30px; }
+h3 { color: #0f3460; }
+table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+th { background: #1a1a2e; color: white; }
+tr:nth-child(even) { background: #f9f9f9; }
+code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+</style></head><body><h1>Karaoke Bora Cantar - App Mobile (Play Store)</h1>
+<h2>Resumo da Conversa</h2>
+<p>Data: 20 de Maio de 2026</p>
+<hr />
+<h2>O que e possivel?</h2>
+<p>Sim, e totalmente viavel criar um app nativo Android para o Karaoke Bora Cantar na Google Play Store. O backend (API + banco de dados com 80k musicas) ja esta pronto e seria 100% reutilizado.</p>
+<hr />
+<h2>Vantagens do App na Play Store</h2>
+<ol>
+<li><strong>Alcance enorme</strong> - bilhoes de usuarios Android podem encontrar e instalar</li>
+<li><strong>Profissionalismo</strong> - passa mais credibilidade para bares e restaurantes</li>
+<li><strong>Atualizacoes automaticas</strong> - usuarios recebem novas versoes sem fazer nada</li>
+<li><strong>Funciona offline parcialmente</strong> - cache local de musicas, busca, fila</li>
+<li><strong>Melhor na TV</strong> - app nativo em TVs Android roda mais fluido que navegador</li>
+<li><strong>Notificacoes push</strong> - "Sua vez esta chegando", "Musica pausada", etc.</li>
+<li><strong>QR Code continua</strong> - o controle remoto via QR funciona do mesmo jeito</li>
+</ol>
+<hr />
+<h2>Tecnologia: Expo + React Native</h2>
+<ul>
+<li>Aproveita todo o React que ja existe no web app</li>
+<li>Mesma API backend (Express) - nada muda no servidor</li>
+<li>Mesmo banco PostgreSQL com 80k musicas</li>
+<li>Player Bunny Stream funciona via WebView nativo</li>
+<li>QR Code via camera do Expo</li>
+</ul>
+<hr />
+<h2>Telas do App (Mockups ja criados no Canvas)</h2>
+<ol>
+<li><strong>Buscar Musicas</strong> - Busca com filtros, lista com botao "+" para adicionar</li>
+<li><strong>Fila da Sessao</strong> - Quem esta tocando, proximos, trocar de lugar, remover</li>
+<li><strong>Controle Remoto</strong> - Player com play/pause/pular, barra de progresso</li>
+</ol>
+<hr />
+<h2>Tempo Estimado de Desenvolvimento</h2>
+<table>
+<thead>
+<tr>
+<th>Fase</th>
+<th>Descricao</th>
+<th>Tempo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Setup + telas principais</td>
+<td>Busca, fila, navegacao</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td>Player Bunny Stream</td>
+<td>Video em tela cheia, controles</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td>QR Code + sessao</td>
+<td>Ler QR, conectar, controle</td>
+<td>1-2 dias</td>
+</tr>
+<tr>
+<td>Branding + Play Store</td>
+<td>Logo, icone, splash, APK</td>
+<td>2-3 dias</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>7 a 10 dias</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Custos Google Play Store</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Valor</th>
+<th>Observacao</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Taxa de desenvolvedor Google</td>
+<td><strong>$25 (USD)</strong></td>
+<td><strong>Paga uma vez so, valida para sempre</strong></td>
+</tr>
+<tr>
+<td>Atualizacoes do app</td>
+<td><strong>GRATIS</strong></td>
+<td>Nao paga nada para enviar updates</td>
+</tr>
+<tr>
+<td>Taxa sobre vendas in-app</td>
+<td>15-30%</td>
+<td>So se vender assinatura/pacote pelo app</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Observacao importante</strong>: Atualizar musicas no Bunny.net NAO exige atualizar o app. O app le do seu backend/API, que por sua vez le do Bunny.net. As musicas sao dinamicas.</p>
+<hr />
+<h2>Decisao Tomada</h2>
+<p><strong>Projeto mobile e ADIADO</strong> ate o web app estar 100% pronto, testado e funcionando.</p>
+<p><strong>Codigo de ativacao</strong>: "App Play Store" ou "Aplicativo Play Store"</p>
+<p>Quando o usuario falar essa frase, iniciar a Task #11 do projeto e comecar a construir o app nativo Expo/React Native.</p>
+<hr />
+<h2>Tarefas do Projeto Relacionadas</h2>
+<ul>
+<li><strong>Task #11</strong>: "Add a mobile app so singers can browse and queue songs from their phone" (status: Rascunho)</li>
+<li><strong>Task #14</strong>: "Push codebase to GitHub" (status: CONCLUIDA - codigo ja esta no GitHub)</li>
+</ul>
+<hr />
+<h2>Proximos Passos (quando ativar)</h2>
+<ol>
+<li>Aceitar Task #11</li>
+<li>Criar artefato Expo no projeto</li>
+<li>Reaproveitar API existente</li>
+<li>Adaptar telas do mockup para React Native</li>
+<li>Testar player Bunny Stream em WebView</li>
+<li>Implementar scanner de QR</li>
+<li>Gerar APK e publicar na Play Store</li>
+</ol>
+<hr />
+<h2>Links Importantes</h2>
+<ul>
+<li>Repositorio GitHub: https://github.com/AudioZionProducoes/karaoke-Bora-Cantar</li>
+<li>Mockups no Canvas: 3 telas mobile ja criadas (Buscar, Fila, Player)</li>
+</ul></body></html>
