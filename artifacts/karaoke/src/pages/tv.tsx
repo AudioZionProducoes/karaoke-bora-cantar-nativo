@@ -649,16 +649,11 @@ export default function TVPage() {
                           gap: '4px'
                         }}
                         onClick={async () => {
-                          // Play immediately with "Anônimo" as singer (TV direct play)
-                          const result = await addToQueue(m.id, m.musica, m.artista, "Anônimo");
-                          if (result.ok) {
-                            await playSong(m.id);
-                            setShowSearch(false);
-                            setSearchTerm("");
-                            toast({ title: "Tocando agora!", description: `${m.musica} — ${m.artista}` });
-                          } else {
-                            toast({ title: "Erro", description: result.error ?? "Não foi possível adicionar.", variant: "destructive" });
-                          }
+                          // Play immediately without adding to queue
+                          await playSong(m.id);
+                          setShowSearch(false);
+                          setSearchTerm("");
+                          toast({ title: "Tocando agora!", description: `${m.musica} — ${m.artista}` });
                         }}
                       >
                         <Play style={{ height: '12px', width: '12px', color: '#000000', flexShrink: 0 }} />

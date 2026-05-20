@@ -105,20 +105,10 @@ export default function Home() {
       activeSessionId = newId;
     }
 
-    // Adiciona à fila com nome "Anônimo" e toca imediatamente
-    const result = await addToQueue(item.id, item.musica, item.artista, "Anônimo");
-    if (!result.ok) {
-      toast({
-        title: "Erro ao adicionar",
-        description: result.error ?? "Não foi possível adicionar à fila.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Toca imediatamente sem adicionar à fila
     await playSong(item.id);
     navigate(`/tv/${activeSessionId}`);
-  }, [session, createSession, addToQueue, playSong, navigate]);
+  }, [session, createSession, playSong, navigate]);
 
   return (
     <Layout>
