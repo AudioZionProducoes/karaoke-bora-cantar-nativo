@@ -511,8 +511,9 @@ export default function TVPage() {
             )}
           </div>
 
-          {/* Right side — Mode + Scoring buttons pinned top-right */}
-          <div className="flex flex-col gap-1.5 shrink-0">
+          {/* Right side — Timer + Mode + Scoring buttons pinned top-right */}
+          <div className="flex flex-col gap-1.5 shrink-0 items-end">
+            <CountdownTimer />
             {isHost && session && (
               <Button
                 size="sm"
@@ -617,11 +618,6 @@ export default function TVPage() {
             Próxima música
           </button>
         )}
-
-        {/* Timer — top-right corner of video area */}
-        <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20">
-          <CountdownTimer />
-        </div>
 
         {/* Logo watermark — top-right corner of video area */}
         <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="absolute top-2 right-2 md:top-4 md:right-4 z-10 h-20 w-20 md:h-28 md:w-28 object-contain rounded-lg md:rounded-xl opacity-60 pointer-events-none shadow-lg shadow-black/40" />
