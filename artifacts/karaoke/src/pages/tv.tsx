@@ -452,6 +452,20 @@ export default function TVPage() {
                       <div className="text-xs font-bold text-white leading-tight truncate">{item.singerName}</div>
                       <div className="text-[10px] text-white/70 leading-tight truncate">{item.musica}</div>
                     </div>
+                    {/* Play button on first item when nothing is playing */}
+                    {!currentSongId && i === 0 && (
+                      <button
+                        type="button"
+                        className="shrink-0 text-primary hover:text-yellow-300 transition-colors p-0.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          playSong(item.id);
+                        }}
+                        title="Tocar agora"
+                      >
+                        <Play className="h-3 w-3" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="shrink-0 text-white/30 hover:text-red-400 transition-colors p-0.5"
