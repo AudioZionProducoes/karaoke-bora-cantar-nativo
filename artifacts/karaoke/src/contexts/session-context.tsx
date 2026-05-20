@@ -242,11 +242,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [sessionId]);
 
-  const leaveSession = useCallback(() => {
+  const leaveSession = useCallback(async () => {
+    // If host, destroy the session on the server so guests can't keep using it
+    if (sessionId && isHost) {
+      try {
+        await fetch(`/api/sessions/${sessionId}`, {
+          method: "DELETE",
+          headers: { "X-Device-Id": deviceId },
+        });
+      } catch {
+        // ignore network errors — local cleanup happens regardless
+      }
+    }
     setSession(null);
     setSessionId(null);
     setStoredSessionId(null);
-  }, []);
+  }, [sessionId, isHost, deviceId]);
 
   const updateQueueItem = useCallback(async (songId: number, musica: string, artista: string): Promise<boolean> => {
     if (!sessionId) return false;

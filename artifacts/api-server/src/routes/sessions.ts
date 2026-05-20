@@ -48,6 +48,34 @@ router.post("/sessions", async (req, res): Promise<void> => {
   res.status(500).json({ error: "Não foi possível criar uma sessão. Tente novamente." });
 });
 
+router.delete("/sessions/:id", async (req: ExpressReq, res): Promise<void> => {
+  const id = String(req.params.id ?? "").toUpperCase();
+  if (!id || id.length !== 6) {
+    res.status(400).json({ error: "ID de sess\u00e3o inv\u00e1lido" });
+    return;
+  }
+
+  try {
+    const [session] = await db.select().from(sessionsTable).where(eq(sessionsTable.id, id));
+    if (!session) {
+      res.status(404).json({ error: "Sess\u00e3o n\u00e3o encontrada" });
+      return;
+    }
+
+    const deviceId = getDeviceId(req);
+    const isHost = !session.hostDeviceId || session.hostDeviceId === deviceId;
+    if (!isHost) {
+      res.status(403).json({ error: "Apenas o host pode encerrar a sess\u00e3o" });
+      return;
+    }
+
+    await db.delete(sessionsTable).where(eq(sessionsTable.id, id));
+    res.json({ deleted: true });
+  } catch {
+    res.status(500).json({ error: "Erro ao encerrar sess\u00e3o" });
+  }
+});
+
 router.patch("/sessions/:id", async (req: ExpressReq, res): Promise<void> => {
   const id = String(req.params.id ?? "").toUpperCase();
   if (!id || id.length !== 6) {
