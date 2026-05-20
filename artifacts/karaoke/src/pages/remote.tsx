@@ -293,7 +293,7 @@ export default function RemotePage() {
             <div className="bg-red-500/20 text-red-400 text-xs text-center py-3 px-4 border-b border-red-500/30">
               <div className="font-bold mb-1 animate-pulse">
                 <Shuffle className="h-3 w-3 inline mr-1" />
-                {session.swapRequest.requesterName} quer trocar de lugar com você!
+                <span className="text-white text-sm">{session.swapRequest.requesterName}</span> quer trocar de lugar com você!
               </div>
               <div className="flex gap-2 justify-center mt-1">
                 <Button size="sm" className="bg-green-500 hover:bg-green-600 text-black h-7 text-xs px-3 font-bold" onClick={handleAcceptSwap}>
