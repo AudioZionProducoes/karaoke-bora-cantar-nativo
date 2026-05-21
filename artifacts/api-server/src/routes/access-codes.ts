@@ -284,6 +284,7 @@ router.get("/access-codes/validate", async (req, res): Promise<void> => {
 // POST /access-codes/:code/reactivate — reactivate an already-redeemed code (get remaining time)
 router.post("/access-codes/:code/reactivate", async (req, res): Promise<void> => {
   const rawCode = typeof req.params.code === "string" ? req.params.code.trim().toUpperCase() : "";
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : null;
 
   if (!rawCode) {
     res.status(400).json({ error: "Código obrigatório" });
@@ -313,6 +314,12 @@ router.post("/access-codes/:code/reactivate", async (req, res): Promise<void> =>
     return;
   }
 
+  // Validate email if provided (must match the original redeemer)
+  if (email && code.redeemerEmail && email !== code.redeemerEmail.toLowerCase()) {
+    res.status(403).json({ error: "Este cupom foi resgatado com outro e-mail. Use o mesmo e-mail da primeira vez." });
+    return;
+  }
+
   const accessExpiresAt = code.usedAt ? addMinutes(code.usedAt, code.durationMinutes) : null;
 
   if (!accessExpiresAt || accessExpiresAt < now) {
@@ -322,7 +329,7 @@ router.post("/access-codes/:code/reactivate", async (req, res): Promise<void> =>
 
   const remainingMinutes = Math.max(0, Math.ceil((accessExpiresAt.getTime() - now.getTime()) / 60_000));
 
-  req.log?.info({ code: rawCode, remainingMinutes }, "Access code reactivated");
+  req.log?.info({ code: rawCode, remainingMinutes, email }, "Access code reactivated");
 
   res.json({
     success: true,
