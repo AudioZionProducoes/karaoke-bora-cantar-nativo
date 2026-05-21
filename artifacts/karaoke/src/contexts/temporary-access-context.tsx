@@ -13,6 +13,7 @@ interface TemporaryAccessContextType {
   remainingMinutes: number;
   ready: boolean;
   redeemCode: (code: string, name: string, email: string, whatsapp: string, marketingConsent?: boolean) => Promise<{ success: boolean; message?: string; error?: string }>;
+  reactivateCode: (code: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   clearAccess: () => void;
 }
 
@@ -101,6 +102,37 @@ export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const reactivateCode = useCallback(async (code: string): Promise<{ success: boolean; message?: string; error?: string }> => {
+    try {
+      const res = await fetch(`/api/access-codes/${encodeURIComponent(code.toUpperCase().trim())}/reactivate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return { success: false, error: data.error || "Erro ao reativar cupom" };
+      }
+
+      const data = await res.json();
+      const newAccess: TemporaryAccess = {
+        code: code.toUpperCase().trim(),
+        durationMinutes: data.durationMinutes,
+        accessExpiresAt: data.accessExpiresAt,
+        redeemedAt: new Date().toISOString(),
+      };
+      saveAccess(newAccess);
+      setAccess(newAccess);
+      // Immediately update remaining
+      const expires = new Date(data.accessExpiresAt).getTime();
+      const mins = Math.max(0, Math.ceil((expires - Date.now()) / 60_000));
+      setRemaining(mins);
+      return { success: true, message: data.message };
+    } catch {
+      return { success: false, error: "Erro de rede. Tente novamente." };
+    }
+  }, []);
+
   const clearAccess = useCallback(() => {
     saveAccess(null);
     setAccess(null);
@@ -115,6 +147,7 @@ export function TemporaryAccessProvider({ children }: { children: ReactNode }) {
         remainingMinutes: remaining,
         ready,
         redeemCode,
+        reactivateCode,
         clearAccess,
       }}
     >

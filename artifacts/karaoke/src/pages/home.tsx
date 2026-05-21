@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus, Trophy, ArrowRight } from "lucide-react";
+import { Play, Music, Mic2, Monitor, Settings, FolderOpen, Plus, Trophy, ArrowRight, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
 import { CountdownTimerLarge } from "@/components/countdown-timer";
 import { getStoredSessionId } from "@/contexts/session-context";
+import { useTemporaryAccess } from "@/contexts/temporary-access-context";
 
 export default function Home() {
   const { session, createSession, addToQueue, setMode, playSong, isHost } = useSession();
@@ -27,6 +28,8 @@ export default function Home() {
   const [pendingItem, setPendingItem] = useState<QueueCandidate | null>(null);
   const [scoringEnabled, setScoringEnabled] = useScoringEnabled();
   const [storedSessionId, setStoredSessionId] = useState<string | null>(null);
+  const [reactivating, setReactivating] = useState(false);
+  const { reactivateCode, hasAccess } = useTemporaryAccess();
 
   useEffect(() => {
     setStoredSessionId(getStoredSessionId());

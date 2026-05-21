@@ -281,6 +281,58 @@ router.get("/access-codes/validate", async (req, res): Promise<void> => {
   });
 });
 
+// POST /access-codes/:code/reactivate — reactivate an already-redeemed code (get remaining time)
+router.post("/access-codes/:code/reactivate", async (req, res): Promise<void> => {
+  const rawCode = typeof req.params.code === "string" ? req.params.code.trim().toUpperCase() : "";
+
+  if (!rawCode) {
+    res.status(400).json({ error: "Código obrigatório" });
+    return;
+  }
+
+  const [code] = await db
+    .select()
+    .from(accessCodesTable)
+    .where(eq(accessCodesTable.code, rawCode));
+
+  if (!code) {
+    res.status(404).json({ error: "Código não encontrado" });
+    return;
+  }
+
+  const now = new Date();
+
+  // Code itself expired before being redeemed
+  if (isCodeExpired(code, now)) {
+    res.status(400).json({ error: "Código expirado. O prazo de validade foi ultrapassado." });
+    return;
+  }
+
+  if (!code.used) {
+    res.status(400).json({ error: "Código ainda não foi resgatado. Use a tela de resgate primeiro." });
+    return;
+  }
+
+  const accessExpiresAt = code.usedAt ? addMinutes(code.usedAt, code.durationMinutes) : null;
+
+  if (!accessExpiresAt || accessExpiresAt < now) {
+    res.status(400).json({ error: "Acesso expirado. O tempo do cupom já acabou." });
+    return;
+  }
+
+  const remainingMinutes = Math.max(0, Math.ceil((accessExpiresAt.getTime() - now.getTime()) / 60_000));
+
+  req.log?.info({ code: rawCode, remainingMinutes }, "Access code reactivated");
+
+  res.json({
+    success: true,
+    message: `Cupom reativado! Restam ${remainingMinutes} minutos de acesso.`,
+    durationMinutes: code.durationMinutes,
+    remainingMinutes,
+    accessExpiresAt: accessExpiresAt.toISOString(),
+  });
+});
+
 // DELETE /access-codes/:id — delete a code (admin only)
 router.delete("/access-codes/:id", async (req, res): Promise<void> => {
   const id = parseInt(req.params.id, 10);
