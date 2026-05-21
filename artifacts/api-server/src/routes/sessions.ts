@@ -276,6 +276,8 @@ router.post("/sessions/:id/play", async (req: ExpressReq, res): Promise<void> =>
   // If playing from queue, grab the singer name and device
   const queue: QueueEntry[] = (session.queue as QueueEntry[]) ?? [];
   const fromQueue = queue.find((q) => q.id === Number(songId));
+  // Remove the song from the queue so it doesn't show duplicated
+  const queueWithoutCurrent = queue.filter((q) => q.id !== Number(songId));
 
   await db
     .update(sessionsTable)
@@ -284,6 +286,7 @@ router.post("/sessions/:id/play", async (req: ExpressReq, res): Promise<void> =>
       currentSingerName: fromQueue?.singerName ?? null,
       currentSongAddedBy: fromQueue?.addedBy ?? null,
       currentSongStartedAt: new Date(),
+      queue: queueWithoutCurrent,
       updatedAt: new Date(),
     })
     .where(eq(sessionsTable.id, id));
