@@ -21,7 +21,7 @@ export default function LoginPage() {
   const [cConsent, setCConsent] = useState(false);
 
   const { login, loading, error, user } = useAuth();
-  const { redeemCode, hasAccess } = useTemporaryAccess();
+  const { redeemCode, reactivateCode, hasAccess } = useTemporaryAccess();
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
@@ -43,7 +43,11 @@ export default function LoginPage() {
       return;
     }
     setRedeeming(true);
-    const result = await redeemCode(cCode.trim(), cName.trim(), cEmail.trim(), cWhatsapp.trim(), cConsent);
+    let result = await redeemCode(cCode.trim(), cName.trim(), cEmail.trim(), cWhatsapp.trim(), cConsent);
+    // If code was already redeemed, try to reactivate it
+    if (!result.success && result.error?.includes("já utilizado")) {
+      result = await reactivateCode(cCode.trim());
+    }
     setRedeeming(false);
     if (result.success) {
       toast({ title: "Cupom ativado!", description: result.message || "Acesso liberado com sucesso." });
