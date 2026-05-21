@@ -71,6 +71,7 @@ Equipe Karaokê Bora Cantar`,
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
     .container { max-width: 480px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
     .logo { text-align: center; margin-bottom: 24px; }
+    .logo img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; }
     .logo h1 { font-size: 24px; font-weight: 800; color: #1a1a1a; margin: 0; }
     .logo span { color: #d4af37; }
     h2 { font-size: 20px; color: #1a1a1a; margin: 0 0 16px; }
@@ -89,6 +90,7 @@ Equipe Karaokê Bora Cantar`,
 <body>
   <div class="container">
     <div class="logo">
+      <img src="https://boracantar.com/logo.jpeg" alt="Karaokê Bora Cantar" />
       <h1>Karaokê <span>Bora Cantar</span></h1>
     </div>
     <h2>Bem-vindo, assinante!</h2>
@@ -152,6 +154,7 @@ Equipe Karaokê Bora Cantar`,
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; padding: 20px; }
     .container { max-width: 480px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
     .logo { text-align: center; margin-bottom: 24px; }
+    .logo img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; }
     .logo h1 { font-size: 24px; font-weight: 800; color: #1a1a1a; margin: 0; }
     .logo span { color: #d4af37; }
     h2 { font-size: 20px; color: #1a1a1a; margin: 0 0 16px; }
@@ -169,6 +172,7 @@ Equipe Karaokê Bora Cantar`,
 <body>
   <div class="container">
     <div class="logo">
+      <img src="https://boracantar.com/logo.jpeg" alt="Karaokê Bora Cantar" />
       <h1>Karaokê <span>Bora Cantar</span></h1>
     </div>
     <h2>Sua senha foi redefinida</h2>

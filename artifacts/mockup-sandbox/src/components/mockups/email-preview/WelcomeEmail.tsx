@@ -13,6 +13,17 @@ export function WelcomeEmail() {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "24px" }}>
+          <img
+            src="/logo.jpeg"
+            alt="Karaokê Bora Cantar"
+            style={{
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: "12px",
+            }}
+          />
           <h1
             style={{
               fontSize: "24px",
