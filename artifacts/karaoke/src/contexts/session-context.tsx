@@ -63,7 +63,6 @@ const EXITED_KEY = "karaoke-ct-session-exited";
 
 export function getStoredSessionId(): string | null {
   try {
-    if (localStorage.getItem(EXITED_KEY) === "1") return null;
     return localStorage.getItem(STORAGE_KEY);
   } catch { return null; }
 }
@@ -101,7 +100,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(isExited() ? null : getStoredSessionId());
+  const [sessionId, setSessionId] = useState<string | null>(getStoredSessionId());
   const sessionIdRef = useRef(sessionId);
   useEffect(() => { sessionIdRef.current = sessionId; }, [sessionId]);
   const deviceId = getDeviceId();
@@ -269,7 +268,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const exitSession = useCallback(() => {
     setSession(null);
     setSessionId(null); // Stop polling so home page detects exited state
-    markExited(); // Flag so provider won't auto-rejoin on next mount
     // Keep localStorage intact so user can rejoin same session later
   }, []);
 
