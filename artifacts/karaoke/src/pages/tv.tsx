@@ -388,17 +388,17 @@ export default function TVPage() {
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-white/30 uppercase tracking-wider">TV</span>
-              <span className="text-xs font-mono font-semibold text-yellow-400">{sessionId}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-bold text-yellow-400 tracking-wider">{sessionId}</span>
+              <button
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full bg-yellow-400/90 hover:bg-yellow-300 text-black transition-colors text-xs font-semibold"
+                onClick={() => setShowSearch((s) => !s)}
+                title="Buscar músicas"
+              >
+                <Search className="h-3.5 w-3.5" strokeWidth={2.5} />
+                <span className="hidden sm:inline">Buscar</span>
+              </button>
             </div>
-            <button
-              className="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-400/90 hover:bg-yellow-300 text-black transition-colors"
-              onClick={() => setShowSearch((s) => !s)}
-              title="Buscar músicas"
-            >
-              <Search className="h-3 w-3" strokeWidth={2.5} />
-            </button>
           </div>
 
           {/* Center — Now playing (compact) */}
