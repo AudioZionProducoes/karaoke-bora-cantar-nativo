@@ -454,28 +454,7 @@ export default function TVPage() {
       {session && session.queue.length > 0 && (
         <div className="shrink-0 bg-black/40 backdrop-blur-sm border-b border-white/5 overflow-x-auto">
           <div className="flex items-center gap-1 px-3 py-1 min-w-0">
-            {/* Now playing */}
-            {currentSongId && currentSinger && (
-              <div className="shrink-0 flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-md px-2.5 py-1">
-                <div className="bg-yellow-400/20 rounded-full p-0.5">
-                  <UserRound className="h-2.5 w-2.5 text-yellow-400" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[9px] text-yellow-400 font-bold uppercase tracking-wider leading-none">Agora</div>
-                  <div className="text-[11px] font-bold text-white leading-tight truncate max-w-[100px]">{currentSinger}</div>
-                </div>
-                {isHost && (
-                  <button
-                    className="text-white/20 hover:text-red-400 transition-colors"
-                    onClick={() => removeFromQueue(currentSongId)}
-                    title="Remover"
-                  >
-                    <Trash2 className="h-2.5 w-2.5" />
-                  </button>
-                )}
-              </div>
-            )}
-            {/* Up next */}
+            {/* Up next — only show queue items, current song is in header */}
             {session.queue.map((item, i) => {
               const isCurrent = currentSongId === item.id;
               if (isCurrent) return null;
