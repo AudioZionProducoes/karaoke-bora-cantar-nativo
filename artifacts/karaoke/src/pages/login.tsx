@@ -24,6 +24,11 @@ export default function LoginPage() {
 
   const [redeeming, setRedeeming] = useState(false);
 
+  // Forgot password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [fEmail, setFEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+
   const { login, loading, error, user } = useAuth();
   const { redeemCode, reactivateCode, hasAccess } = useTemporaryAccess();
   const [, navigate] = useLocation();
@@ -39,6 +44,32 @@ export default function LoginPage() {
     if (!sEmail.trim() || !sPassword.trim()) return;
     const ok = await login(sEmail.trim(), sPassword.trim());
     if (ok) navigate("/");
+  }
+
+  async function handleForgotPassword() {
+    if (!fEmail.trim() || !fEmail.includes("@")) {
+      toast({ title: "Email inválido", variant: "destructive" });
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const res = await fetch("/api/users/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: fEmail.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      toast({
+        title: "Solicitação enviada",
+        description: data.message || "Se o email estiver cadastrado, você receberá uma nova senha em breve.",
+      });
+      setShowForgot(false);
+      setFEmail("");
+    } catch {
+      toast({ title: "Erro ao enviar", description: "Tente novamente mais tarde.", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
+    }
   }
 
   async function checkCouponStatus(code: string) {
@@ -171,10 +202,57 @@ export default function LoginPage() {
               </div>
             )}
 
+            {!showForgot && (
+              <button
+                type="button"
+                onClick={() => setShowForgot(true)}
+                className="text-xs text-primary/70 hover:text-primary underline self-start -mt-1"
+              >
+                Esqueci minha senha
+              </button>
+            )}
+
+            {showForgot && (
+              <div className="space-y-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-400/20 animate-in fade-in slide-in-from-top-1 duration-200">
+                <p className="text-xs text-yellow-400/90 font-medium">Digite seu email para receber uma nova senha:</p>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={fEmail}
+                    onChange={(e) => setFEmail(e.target.value)}
+                    className="h-10 pl-10 text-sm"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 text-xs"
+                    onClick={() => { setShowForgot(false); setFEmail(""); }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="flex-1 h-9 text-xs bg-yellow-500 hover:bg-yellow-400 text-black font-semibold"
+                    disabled={forgotLoading || !fEmail.trim()}
+                    onClick={handleForgotPassword}
+                  >
+                    {forgotLoading ? "Enviando..." : "Enviar senha"}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full h-12 bg-primary hover:bg-primary/90 font-bold text-base"
-              disabled={loading || !sEmail.trim() || !sPassword.trim()}
+              disabled={loading || !sEmail.trim() || !sPassword.trim() || showForgot}
             >
               {loading ? (
                 <span className="animate-pulse">Verificando...</span>

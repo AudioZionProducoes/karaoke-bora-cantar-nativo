@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, karaokeUsersTable } from "@workspace/db";
 import bcryptjs from "bcryptjs";
 import { logger } from "../lib/logger";
+import { sendWelcomeEmail } from "../lib/email";
 
 function generateTempPassword(): string {
   return Math.floor(10000000 + Math.random() * 90000000).toString();
@@ -81,7 +82,14 @@ router.post("/webhook/woocommerce", async (req, res): Promise<void> => {
       accessGranted: true,
     });
 
-    req.log.info({ email, password: tempPassword }, "New subscriber created with temporary password");
+    // Send welcome email with temporary password
+    try {
+      await sendWelcomeEmail({ email, password: tempPassword });
+    } catch (err) {
+      req.log.warn({ email, error: (err as Error).message }, "Failed to send welcome email");
+    }
+
+    req.log.info({ email }, "New subscriber created with temporary password");
     res.json({
       success: true,
       message: `Subscriber created for ${email}`,

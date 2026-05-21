@@ -4,6 +4,7 @@ import { db, karaokeUsersTable } from "@workspace/db";
 import { RevokeUserAccessParams } from "@workspace/api-zod";
 import bcryptjs from "bcryptjs";
 import { randomBytes } from "crypto";
+import { sendPasswordResetEmail } from "../lib/email";
 
 function generateToken(): string {
   return randomBytes(32).toString("hex");
@@ -224,6 +225,45 @@ router.post("/users/:id/revoke", async (req, res): Promise<void> => {
     accessGrantedAt: user.accessGrantedAt?.toISOString() ?? null,
     expiresAt: user.expiresAt?.toISOString() ?? null,
   });
+});
+
+// Forgot password — generate new temporary password and email it
+router.post("/users/forgot-password", async (req, res): Promise<void> => {
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+
+  if (!email || !email.includes("@")) {
+    res.status(400).json({ error: "Email inválido" });
+    return;
+  }
+
+  const [user] = await db
+    .select()
+    .from(karaokeUsersTable)
+    .where(eq(karaokeUsersTable.email, email));
+
+  if (!user || !user.accessGranted) {
+    // Don't reveal whether user exists — same message either way
+    res.json({ success: true, message: "Se o email estiver cadastrado, você receberá uma nova senha em breve." });
+    return;
+  }
+
+  const tempPassword = generateTempPassword();
+  const hash = await hashPassword(tempPassword);
+
+  await db
+    .update(karaokeUsersTable)
+    .set({ passwordHash: hash, activeSessionToken: null, activeSessionAt: null })
+    .where(eq(karaokeUsersTable.id, user.id));
+
+  // Send password reset email
+  try {
+    await sendPasswordResetEmail({ email, newPassword: tempPassword });
+  } catch (err) {
+    req.log?.warn({ email, error: (err as Error).message }, "Failed to send password reset email");
+  }
+
+  req.log?.info({ email, userId: user.id }, "Password reset — new temporary password generated and emailed");
+  res.json({ success: true, message: "Se o email estiver cadastrado, você receberá uma nova senha em breve." });
 });
 
 export default router;
