@@ -11,7 +11,7 @@ Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player in
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/scripts run import-musicas -- --file /caminho/para/Dados_CT.ini` — importar catálogo de músicas
 - Required env: `DATABASE_URL` — Postgres connection string
-- Optional env: `VITE_BUNNY_LIBRARY_ID` — Bunny Stream Video Library ID (set before deploying)
+- Optional env: `VITE_BUNNY_LIBRARY_ID` — Bunny Stream Video Library ID (set before deploying) — **Current: 670252**
 
 ## Stack
 
