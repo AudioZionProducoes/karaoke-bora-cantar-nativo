@@ -433,7 +433,10 @@ export default function RemotePage() {
               {searchResults?.data.map((m) => (
                 <div key={m.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm line-clamp-1">{m.musica}</div>
+                    <div className="font-medium text-sm line-clamp-1 flex items-center gap-2">
+                      {m.musica}
+                      <span className="text-[9px] font-mono bg-primary/15 text-primary/70 px-1.5 py-0.5 rounded">#{m.id}</span>
+                    </div>
                     <div className="text-xs text-muted-foreground">{m.artista}</div>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
@@ -530,7 +533,10 @@ export default function RemotePage() {
                       <div className={`font-bold text-xs line-clamp-1 ${isTargetable ? "text-red-400 animate-pulse" : "text-foreground"}`}>
                         {item.singerName}
                       </div>
-                      <div className="text-sm text-foreground line-clamp-1">{item.musica}</div>
+                      <div className="text-sm text-foreground line-clamp-1 flex items-center gap-2">
+                        {item.musica}
+                        <span className="text-[9px] font-mono bg-primary/15 text-primary/70 px-1.5 py-0.5 rounded">#{item.id}</span>
+                      </div>
                       <div className="text-xs text-muted-foreground">{item.artista}</div>
                     </div>
                     {index === 0 && currentSongId === item.id && (
