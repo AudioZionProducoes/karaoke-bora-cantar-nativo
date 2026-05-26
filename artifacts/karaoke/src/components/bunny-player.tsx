@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AlertCircle } from "lucide-react";
 
 interface BunnyPlayerProps {
   libraryId: string;
@@ -16,6 +17,7 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
   const stallCountRef = useRef(0);
   const durationRef = useRef(0);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   // Keep latest onEnded reference
   useEffect(() => {
@@ -128,6 +130,21 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
     };
   }, []);
 
+  if (loadError) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-[#04192c] text-white p-6">
+        <AlertCircle className="h-12 w-12 text-yellow-400 mb-4" />
+        <h3 className="text-lg font-bold mb-2">Vídeo não encontrado</h3>
+        <p className="text-sm text-white/60 text-center mb-4">
+          O vídeo da música (ID: {videoId}) ainda não foi carregado no Bunny Stream.
+        </p>
+        <p className="text-xs text-white/40 text-center">
+          Library: {libraryId}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <iframe
       ref={iframeRef}
@@ -136,6 +153,7 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
       allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
       allowFullScreen
       onLoad={handleLoad}
+      onError={() => setLoadError(true)}
     />
   );
 }
