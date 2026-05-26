@@ -16,6 +16,8 @@ export interface Musica {
   /** @nullable */
   inicio: string | null;
   hasVideo?: boolean;
+  /** @nullable */
+  bunnyGuid?: string | null;
 }
 
 export interface MusicaInput {
@@ -26,6 +28,7 @@ export interface MusicaInput {
   musica: string;
   inicio?: string;
   hasVideo?: boolean;
+  bunnyGuid?: string;
 }
 
 export interface MusicaUpdate {
@@ -35,6 +38,7 @@ export interface MusicaUpdate {
   musica?: string;
   inicio?: string;
   hasVideo?: boolean;
+  bunnyGuid?: string;
 }
 
 export interface MusicaSearchResult {

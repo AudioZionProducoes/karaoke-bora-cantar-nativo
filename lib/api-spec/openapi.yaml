@@ -656,6 +656,8 @@ components:
           type: ["string", "null"]
         hasVideo:
           type: boolean
+        bunnyGuid:
+          type: ["string", "null"]
 
     MusicaInput:
       type: object
@@ -673,6 +675,8 @@ components:
           type: string
         hasVideo:
           type: boolean
+        bunnyGuid:
+          type: string
 
     MusicaUpdate:
       type: object
@@ -687,6 +691,8 @@ components:
           type: string
         hasVideo:
           type: boolean
+        bunnyGuid:
+          type: string
 
     MusicaSearchResult:
       type: object

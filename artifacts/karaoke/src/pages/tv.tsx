@@ -523,7 +523,7 @@ export default function TVPage() {
           <BunnyPlayer
             key={`bunny-${currentSongId}`}
             libraryId={libraryId}
-            videoId={currentSongId}
+            videoId={musica?.bunnyGuid || currentSongId}
             onEnded={handleVideoEnd}
           />
         ) : localVideoUrl ? (

@@ -3,7 +3,7 @@ import { AlertCircle } from "lucide-react";
 
 interface BunnyPlayerProps {
   libraryId: string;
-  videoId: number;
+  videoId: string | number;
   onEnded: () => void;
 }
 

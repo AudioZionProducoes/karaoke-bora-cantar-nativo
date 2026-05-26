@@ -104,7 +104,14 @@ router.get("/musicas/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  res.json(musica);
+  res.json({
+    id: musica.id,
+    artista: musica.artista,
+    musica: musica.musica,
+    inicio: musica.inicio,
+    hasVideo: musica.hasVideo,
+    bunnyGuid: musica.bunnyGuid,
+  });
 });
 
 router.post("/musicas", async (req, res): Promise<void> => {
@@ -150,10 +157,12 @@ router.put("/musicas/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const values: Record<string, string | null> = {};
+  const values: Record<string, string | null | boolean> = {};
   if (parsed.data.artista != null) values.artista = parsed.data.artista.trim();
   if (parsed.data.musica != null) values.musica = parsed.data.musica.trim();
   if (parsed.data.inicio != null) values.inicio = parsed.data.inicio.trim();
+  if (parsed.data.hasVideo != null) values.hasVideo = parsed.data.hasVideo;
+  if (parsed.data.bunnyGuid !== undefined) values.bunnyGuid = parsed.data.bunnyGuid || null;
 
   if (Object.keys(values).length === 0) {
     res.status(400).json({ error: "Nenhum campo para atualizar" });
@@ -269,44 +278,67 @@ router.post("/musicas/sync-bunny", async (req, res): Promise<void> => {
       return;
     }
 
-    const data = (await response.json()) as { items?: Array<{ guid?: string; id?: string }> };
+    const data = (await response.json()) as {
+      items?: Array<{
+        guid?: string;
+        id?: string;
+        title?: string;
+        fileName?: string;
+      }>;
+    };
     const items = data.items ?? [];
 
-    // Bunny Stream uses GUID as video ID; try to parse numeric ID from it
-    const videoIds: number[] = [];
+    // Build a map: numeric musica ID → Bunny GUID
+    // Bunny filenames are like "20682.mp4" → ID 20682, GUID from API
+    const guidMap = new Map<number, string>();
     for (const item of items) {
       const guid = item.guid ?? item.id ?? "";
-      // Try to extract numeric ID from guid (e.g. "12345" or "video-12345")
-      const match = guid.match(/(\d+)/);
+      const fileName = item.fileName ?? item.title ?? "";
+      // Try to extract numeric ID from filename (e.g. "20682.mp4" → 20682)
+      const match = fileName.match(/(\d+)/);
       if (match) {
         const id = parseInt(match[1]!, 10);
         if (!Number.isNaN(id) && id > 0) {
-          videoIds.push(id);
+          guidMap.set(id, guid);
+        }
+      } else {
+        // Fallback: try to extract from GUID itself
+        const guidMatch = guid.match(/(\d+)/);
+        if (guidMatch) {
+          const id = parseInt(guidMatch[1]!, 10);
+          if (!Number.isNaN(id) && id > 0) {
+            guidMap.set(id, guid);
+          }
         }
       }
     }
 
-    // Sync the extracted IDs
+    const videoIds = Array.from(guidMap.keys());
+
+    // Sync the extracted IDs and their GUIDs
     let synced = 0;
     let cleared = 0;
 
     if (videoIds.length > 0) {
-      // Clear ALL existing video flags first (complete replace with Bunny list)
+      // Clear ALL existing video flags and GUIDs first
       const clearResult = await db
         .update(musicasTable)
-        .set({ hasVideo: false })
+        .set({ hasVideo: false, bunnyGuid: null })
         .where(eq(musicasTable.hasVideo, true));
       cleared = clearResult.rowCount ?? 0;
 
-      const syncResult = await db
-        .update(musicasTable)
-        .set({ hasVideo: true })
-        .where(inArray(musicasTable.id, videoIds));
-      synced = syncResult.rowCount ?? 0;
+      // Update each matched song with its GUID
+      for (const [id, guid] of guidMap) {
+        await db
+          .update(musicasTable)
+          .set({ hasVideo: true, bunnyGuid: guid })
+          .where(eq(musicasTable.id, id));
+      }
+      synced = videoIds.length;
     } else {
       const clearResult = await db
         .update(musicasTable)
-        .set({ hasVideo: false })
+        .set({ hasVideo: false, bunnyGuid: null })
         .where(eq(musicasTable.hasVideo, true));
       cleared = clearResult.rowCount ?? 0;
     }
