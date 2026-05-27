@@ -146,14 +146,31 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
   }
 
   return (
-    <iframe
-      ref={iframeRef}
-      src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
-      className="w-full h-full border-0"
-      allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-      allowFullScreen
-      onLoad={handleLoad}
-      onError={() => setLoadError(true)}
-    />
+    <div
+      className="w-full h-full relative overflow-hidden"
+      style={{ background: "#000" }}
+    >
+      {/* Scaled-up iframe so the video fills the entire container.
+         Bunny Stream’s Plyr player preserves the source aspect ratio
+         (common for karaoke = 4:3) so on a 16:9 TV the video appears
+         small and centred. We zoom the iframe 133 % and crop overflow. */}
+      <iframe
+        ref={iframeRef}
+        src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&loop=false&muted=false&preload=true`}
+        className="border-0"
+        style={{
+          position: "absolute",
+          top: "-16.5%",
+          left: "-16.5%",
+          width: "133%",
+          height: "133%",
+        }}
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+        allowFullScreen
+        onLoad={handleLoad}
+        onError={() => setLoadError(true)}
+        scrolling="no"
+      />
+    </div>
   );
 }

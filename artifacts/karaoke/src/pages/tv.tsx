@@ -492,7 +492,7 @@ export default function TVPage() {
       )}
 
       {/* Video Player */}
-      <div className="flex-1 flex items-center justify-center bg-black min-h-0 relative">
+      <div className="flex-1 bg-black min-h-0 relative overflow-hidden" style={{ minHeight: "60vh" }}>
         {isTransitioning && nextSongRef.current ? (
           <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black text-white animate-in fade-in duration-500">
             <div className="absolute top-0 left-1/4 w-1/2 h-64 bg-primary/30 blur-[120px] rounded-full pointer-events-none -translate-y-1/2" />
