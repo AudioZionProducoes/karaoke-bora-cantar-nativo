@@ -5,6 +5,7 @@ import usersRouter from "./users";
 import accessCodesRouter from "./access-codes";
 import webhookRouter from "./webhook";
 import videoRouter from "./video";
+import videoProxyRouter from "./video-proxy";
 import sessionsRouter from "./sessions";
 
 const router: IRouter = Router();
@@ -15,6 +16,7 @@ router.use(usersRouter);
 router.use(accessCodesRouter);
 router.use(webhookRouter);
 router.use(videoRouter);
+router.use(videoProxyRouter);
 router.use(sessionsRouter);
 
 export default router;
