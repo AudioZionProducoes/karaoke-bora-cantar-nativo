@@ -239,7 +239,7 @@ export default function Player() {
     query: { enabled: !!id, queryKey: getGetMusicaQueryKey(id) }
   });
 
-  const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
+  const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
   const isLibraryConfigured = libraryId && libraryId !== "CONFIGURE_LIBRARY_ID";
 
   const { folderName, selectFolder, getFileUrl } = useLocalMusic();

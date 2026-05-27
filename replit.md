@@ -11,7 +11,7 @@ Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player in
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/scripts run import-musicas -- --file /caminho/para/Dados_CT.ini` — importar catálogo de músicas
 - Required env: `DATABASE_URL` — Postgres connection string
-- Optional env: `VITE_BUNNY_LIBRARY_ID` — Bunny Stream Video Library ID (set before deploying) — **Current: 670252**
+- Optional env: `VITE_BUNNY_LIBRARY_ID` — Bunny Stream Video Library ID (set before deploying) — **Current: 670590**
 
 ## Stack
 
@@ -42,7 +42,8 @@ Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player in
 - Busca em tempo real com debounce de 300ms no frontend + paginação de 24 por página no backend
 - Busca faz ILIKE nas colunas `artista`, `musica` e `inicio` simultaneamente
 - Webhook WooCommerce processa `subscription_active`, `order_completed`, `subscription_cancelled`, `subscription_expired`
-- Player usa iframe nativo do Bunny Stream: `https://iframe.mediadelivery.net/embed/{LIBRARY_ID}/{id}`
+- Player usa iframe nativo do Bunny Stream: `https://iframe.mediadelivery.net/embed/{LIBRARY_ID}/{bunnyGuid}`
+- Vídeos devem ter áudio AAC (não AC3/Dolby Digital) para compatibilidade com navegadores
 
 ## Product
 

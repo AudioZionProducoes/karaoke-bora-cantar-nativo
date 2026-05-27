@@ -184,7 +184,7 @@ export default function TVPage() {
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
 
-  const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID;
+  const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
   const isLibraryConfigured = libraryId && libraryId !== "CONFIGURE_LIBRARY_ID";
 
   const currentSongId = session?.currentSongId ? Number(session.currentSongId) : null;
