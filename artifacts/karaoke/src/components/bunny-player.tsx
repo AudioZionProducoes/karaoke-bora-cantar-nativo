@@ -74,11 +74,11 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
   };
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-black">
+    <div className="absolute inset-0 bg-black">
       <iframe
         key={`bunny-iframe-${id}-${retryKey}`}
         src={iframeUrl}
-        className="w-full h-full border-0"
+        className="absolute inset-0 w-full h-full border-0"
         allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
         allowFullScreen
         title="Karaoke Video Player"
