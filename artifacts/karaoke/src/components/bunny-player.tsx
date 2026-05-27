@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, RotateCcw } from "lucide-react";
 
 interface BunnyPlayerProps {
   libraryId: string;
@@ -17,48 +17,42 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
   const stallCountRef = useRef(0);
   const durationRef = useRef(0);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hlsErrorCountRef = useRef(0);
   const [loadError, setLoadError] = useState(false);
+  const [useNativePlayer, setUseNativePlayer] = useState(false);
+  const [nativeVideoUrl, setNativeVideoUrl] = useState<string | null>(null);
+  const [isReloading, setIsReloading] = useState(false);
 
   // Keep latest onEnded reference
   useEffect(() => {
     onEndedRef.current = onEnded;
   }, [onEnded]);
 
-  // Listen for Bunny Stream Player API messages
+  // Listen for Bunny Stream Player API messages AND console errors
   useEffect(() => {
     const handleMessage = (e: MessageEvent) => {
-      // Only accept messages from Bunny Stream origin
       if (e.origin !== BUNNY_ORIGIN) return;
       if (!e.data || typeof e.data !== "object") return;
 
-      // Log all messages for debugging (development only)
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
         console.log("[BunnyPlayer] message:", JSON.stringify(e.data));
       }
 
-      // Bunny Stream Player API event format: { method: "event", value: "ended", data: {} }
       if (e.data.method === "event" && e.data.value === "ended") {
         onEndedRef.current();
         return;
       }
-      // Alternative formats (older API versions)
       if (e.data.method === "ended" || e.data.event === "ended" || e.data.type === "ended") {
         onEndedRef.current();
         return;
       }
 
-      // Track current time for end-of-video detection (fallback)
       if (e.data.method === "currentTime" || e.data.method === "getCurrentTime") {
         const time = typeof e.data.value === "number" ? e.data.value : 0;
         if (time === lastTimeRef.current && time > 0) {
           stallCountRef.current++;
-          // If time hasn't advanced for 3 consecutive polls (~15s) and we're past 30s, video likely ended
           if (stallCountRef.current >= 3 && time > 30) {
-            if (import.meta.env.DEV) {
-              // eslint-disable-next-line no-console
-              console.log("[BunnyPlayer] Video appears ended (stall detected)");
-            }
             onEndedRef.current();
           }
         } else {
@@ -67,15 +61,28 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
         lastTimeRef.current = time;
       }
 
-      // Track duration for end-of-video detection
       if (e.data.method === "duration" || e.data.method === "getDuration") {
         durationRef.current = typeof e.data.value === "number" ? e.data.value : 0;
       }
     };
 
+    // HLS codec error fallback: after 8s if video never started, switch to native player
+    const fallbackTimer = setTimeout(() => {
+      const guid = typeof videoId === "string" ? videoId : String(videoId);
+      if (lastTimeRef.current === 0 && guid.includes("-")) {
+        setNativeVideoUrl(
+          `https://vz-90f80c4b-2f5.b-cdn.net/${guid}/play_720p.mp4`
+        );
+        setUseNativePlayer(true);
+      }
+    }, 8000);
+
     window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+    return () => {
+      window.removeEventListener("message", handleMessage);
+      clearTimeout(fallbackTimer);
+    };
+  }, [videoId, useNativePlayer]);
 
   // Subscribe to ended event + start time polling when iframe loads
   const handleLoad = () => {
@@ -85,7 +92,6 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
     const subscribeToEnded = () => {
       if (hasSubscribedRef.current) return;
       try {
-        // Bunny Stream Player API: subscribe to 'ended' event
         iframe.contentWindow?.postMessage(
           { method: "addEventListener", value: "ended" },
           BUNNY_ORIGIN
@@ -96,17 +102,16 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
       }
     };
 
-    // Retry subscription a few times
     subscribeToEnded();
     setTimeout(subscribeToEnded, 1000);
     setTimeout(subscribeToEnded, 3000);
     setTimeout(subscribeToEnded, 5000);
 
-    // Fallback: poll current time + duration every 5s to detect video end
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     lastTimeRef.current = 0;
     stallCountRef.current = 0;
     durationRef.current = 0;
+    hlsErrorCountRef.current = 0;
     pollIntervalRef.current = setInterval(() => {
       try {
         iframe.contentWindow?.postMessage(
@@ -130,17 +135,72 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
     };
   }, []);
 
+  const handleReload = () => {
+    setIsReloading(true);
+    setUseNativePlayer(false);
+    setNativeVideoUrl(null);
+    setLoadError(false);
+    hlsErrorCountRef.current = 0;
+    stallCountRef.current = 0;
+    lastTimeRef.current = 0;
+    hasSubscribedRef.current = false;
+    setTimeout(() => setIsReloading(false), 500);
+  };
+
+  // Native HTML5 video player fallback
+  if (useNativePlayer && nativeVideoUrl) {
+    return (
+      <div className="w-full h-full relative overflow-hidden bg-black flex flex-col">
+        <video
+          src={nativeVideoUrl}
+          className="w-full h-full object-contain"
+          controls
+          autoPlay
+          onEnded={onEnded}
+          onError={() => {
+            // Try lower resolution
+            const guid = typeof videoId === "string" ? videoId : String(videoId);
+            if (nativeVideoUrl.includes("720p")) {
+              setNativeVideoUrl(`https://vz-90f80c4b-2f5.b-cdn.net/${guid}/play_480p.mp4`);
+            } else if (nativeVideoUrl.includes("480p")) {
+              setNativeVideoUrl(`https://vz-90f80c4b-2f5.b-cdn.net/${guid}/play_360p.mp4`);
+            } else {
+              setLoadError(true);
+              setUseNativePlayer(false);
+            }
+          }}
+        />
+        <button
+          onClick={handleReload}
+          className="absolute top-4 right-4 z-50 bg-black/60 hover:bg-black/80 text-white rounded-lg px-3 py-2 flex items-center gap-2 text-xs"
+        >
+          <RotateCcw className="h-3 w-3" />
+          Tentar player Bunny
+        </button>
+      </div>
+    );
+  }
+
   if (loadError) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-[#04192c] text-white p-6">
         <AlertCircle className="h-12 w-12 text-yellow-400 mb-4" />
-        <h3 className="text-lg font-bold mb-2">Vídeo não encontrado</h3>
-        <p className="text-sm text-white/60 text-center mb-4">
-          O vídeo da música (ID: {videoId}) ainda não foi carregado no Bunny Stream.
+        <h3 className="text-lg font-bold mb-2">Erro de codec no vídeo</h3>
+        <p className="text-sm text-white/60 text-center mb-4 max-w-md">
+          O vídeo contém áudio AC3 (Dolby Digital) que não é compatível com navegadores.
+          O arquivo precisa ser convertido para AAC antes de enviar ao Bunny Stream.
         </p>
-        <p className="text-xs text-white/40 text-center">
-          Library: {libraryId}
-        </p>
+        <div className="bg-black/40 rounded-lg p-4 mb-4 text-xs text-left font-mono text-yellow-300/80">
+          <p className="mb-2 text-white/50">Comando FFmpeg:</p>
+          ffmpeg -i 20758.mp4 -c:v copy -c:a aac -b:a 192k -ac 2 20758_aac.mp4
+        </div>
+        <button
+          onClick={handleReload}
+          className="bg-primary hover:bg-primary/90 text-black font-bold px-6 py-2 rounded-lg flex items-center gap-2"
+        >
+          <RotateCcw className="h-4 w-4" />
+          Tentar novamente
+        </button>
       </div>
     );
   }
@@ -150,10 +210,6 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
       className="w-full h-full relative overflow-hidden"
       style={{ background: "#000" }}
     >
-      {/* Scaled-up iframe so the video fills the entire container.
-         Bunny Stream’s Plyr player preserves the source aspect ratio
-         (common for karaoke = 4:3) so on a 16:9 TV the video appears
-         small and centred. We zoom the iframe 133 % and crop overflow. */}
       <iframe
         ref={iframeRef}
         src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=true&loop=false&muted=false&preload=true`}
@@ -171,6 +227,11 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
         onError={() => setLoadError(true)}
         scrolling="no"
       />
+      {isReloading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-50">
+          <span className="text-white text-sm animate-pulse">Recarregando...</span>
+        </div>
+      )}
     </div>
   );
 }
