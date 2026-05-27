@@ -236,6 +236,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         ...prev,
         queue: data.queue,
         currentSongId: data.next ? String(data.next.id) : null,
+        currentSingerName: data.next?.singerName ?? null,
+        currentSongAddedBy: data.next?.addedBy ?? null,
         currentSongStartedAt: data.next ? new Date().toISOString() : null,
       } : null);
       return { ok: true };
