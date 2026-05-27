@@ -66,16 +66,12 @@ export function BunnyPlayer({ libraryId, videoId, onEnded }: BunnyPlayerProps) {
       }
     };
 
-    // HLS codec error fallback: after 8s if video never started, switch to native player
+    // HLS codec error fallback: after 5s if video never started, show error
     const fallbackTimer = setTimeout(() => {
-      const guid = typeof videoId === "string" ? videoId : String(videoId);
-      if (lastTimeRef.current === 0 && guid.includes("-")) {
-        setNativeVideoUrl(
-          `https://vz-90f80c4b-2f5.b-cdn.net/${guid}/play_720p.mp4`
-        );
-        setUseNativePlayer(true);
+      if (lastTimeRef.current === 0) {
+        setLoadError(true);
       }
-    }, 8000);
+    }, 5000);
 
     window.addEventListener("message", handleMessage);
     return () => {
