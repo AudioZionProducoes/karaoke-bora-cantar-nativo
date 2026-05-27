@@ -1,0 +1,73 @@
+modules = ["nodejs-24", "postgresql-16", "python-3.11"]
+
+[deployment]
+router = "application"
+deploymentTarget = "autoscale"
+
+[deployment.postBuild]
+args = ["pnpm", "store", "prune"]
+env = { "CI" = "true" }
+
+[workflows]
+runButton = "Project"
+
+[agent]
+stack = "PNPM_WORKSPACE"
+expertMode = true
+integrations = ["github:1.0.0"]
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 80
+
+[[ports]]
+localPort = 8082
+externalPort = 3002
+
+[[ports]]
+localPort = 8083
+externalPort = 3003
+
+[[ports]]
+localPort = 8084
+externalPort = 3001
+
+[[ports]]
+localPort = 8085
+externalPort = 4200
+
+[[ports]]
+localPort = 8086
+externalPort = 5173
+
+[[ports]]
+localPort = 8087
+externalPort = 5000
+
+[[ports]]
+
+[[ports]]
+localPort = 19447
+externalPort = 3000
+
+[nix]
+channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+SMTP_HOST = "smtp.hostinger.com"
+SMTP_PORT = "587"
+SMTP_USER = "contato@karaokeboracantar.com.br"
+SMTP_FROM = "contato@karaokeboracantar.com.br"
+VITE_BUNNY_LIBRARY_ID = "670590"
+BUNNY_API_KEY = "9ac2ecd8-468e-42fd-8355385d6839-bf55-4ee2"
+BUNNY_LIBRARY_ID = "670590"
