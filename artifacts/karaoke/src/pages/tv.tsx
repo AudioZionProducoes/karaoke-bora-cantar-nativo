@@ -520,12 +520,18 @@ export default function TVPage() {
             </div>
           </div>
         ) : isLibraryConfigured && currentSongId ? (
-          <BunnyPlayer
-            key={`bunny-${currentSongId}`}
-            libraryId={libraryId}
-            videoId={musica?.bunnyGuid || currentSongId}
-            onEnded={handleVideoEnd}
-          />
+          !musica?.bunnyGuid ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+            </div>
+          ) : (
+            <BunnyPlayer
+              key={`bunny-${currentSongId}`}
+              libraryId={libraryId}
+              videoId={musica.bunnyGuid}
+              onEnded={handleVideoEnd}
+            />
+          )
         ) : localVideoUrl ? (
           <video
             key={`local-${videoKey}`}

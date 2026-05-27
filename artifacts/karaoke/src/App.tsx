@@ -17,6 +17,7 @@ import TVPage from "@/pages/tv";
 import RemotePage from "@/pages/remote";
 import LoginPage from "@/pages/login";
 import PlanosPage from "@/pages/planos";
+import VideoTestPage from "@/pages/video-test";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/remote/:sessionId" component={RemotePage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/planos" component={PlanosPage} />
+      <Route path="/video-test" component={VideoTestPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -33,8 +33,11 @@ Plataforma profissional de karaokê com catálogo de ~80.000 músicas, player in
 - `artifacts/api-server/src/routes/webhook.ts` — webhook WooCommerce
 - `artifacts/karaoke/src/pages/home.tsx` — página principal com busca em tempo real
 - `artifacts/karaoke/src/pages/player.tsx` — player Bunny Stream
+- `artifacts/karaoke/src/pages/tv.tsx` — interface da TV com player iframe
 - `artifacts/karaoke/src/pages/admin.tsx` — painel admin (catálogo + assinantes)
 - `scripts/src/import-musicas.ts` — script de importação do arquivo .ini
+- `scripts/src/fix-video-codec.ts` — script para converter áudio AC3 → AAC e re-upload ao Bunny Stream
+- `artifacts/api-server/src/routes/video-proxy.ts` — proxy HTTP para streaming direto dos vídeos
 
 ## Architecture decisions
 

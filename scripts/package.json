@@ -7,6 +7,7 @@
     "hello": "tsx ./src/hello.ts",
     "import-musicas": "tsx ./src/import-musicas.ts",
     "sync-bunny-guids": "tsx ./src/sync-bunny-guids.ts",
+    "fix-video-codec": "tsx ./src/fix-video-codec.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

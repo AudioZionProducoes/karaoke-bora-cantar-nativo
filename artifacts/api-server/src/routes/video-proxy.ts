@@ -1,17 +1,17 @@
 import { Router, type IRouter } from "express";
+import https from "https";
 import { db } from "@workspace/db";
 import { musicasTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 
-const BUNNY_CDN = "https://vz-90f80c4b-2f5.b-cdn.net";
+const BUNNY_CDN = "vz-90f80c4b-2f5.b-cdn.net";
 
 const router: IRouter = Router();
 
 /**
  * Proxy video from Bunny Stream to bypass referer/CORS issues.
- * The browser requests this endpoint (same origin) and the server
- * fetches from Bunny with proper referer, then streams the MP4 back.
- * This also avoids HLS codec errors since we serve MP4 directly.
+ * Supports HTTP Range requests so the browser can seek/scrub.
+ * Uses https.get() for reliable streaming — no buffering.
  */
 router.get("/video-proxy/:id", async (req, res): Promise<void> => {
   const idParam = req.params.id;
@@ -19,10 +19,8 @@ router.get("/video-proxy/:id", async (req, res): Promise<void> => {
   let guid: string | null = null;
 
   if (/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(idParam)) {
-    // Already a Bunny GUID
     guid = idParam;
   } else if (/^\d+$/.test(idParam)) {
-    // Numeric music ID — look up bunnyGuid
     const musicId = parseInt(idParam, 10);
     const [musica] = await db
       .select({ bunnyGuid: musicasTable.bunnyGuid })
@@ -37,92 +35,91 @@ router.get("/video-proxy/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  // Determine resolution from query param (default 720p)
   const resolution = (req.query.res as string) || "720p";
   const validResolutions = ["720p", "480p", "360p", "240p"];
   const resKey = validResolutions.includes(resolution) ? resolution : "720p";
 
-  const bunnyUrl = `${BUNNY_CDN}/${guid}/play_${resKey}.mp4`;
+  const path = `/${guid}/play_${resKey}.mp4`;
 
-  try {
-    const bunnyResponse = await fetch(bunnyUrl, {
-      headers: {
-        Referer: "https://karaokeboracantar.com.br/",
-        "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
-      },
-    });
+  // Forward the client's Range header
+  const rangeHeader = req.headers.range;
 
-    if (!bunnyResponse.ok) {
-      if (bunnyResponse.status === 403) {
-        // Bunny blocked the request — try lower resolution
-        const fallbackUrl = `${BUNNY_CDN}/${guid}/play_360p.mp4`;
-        const fallbackResp = await fetch(fallbackUrl, {
-          headers: {
-            Referer: "https://karaokeboracantar.com.br/",
-            "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
-          },
-        });
+  const options: https.RequestOptions = {
+    hostname: BUNNY_CDN,
+    port: 443,
+    path,
+    method: "GET",
+    headers: {
+      Referer: "https://karaokeboracantar.com.br/",
+      "User-Agent": req.headers["user-agent"] || "Mozilla/5.0",
+      ...(rangeHeader ? { Range: rangeHeader } : {}),
+    },
+  };
 
-        if (!fallbackResp.ok) {
-          res.status(502).json({ error: "Bunny Stream retornou erro de acesso." });
-          return;
-        }
+  const bunnyReq = https.request(options, (bunnyRes) => {
+    if (bunnyRes.statusCode === 403) {
+      // Try lower resolution
+      const fallbackPath = `/${guid}/play_360p.mp4`;
+      const fallbackOptions: https.RequestOptions = {
+        hostname: BUNNY_CDN,
+        port: 443,
+        path: fallbackPath,
+        method: "GET",
+        headers: options.headers,
+      };
 
-        // Stream fallback
-        res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Accept-Ranges", "bytes");
-        if (fallbackResp.headers.get("content-length")) {
-          res.setHeader("Content-Length", fallbackResp.headers.get("content-length")!);
-        }
-
-        const reader = fallbackResp.body?.getReader();
-        if (!reader) {
-          res.status(500).json({ error: "Falha ao ler stream de vídeo." });
-          return;
-        }
-
-        let done = false;
-        while (!done) {
-          const { value, done: readerDone } = await reader.read();
-          done = readerDone;
-          if (value) {
-            res.write(Buffer.from(value));
+      https.request(fallbackOptions, (fallbackRes) => {
+        res.status(fallbackRes.statusCode || 200);
+        fallbackRes.headers && Object.entries(fallbackRes.headers).forEach(([key, value]) => {
+          if (["content-type", "content-length", "content-range", "accept-ranges", "etag", "last-modified"].includes(key.toLowerCase())) {
+            res.setHeader(key, value as string);
           }
-        }
-        res.end();
-        return;
-      }
+        });
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        fallbackRes.pipe(res);
+        fallbackRes.on("error", (err) => {
+          req.log?.error?.({ err }, "Erro no fallback stream de vídeo");
+          if (!res.writableEnded) res.end();
+        });
+      }).on("error", (err) => {
+        req.log?.error?.({ err }, "Erro na requisição fallback de vídeo");
+        if (!res.headersSent) res.status(502).json({ error: "Erro ao buscar vídeo do Bunny." });
+        else if (!res.writableEnded) res.end();
+      }).end();
 
-      res.status(502).json({ error: `Bunny Stream erro: ${bunnyResponse.status}` });
       return;
     }
 
-    // Stream the video to the client
-    res.setHeader("Content-Type", "video/mp4");
-    res.setHeader("Accept-Ranges", "bytes");
-    if (bunnyResponse.headers.get("content-length")) {
-      res.setHeader("Content-Length", bunnyResponse.headers.get("content-length")!);
-    }
-
-    const reader = bunnyResponse.body?.getReader();
-    if (!reader) {
-      res.status(500).json({ error: "Falha ao ler stream de vídeo." });
+    if (!bunnyRes.statusCode || bunnyRes.statusCode >= 400) {
+      if (!res.headersSent) {
+        res.status(502).json({ error: `Bunny Stream erro: ${bunnyRes.statusCode}` });
+      }
       return;
     }
 
-    let done = false;
-    while (!done) {
-      const { value, done: readerDone } = await reader.read();
-      done = readerDone;
-      if (value) {
-        res.write(Buffer.from(value));
+    // Stream back to client
+    res.status(bunnyRes.statusCode);
+    bunnyRes.headers && Object.entries(bunnyRes.headers).forEach(([key, value]) => {
+      if (["content-type", "content-length", "content-range", "accept-ranges", "etag", "last-modified"].includes(key.toLowerCase())) {
+        res.setHeader(key, value as string);
       }
-    }
-    res.end();
-  } catch (err) {
-    req.log?.error?.({ err }, "Erro no proxy de vídeo");
-    res.status(500).json({ error: "Erro interno ao buscar vídeo." });
-  }
+    });
+    res.setHeader("Access-Control-Allow-Origin", "*");
+
+    bunnyRes.pipe(res);
+    bunnyRes.on("error", (err) => {
+      req.log?.error?.({ err }, "Erro no stream de vídeo");
+      if (!res.writableEnded) res.end();
+    });
+  });
+
+  bunnyReq.on("error", (err) => {
+    req.log?.error?.({ err }, "Erro na requisição de vídeo");
+    if (!res.headersSent) res.status(500).json({ error: "Erro interno ao buscar vídeo." });
+    else if (!res.writableEnded) res.end();
+  });
+
+  bunnyReq.end();
 });
 
 export default router;
