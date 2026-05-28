@@ -66,3 +66,9 @@ id = "qqi4qmlJ4dqc8YRQuUk4A"
 uri = "file://screenshots/player-fixed-timer.jpg"
 type = "image"
 title = "Tela do Player"
+
+[[outputs]]
+id = "yyF0W0uJg2piGgTWif4TL"
+uri = "file://karaoke-bora-cantar.tar.gz"
+type = "unspecified"
+title = "Código completo - Karaokê Bora Cantar"
