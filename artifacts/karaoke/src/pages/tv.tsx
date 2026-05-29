@@ -448,7 +448,7 @@ export default function TVPage() {
           <div className="flex items-center gap-1 px-3 py-1 min-w-0">
             {/* Up next — only show queue items, current song is in header */}
             {session.queue.map((item, i) => {
-              const isCurrent = currentSongId === item.id;
+              const isCurrent = String(item.id) === currentSongId;
               if (isCurrent) return null;
               return (
                 <div
