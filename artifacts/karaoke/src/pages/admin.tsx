@@ -22,7 +22,8 @@ const songFormSchema = z.object({
   id: z.coerce.number().min(1, "O ID deve ser maior que 0"),
   artista: z.string().min(1, "O nome do artista é obrigatório"),
   musica: z.string().min(1, "O título da música é obrigatório"),
-  inicio: z.string().optional()
+  inicio: z.string().optional(),
+  duration: z.coerce.number().min(1, "Duração inválida").optional()
 });
 
 const statusLabel: Record<string, string> = {
@@ -41,7 +42,8 @@ export default function Admin() {
       id: undefined,
       artista: "",
       musica: "",
-      inicio: ""
+      inicio: "",
+      duration: undefined
     }
   });
 
@@ -204,6 +206,20 @@ export default function Admin() {
                             <FormLabel>Frase de Inicio (opcional)</FormLabel>
                             <FormControl>
                               <Input placeholder="Ex: Tem um pedaço do meu peito..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="duration"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Duração (segundos, opcional)</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="Ex: 215 (3:35)" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

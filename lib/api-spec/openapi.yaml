@@ -658,6 +658,9 @@ components:
           type: boolean
         bunnyGuid:
           type: ["string", "null"]
+        duration:
+          type: ["integer", "null"]
+          description: Duration in seconds
 
     MusicaInput:
       type: object
@@ -677,6 +680,9 @@ components:
           type: boolean
         bunnyGuid:
           type: string
+        duration:
+          type: integer
+          description: Duration in seconds
 
     MusicaUpdate:
       type: object
@@ -693,6 +699,9 @@ components:
           type: boolean
         bunnyGuid:
           type: string
+        duration:
+          type: integer
+          description: Duration in seconds
 
     MusicaSearchResult:
       type: object

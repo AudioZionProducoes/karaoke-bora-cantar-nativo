@@ -18,6 +18,11 @@ export interface Musica {
   hasVideo?: boolean;
   /** @nullable */
   bunnyGuid?: string | null;
+  /**
+     * Duration in seconds
+     * @nullable
+     */
+  duration?: number | null;
 }
 
 export interface MusicaInput {
@@ -29,6 +34,8 @@ export interface MusicaInput {
   inicio?: string;
   hasVideo?: boolean;
   bunnyGuid?: string;
+  /** Duration in seconds */
+  duration?: number;
 }
 
 export interface MusicaUpdate {
@@ -39,6 +46,8 @@ export interface MusicaUpdate {
   inicio?: string;
   hasVideo?: boolean;
   bunnyGuid?: string;
+  /** Duration in seconds */
+  duration?: number;
 }
 
 export interface MusicaSearchResult {

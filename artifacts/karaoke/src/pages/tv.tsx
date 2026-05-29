@@ -241,17 +241,6 @@ export default function TVPage() {
     }
   }, [scoringEnabled]);
 
-  // Listen for Bunny Stream iframe postMessage events
-  useEffect(() => {
-    const handler = (e: MessageEvent) => {
-      if (e.data && typeof e.data === "object" && (e.data.method === "ended" || e.data.event === "ended")) {
-        handleVideoEnd();
-      }
-    };
-    window.addEventListener("message", handler);
-    return () => window.removeEventListener("message", handler);
-  }, [handleVideoEnd]);
-
   const [skipError, setSkipError] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionCountdown, setTransitionCountdown] = useState(10);
@@ -527,8 +516,8 @@ export default function TVPage() {
           ) : (
             <BunnyPlayer
               key={`bunny-${currentSongId}`}
-              libraryId={libraryId}
               videoId={musica.bunnyGuid}
+              duration={musica?.duration ?? undefined}
               onEnded={handleVideoEnd}
             />
           )

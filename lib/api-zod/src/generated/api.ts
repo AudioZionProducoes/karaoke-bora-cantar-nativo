@@ -37,7 +37,8 @@ export const SearchMusicasResponse = zod.object({
   "musica": zod.string(),
   "inicio": zod.string().nullable(),
   "hasVideo": zod.boolean().optional(),
-  "bunnyGuid": zod.string().nullish()
+  "bunnyGuid": zod.string().nullish(),
+  "duration": zod.number().nullish().describe('Duration in seconds')
 })),
   "total": zod.number(),
   "page": zod.number(),
@@ -96,7 +97,8 @@ export const CreateMusicaBody = zod.object({
   "musica": zod.string().min(1),
   "inicio": zod.string().optional(),
   "hasVideo": zod.boolean().optional(),
-  "bunnyGuid": zod.string().optional()
+  "bunnyGuid": zod.string().optional(),
+  "duration": zod.number().optional().describe('Duration in seconds')
 })
 
 
@@ -113,7 +115,8 @@ export const GetMusicaResponse = zod.object({
   "musica": zod.string(),
   "inicio": zod.string().nullable(),
   "hasVideo": zod.boolean().optional(),
-  "bunnyGuid": zod.string().nullish()
+  "bunnyGuid": zod.string().nullish(),
+  "duration": zod.number().nullish().describe('Duration in seconds')
 })
 
 
@@ -133,7 +136,8 @@ export const UpdateMusicaBody = zod.object({
   "musica": zod.string().min(1).optional(),
   "inicio": zod.string().optional(),
   "hasVideo": zod.boolean().optional(),
-  "bunnyGuid": zod.string().optional()
+  "bunnyGuid": zod.string().optional(),
+  "duration": zod.number().optional().describe('Duration in seconds')
 })
 
 export const UpdateMusicaResponse = zod.object({
@@ -142,7 +146,8 @@ export const UpdateMusicaResponse = zod.object({
   "musica": zod.string(),
   "inicio": zod.string().nullable(),
   "hasVideo": zod.boolean().optional(),
-  "bunnyGuid": zod.string().nullish()
+  "bunnyGuid": zod.string().nullish(),
+  "duration": zod.number().nullish().describe('Duration in seconds')
 })
 
 

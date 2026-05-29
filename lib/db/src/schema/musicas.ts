@@ -8,7 +8,8 @@ export const musicasTable = pgTable("musicas", {
   musica: text("musica").notNull(),
   inicio: text("inicio"),
   hasVideo: boolean("has_video").default(false),
-  bunnyGuid: text("bunny_guid"), // Bunny Stream video GUID (e.g. 9b8609b8-76b9-4039-977b-c9e93e63e1dc)
+  bunnyGuid: text("bunny_guid"), // Bunny Stream video GUID
+  duration: integer("duration"), // Duration in seconds (e.g. 215 for 3:35)
 });
 
 export const insertMusicaSchema = createInsertSchema(musicasTable);
