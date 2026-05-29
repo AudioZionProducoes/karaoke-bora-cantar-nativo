@@ -12,12 +12,13 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
   const [retryKey, setRetryKey] = useState(0);
   const [hasError, setHasError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const isPlayingRef = useRef(false);
   const endedCalled = useRef(false);
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTime = useRef<number>(0);
 
-  // Fallback: use duration from DB if available, otherwise 30s (for quick testing/debug)
-  const FALLBACK_DURATION_MS = (duration && duration > 0) ? (duration + 5) * 1000 : 30 * 1000;
+  // Fallback: use duration from DB if available, otherwise 5 min
+  const FALLBACK_DURATION_MS = (duration && duration > 0) ? (duration + 5) * 1000 : 5 * 60 * 1000;
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
   const iframeUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
@@ -50,6 +51,7 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
       if (e.data.method === "play" || e.data.event === "play" || e.data.type === "play") {
         console.log("[BunnyPlayer] play event received");
         setIsPlaying(true);
+        isPlayingRef.current = true;
         setHasError(false);
       }
       if (e.data.method === "error" || e.data.event === "error" || e.data.type === "error") {
