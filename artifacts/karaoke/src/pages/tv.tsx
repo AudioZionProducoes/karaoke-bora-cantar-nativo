@@ -522,7 +522,6 @@ export default function TVPage() {
               videoId={musica.bunnyGuid}
               duration={musica?.duration ?? undefined}
               onEnded={handleVideoEnd}
-              onError={handleVideoEnd}
             />
           )
         ) : localVideoUrl ? (
@@ -550,16 +549,16 @@ export default function TVPage() {
           </div>
         )}
 
-        {/* Next song button — visible during playback for manual advance */}
-        {currentSongId && session?.queue && session.queue.length > 0 && (
+        {/* End song button — always visible during playback */}
+        {currentSongId && (
           <button
             type="button"
             className="absolute bottom-4 left-4 z-30 bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-white/80 hover:text-white transition-colors"
             onClick={handleVideoEnd}
-            title="Pular para próxima música"
+            title={scoringEnabled ? "Encerrar música e ver pontuação" : "Pular para próxima música"}
           >
             <Play className="h-3 w-3 fill-white" />
-            Próxima música
+            {scoringEnabled ? "Encerrar / Pontuação" : "Próxima música"}
           </button>
         )}
 
