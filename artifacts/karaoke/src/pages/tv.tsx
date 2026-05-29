@@ -522,6 +522,7 @@ export default function TVPage() {
               videoId={musica.bunnyGuid}
               duration={musica?.duration ?? undefined}
               onEnded={handleVideoEnd}
+              onError={handleVideoEnd}
             />
           )
         ) : localVideoUrl ? (
