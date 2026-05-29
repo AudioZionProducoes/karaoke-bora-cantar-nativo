@@ -388,7 +388,7 @@ export default function TVPage() {
                 title="Buscar músicas"
               >
                 <Search className="h-3.5 w-3.5" strokeWidth={2.5} />
-                <span className="hidden sm:inline">Buscar</span>
+                <span>Buscar</span>
               </button>
             </div>
           </div>

@@ -268,6 +268,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   // Exit session screen without destroying — allows returning later
   const exitSession = useCallback(() => {
+    markExited(); // mark as intentionally exited so home page shows "Voltar para Sessão"
     setSession(null);
     setSessionId(null); // Stop polling so home page detects exited state
     // Keep localStorage intact so user can rejoin same session later
