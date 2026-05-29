@@ -72,3 +72,9 @@ id = "yyF0W0uJg2piGgTWif4TL"
 uri = "file://karaoke-bora-cantar.tar.gz"
 type = "unspecified"
 title = "Código completo - Karaokê Bora Cantar"
+
+[[outputs]]
+id = "ZgSp4IqR51ZyxPFlU7faj"
+uri = "file://karaoke-v2.0.tar.gz"
+type = "unspecified"
+title = "Karaokê Bora Cantar - Código Completo v2.0"
