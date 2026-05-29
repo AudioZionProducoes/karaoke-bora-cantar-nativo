@@ -16,13 +16,14 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startTime = useRef<number>(0);
 
-  // Fallback: use duration from DB if available, otherwise 5 min
-  const FALLBACK_DURATION_MS = (duration && duration > 0) ? (duration + 5) * 1000 : 5 * 60 * 1000;
+  // Fallback: use duration from DB if available, otherwise 30s (for quick testing/debug)
+  const FALLBACK_DURATION_MS = (duration && duration > 0) ? (duration + 5) * 1000 : 30 * 1000;
 
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
   const iframeUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
 
   const callEnded = useCallback(() => {
+    console.log("[BunnyPlayer] callEnded called");
     if (endedCalled.current) return;
     endedCalled.current = true;
     if (fallbackTimer.current) {
@@ -90,6 +91,7 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
       console.warn(`[BunnyPlayer] Fallback timer triggered after ${elapsed}s — no ended event received`);
       callEnded();
     }, FALLBACK_DURATION_MS);
+    console.log(`[BunnyPlayer] Started fallback timer for ${FALLBACK_DURATION_MS}ms`);
 
     return () => {
       window.removeEventListener("message", handler);

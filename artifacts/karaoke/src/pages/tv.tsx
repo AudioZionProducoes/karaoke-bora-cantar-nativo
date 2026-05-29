@@ -234,9 +234,12 @@ export default function TVPage() {
   const handleNextRef = useRef<() => void>(() => {});
 
   const handleVideoEnd = useCallback(() => {
+    console.log("[TV] handleVideoEnd called", { scoringEnabled });
     if (scoringEnabled) {
+      console.log("[TV] scoringEnabled=true, setting showScore=true");
       setShowScore(true);
     } else {
+      console.log("[TV] scoringEnabled=false, calling handleNextRef");
       handleNextRef.current();
     }
   }, [scoringEnabled]);
@@ -658,10 +661,10 @@ export default function TVPage() {
       {/* Add to queue dialog */}
       <AddToQueueDialog item={pendingItem} onConfirm={handleAddToQueue} onCancel={() => setPendingItem(null)} />
 
-      {/* Score overlay */}
-      {showScore && musica && currentSinger && (
+      {/* Score overlay — always show if video ended and we have song data */}
+      {showScore && musica && (
         <ScoreOverlay
-          singerName={currentSinger}
+          singerName={currentSinger || "Anônimo"}
           musica={musica.musica}
           artista={musica.artista}
           nextItem={nextItem}
