@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Search, Mic2, ListMusic, Play, Plus, Check, UserRound,
   Monitor, ArrowLeft, X, Trash2, Smartphone, Pencil, Shuffle,
-  Sun, Moon, Eye
+  Sun, Moon, Eye, Trophy
 } from "lucide-react";
 import { AddToQueueDialog } from "@/components/add-to-queue-dialog";
 
@@ -358,15 +358,36 @@ export default function RemotePage() {
               <span className="text-xs text-primary font-bold">{session.currentSingerName}</span>
               <span className="text-[10px] text-muted-foreground">está cantando</span>
             </div>
-            <Button
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-xs h-6 px-2"
-              onClick={handleNext}
-              disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
-              title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
-            >
-              <Play className="h-3 w-3 mr-1" />Próxima
-            </Button>
+            <div className="flex items-center gap-1.5">
+              {/* Encerrar / Pontuação — só aparece para quem está cantando OU quem será o próximo */}
+              {(() => {
+                const isCurrentSinger = session?.currentSongAddedBy === deviceId;
+                const nextItem = session?.queue?.[0] ?? null;
+                const isNextSinger = nextItem?.addedBy === deviceId;
+                const canEnd = isCurrentSinger || isNextSinger;
+                if (!canEnd) return null;
+                return (
+                  <Button
+                    size="sm"
+                    className="bg-amber-500 hover:bg-amber-400 text-black text-xs h-6 px-2 font-bold"
+                    onClick={handleNext}
+                    title={isCurrentSinger ? "Encerrar música e ver pontuação" : "Encerrar música atual"}
+                  >
+                    <Trophy className="h-3 w-3 mr-1" />
+                    {isCurrentSinger ? "Encerrar / Pontuação" : "Encerrar"}
+                  </Button>
+                );
+              })()}
+              <Button
+                size="sm"
+                className="bg-primary hover:bg-primary/90 text-xs h-6 px-2"
+                onClick={handleNext}
+                disabled={session?.currentSongAddedBy ? session.currentSongAddedBy !== deviceId : false}
+                title={session?.currentSongAddedBy && session.currentSongAddedBy !== deviceId ? "Apenas quem está cantando pode pular" : "Próxima música"}
+              >
+                <Play className="h-3 w-3 mr-1" />Próxima
+              </Button>
+            </div>
           </div>
         )}
 
