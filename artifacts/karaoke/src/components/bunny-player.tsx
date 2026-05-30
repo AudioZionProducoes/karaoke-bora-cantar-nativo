@@ -15,7 +15,7 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
 
   const endedCalled = useRef(false);
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activated = useRef(false);
   const startTime = useRef<number>(0);
   const lastKnownTime = useRef<number>(0);
   const knownDuration = useRef<number>(duration && duration > 0 ? duration : 0);
@@ -30,8 +30,30 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
   const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
   const iframeUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`;
 
+  // Send { command } to the Bunny player iframe
+  // Bunny uses { command: "activate" | "play" | "pause" | ... }
+  const sendCommand = (command: string, parameter?: unknown) => {
+    try {
+      const frame = iframeRef.current;
+      if (!frame?.contentWindow) return;
+      const msg = parameter !== undefined ? { command, parameter } : { command };
+      frame.contentWindow.postMessage(msg, "*");
+    } catch { /* cross-origin postMessage */ }
+  };
+
+  // Activate the Bunny player events (REQUIRED — without this wireUpEvents() is never called)
+  const activateRef = useRef(false);
+  const doActivate = () => {
+    if (activateRef.current) return;
+    activateRef.current = true;
+    sendCommand("activate");
+    console.log("[BunnyPlayer] sent activate");
+  };
+
   useEffect(() => {
     endedCalled.current = false;
+    activated.current = false;
+    activateRef.current = false;
     setHasError(false);
     startTime.current = Date.now();
     lastKnownTime.current = 0;
@@ -41,114 +63,88 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
       if (endedCalled.current) return;
       endedCalled.current = true;
       if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
-      if (pollInterval.current) { clearInterval(pollInterval.current); pollInterval.current = null; }
       console.log("[BunnyPlayer] onEnded fired");
       onEndedRef.current();
-    };
-
-    const sendCommand = (method: string, value?: unknown) => {
-      try {
-        const frame = iframeRef.current;
-        if (!frame?.contentWindow) return;
-        const msg = value !== undefined ? { method, value } : { method };
-        frame.contentWindow.postMessage(msg, "*");
-      } catch { /* cross-origin postMessage is safe to ignore */ }
     };
 
     const handler = (e: MessageEvent) => {
       if (!e.data || typeof e.data !== "object") return;
 
-      // Bunny Stream uses { event: "..." } but some versions use { method: "..." } or { type: "..." }
-      const ev = e.data.event ?? e.data.method ?? e.data.type;
+      // Only handle Bunny Stream messages
+      if (e.data.channel !== "bunnystream") return;
 
-      // --- Fim do vídeo ---
-      if (ev === "ended" || ev === "end") {
-        console.log("[BunnyPlayer] ended event from player");
+      const ev = e.data.event as string | undefined;
+      // Time data lives inside status: { currentTime, duration, ended, paused, ... }
+      const status = (e.data.status ?? {}) as Record<string, unknown>;
+
+      if (!ev) return;
+
+      // --- Video ended (native event) ---
+      if (ev === "ended") {
+        console.log("[BunnyPlayer] ended event");
         callEnded();
         return;
       }
 
-      // --- Atualização de tempo (Bunny usa "seconds", mas tratamos todas as variações) ---
+      // --- Player ready: send activate to wire up events ---
+      if (ev === "ready") {
+        doActivate();
+        return;
+      }
+
+      // --- Time update: extract from status.currentTime / status.duration ---
       if (ev === "timeupdate") {
-        const time = e.data.seconds ?? e.data.currentTime ?? e.data.current_time ?? e.data.time;
-        const dur = e.data.duration ?? e.data.totalDuration ?? e.data.total_duration;
-        if (typeof time === "number") lastKnownTime.current = time;
-        if (typeof dur === "number" && dur > 0) knownDuration.current = dur;
-        if (
-          typeof time === "number" &&
-          knownDuration.current > 0 &&
-          time >= knownDuration.current - 2
-        ) {
+        const time = typeof status.currentTime === "number" ? status.currentTime : null;
+        const dur = typeof status.duration === "number" ? status.duration : null;
+
+        if (time !== null) lastKnownTime.current = time;
+        if (dur !== null && dur > 0) knownDuration.current = dur;
+
+        // Check ended flag in status (belt + suspenders)
+        if (status.ended === true) { callEnded(); return; }
+
+        // Detect near end (within last 2 seconds)
+        if (time !== null && knownDuration.current > 0 && time >= knownDuration.current - 2) {
           console.log("[BunnyPlayer] end via timeupdate", { time, dur: knownDuration.current });
           callEnded();
         }
         return;
       }
 
-      // --- Progresso (0-100%) ---
-      if (ev === "progress") {
-        const pct = e.data.percent ?? e.data.progress ?? e.data.percentage;
-        if (typeof pct === "number" && pct >= 99) {
-          console.log("[BunnyPlayer] end via progress", pct);
-          callEnded();
-        }
-        return;
-      }
-
-      // --- Pause perto do fim = vídeo terminou ---
-      if (ev === "pause" || ev === "paused") {
-        const time = e.data.seconds ?? e.data.currentTime ?? e.data.current_time ?? e.data.time;
-        const dur = e.data.duration ?? e.data.totalDuration ?? e.data.total_duration ?? knownDuration.current;
-        if (typeof time === "number" && dur > 0 && time >= dur - 5) {
+      // --- Pause near end = video ended ---
+      if (ev === "pause") {
+        const time = typeof status.currentTime === "number" ? status.currentTime : lastKnownTime.current;
+        const dur = typeof status.duration === "number" ? status.duration : knownDuration.current;
+        if (status.ended === true || (dur > 0 && time >= dur - 5)) {
           console.log("[BunnyPlayer] end via pause-near-end", { time, dur });
           callEnded();
         }
         return;
       }
 
-      // --- Resposta do comando getCurrentTime ---
-      if (ev === "getCurrentTime" && typeof e.data.value === "number") {
-        lastKnownTime.current = e.data.value;
-        if (knownDuration.current > 0 && e.data.value >= knownDuration.current - 2) {
-          console.log("[BunnyPlayer] end via getCurrentTime poll", e.data.value);
-          callEnded();
-        }
-        return;
-      }
-
-      // --- Resposta do comando getDuration ---
-      if (ev === "getDuration" && typeof e.data.value === "number" && e.data.value > 0) {
-        knownDuration.current = e.data.value;
-        return;
-      }
-
       if (ev === "error") {
-        console.warn("[BunnyPlayer] error event from iframe");
+        console.warn("[BunnyPlayer] error event from player");
         setHasError(true);
       }
     };
 
     window.addEventListener("message", handler);
 
-    // Polling ativo: a cada 1s envia getCurrentTime ao player.
-    // Se o player não emitir eventos espontâneos, o poll detecta o fim.
-    pollInterval.current = setInterval(() => {
-      sendCommand("getCurrentTime");
-      if (knownDuration.current === 0) sendCommand("getDuration");
-    }, 1000);
+    // Fallback activate: send activate 1.5s after mount in case 'ready' event was missed
+    const activateTimer = setTimeout(doActivate, 1500);
 
-    // Fallback: dispara onEnded após a duração esperada + margem
+    // Fallback timer: fire onEnded if events never arrive
     fallbackTimer.current = setTimeout(() => {
       const elapsed = ((Date.now() - startTime.current) / 1000).toFixed(1);
       console.warn(`[BunnyPlayer] Fallback timer fired after ${elapsed}s`);
       callEnded();
     }, FALLBACK_DURATION_MS);
 
-    console.log(`[BunnyPlayer] Started — libraryId=${libraryId}, videoId=${id}, fallback=${FALLBACK_DURATION_MS / 1000}s`);
+    console.log(`[BunnyPlayer] Started — videoId=${id}, fallback=${FALLBACK_DURATION_MS / 1000}s`);
 
     return () => {
       window.removeEventListener("message", handler);
-      if (pollInterval.current) { clearInterval(pollInterval.current); pollInterval.current = null; }
+      clearTimeout(activateTimer);
       if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
     };
   }, [id, retryKey, FALLBACK_DURATION_MS]);
@@ -163,6 +159,7 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
         allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
         allowFullScreen
         title="Karaoke Video Player"
+        onLoad={doActivate}
       />
       {hasError && (
         <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 bg-black/80 border border-white/20 rounded-lg px-4 py-2 flex items-center gap-2 text-xs text-white/70">
