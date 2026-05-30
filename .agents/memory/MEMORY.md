@@ -1,0 +1,2 @@
+- [Bunny Stream Player API](bunny-stream-player.md) — usa `seconds` (não `currentTime`) no timeupdate; polling ativo via `getCurrentTime` postMessage detecta fim quando eventos espontâneos falham.
+- [DB migration pitfall](db-migration-pitfall.md) — schema Drizzle atualizado mas `db push` não rodado causa falha silenciosa nas queries (coluna inexistente).

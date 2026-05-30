@@ -3,7 +3,7 @@ import { RotateCcw } from "lucide-react";
 
 interface BunnyPlayerProps {
   videoId: string | number;
-  duration?: number; // Duration in seconds (from musicas table)
+  duration?: number;
   onEnded: () => void;
 }
 
@@ -11,16 +11,18 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
   const id = typeof videoId === "string" ? videoId : String(videoId);
   const [retryKey, setRetryKey] = useState(0);
   const [hasError, setHasError] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const endedCalled = useRef(false);
   const fallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTime = useRef<number>(0);
+  const lastKnownTime = useRef<number>(0);
+  const knownDuration = useRef<number>(duration && duration > 0 ? duration : 0);
 
-  // Keep latest onEnded in ref so effect doesn't re-run when callback changes
   const onEndedRef = useRef(onEnded);
   onEndedRef.current = onEnded;
 
-  // Fallback: use duration from DB if available (+5s buffer), otherwise 5 min
   const FALLBACK_DURATION_MS = duration && duration > 0
     ? (duration + 5) * 1000
     : 5 * 60 * 1000;
@@ -32,39 +34,58 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
     endedCalled.current = false;
     setHasError(false);
     startTime.current = Date.now();
+    lastKnownTime.current = 0;
+    knownDuration.current = duration && duration > 0 ? duration : 0;
 
     const callEnded = () => {
       if (endedCalled.current) return;
       endedCalled.current = true;
-      if (fallbackTimer.current) {
-        clearTimeout(fallbackTimer.current);
-        fallbackTimer.current = null;
-      }
-      console.log("[BunnyPlayer] onEnded called");
+      if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
+      if (pollInterval.current) { clearInterval(pollInterval.current); pollInterval.current = null; }
+      console.log("[BunnyPlayer] onEnded fired");
       onEndedRef.current();
+    };
+
+    const sendCommand = (method: string, value?: unknown) => {
+      try {
+        const frame = iframeRef.current;
+        if (!frame?.contentWindow) return;
+        const msg = value !== undefined ? { method, value } : { method };
+        frame.contentWindow.postMessage(msg, "*");
+      } catch { /* cross-origin postMessage is safe to ignore */ }
     };
 
     const handler = (e: MessageEvent) => {
       if (!e.data || typeof e.data !== "object") return;
 
-      const ev = e.data.method ?? e.data.event ?? e.data.type;
+      // Bunny Stream uses { event: "..." } but some versions use { method: "..." } or { type: "..." }
+      const ev = e.data.event ?? e.data.method ?? e.data.type;
 
-      if (ev === "ended") {
-        console.log("[BunnyPlayer] ended event");
+      // --- Fim do vídeo ---
+      if (ev === "ended" || ev === "end") {
+        console.log("[BunnyPlayer] ended event from player");
         callEnded();
         return;
       }
 
+      // --- Atualização de tempo (Bunny usa "seconds", mas tratamos todas as variações) ---
       if (ev === "timeupdate") {
-        const time = e.data.currentTime ?? e.data.current_time ?? e.data.time;
+        const time = e.data.seconds ?? e.data.currentTime ?? e.data.current_time ?? e.data.time;
         const dur = e.data.duration ?? e.data.totalDuration ?? e.data.total_duration;
-        if (typeof time === "number" && typeof dur === "number" && dur > 0 && time >= dur - 2) {
-          console.log("[BunnyPlayer] end via timeupdate", { time, dur });
+        if (typeof time === "number") lastKnownTime.current = time;
+        if (typeof dur === "number" && dur > 0) knownDuration.current = dur;
+        if (
+          typeof time === "number" &&
+          knownDuration.current > 0 &&
+          time >= knownDuration.current - 2
+        ) {
+          console.log("[BunnyPlayer] end via timeupdate", { time, dur: knownDuration.current });
           callEnded();
         }
         return;
       }
 
+      // --- Progresso (0-100%) ---
       if (ev === "progress") {
         const pct = e.data.percent ?? e.data.progress ?? e.data.percentage;
         if (typeof pct === "number" && pct >= 99) {
@@ -74,13 +95,30 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
         return;
       }
 
-      if (ev === "paused") {
-        const time = e.data.currentTime ?? e.data.current_time ?? e.data.time;
-        const dur = e.data.duration ?? e.data.totalDuration ?? e.data.total_duration;
-        if (typeof time === "number" && typeof dur === "number" && dur > 0 && time >= dur - 5) {
-          console.log("[BunnyPlayer] end via paused-near-end", { time, dur });
+      // --- Pause perto do fim = vídeo terminou ---
+      if (ev === "pause" || ev === "paused") {
+        const time = e.data.seconds ?? e.data.currentTime ?? e.data.current_time ?? e.data.time;
+        const dur = e.data.duration ?? e.data.totalDuration ?? e.data.total_duration ?? knownDuration.current;
+        if (typeof time === "number" && dur > 0 && time >= dur - 5) {
+          console.log("[BunnyPlayer] end via pause-near-end", { time, dur });
           callEnded();
         }
+        return;
+      }
+
+      // --- Resposta do comando getCurrentTime ---
+      if (ev === "getCurrentTime" && typeof e.data.value === "number") {
+        lastKnownTime.current = e.data.value;
+        if (knownDuration.current > 0 && e.data.value >= knownDuration.current - 2) {
+          console.log("[BunnyPlayer] end via getCurrentTime poll", e.data.value);
+          callEnded();
+        }
+        return;
+      }
+
+      // --- Resposta do comando getDuration ---
+      if (ev === "getDuration" && typeof e.data.value === "number" && e.data.value > 0) {
+        knownDuration.current = e.data.value;
         return;
       }
 
@@ -92,27 +130,33 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
 
     window.addEventListener("message", handler);
 
-    // Fallback: fire onEnded when expected duration elapses
+    // Polling ativo: a cada 1s envia getCurrentTime ao player.
+    // Se o player não emitir eventos espontâneos, o poll detecta o fim.
+    pollInterval.current = setInterval(() => {
+      sendCommand("getCurrentTime");
+      if (knownDuration.current === 0) sendCommand("getDuration");
+    }, 1000);
+
+    // Fallback: dispara onEnded após a duração esperada + margem
     fallbackTimer.current = setTimeout(() => {
       const elapsed = ((Date.now() - startTime.current) / 1000).toFixed(1);
-      console.warn(`[BunnyPlayer] Fallback fired after ${elapsed}s`);
+      console.warn(`[BunnyPlayer] Fallback timer fired after ${elapsed}s`);
       callEnded();
     }, FALLBACK_DURATION_MS);
 
-    console.log(`[BunnyPlayer] Ready — fallback in ${FALLBACK_DURATION_MS / 1000}s`);
+    console.log(`[BunnyPlayer] Started — libraryId=${libraryId}, videoId=${id}, fallback=${FALLBACK_DURATION_MS / 1000}s`);
 
     return () => {
       window.removeEventListener("message", handler);
-      if (fallbackTimer.current) {
-        clearTimeout(fallbackTimer.current);
-        fallbackTimer.current = null;
-      }
+      if (pollInterval.current) { clearInterval(pollInterval.current); pollInterval.current = null; }
+      if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
     };
   }, [id, retryKey, FALLBACK_DURATION_MS]);
 
   return (
     <div className="absolute inset-0 bg-black">
       <iframe
+        ref={iframeRef}
         key={`bunny-${id}-${retryKey}`}
         src={iframeUrl}
         className="absolute inset-0 w-full h-full border-0"
@@ -130,7 +174,7 @@ export function BunnyPlayer({ videoId, duration, onEnded }: BunnyPlayerProps) {
               setHasError(false);
             }}
           />
-          Erro de codec — clique para tentar novamente
+          Erro de reprodução — clique para tentar novamente
         </div>
       )}
     </div>
