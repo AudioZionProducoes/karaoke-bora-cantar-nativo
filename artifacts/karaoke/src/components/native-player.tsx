@@ -10,7 +10,11 @@ interface NativePlayerProps {
 const BUNNY_CDN_HOST = "https://karaoke-cdn.b-cdn.net";
 
 export function NativePlayer({ videoId, duration, onEnded }: NativePlayerProps) {
-  const id = typeof videoId === "string" ? videoId : String(videoId);
+  const rawId = typeof videoId === "string" ? videoId : String(videoId);
+  // Bunny Storage files may have zero-padding (e.g. 04937.mp4 vs 4937.mp4)
+  const paddedId = rawId.length < 5 ? rawId.padStart(5, "0") : rawId;
+  const [id, setId] = useState(rawId);
+  const [useFallback, setUseFallback] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [retryKey, setRetryKey] = useState(0);
   const [hasError, setHasError] = useState(false);
@@ -76,6 +80,15 @@ export function NativePlayer({ videoId, duration, onEnded }: NativePlayerProps) 
 
     const handleError = () => {
       console.warn("[NativePlayer] error event", video.error);
+      // If rawId failed, try zero-padded version once
+      if (id === rawId && !useFallback) {
+        console.log(`[NativePlayer] Retrying with padded ID: ${paddedId}`);
+        setId(paddedId);
+        setUseFallback(true);
+        setHasError(false);
+        setIsLoading(true);
+        return;
+      }
       setHasError(true);
       setIsLoading(false);
     };
@@ -124,7 +137,8 @@ export function NativePlayer({ videoId, duration, onEnded }: NativePlayerProps) 
         autoPlay
         playsInline
         muted={false}
-        preload="auto"
+        preload="metadata"
+        crossOrigin="anonymous"
         title="Karaoke Video Player"
       />
       {isLoading && (
