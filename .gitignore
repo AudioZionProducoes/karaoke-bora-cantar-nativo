@@ -47,3 +47,7 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Large files / build artifacts
+karaoke-ct-source.zip
+screenshots/
