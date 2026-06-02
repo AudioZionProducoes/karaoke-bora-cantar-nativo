@@ -13,7 +13,7 @@ import QRCode from "react-qr-code";
 import { ListMusic, UserRound, Play, ArrowLeft, Monitor, Smartphone, X, Search, Plus, Trash2 } from "lucide-react";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { AddToQueueDialog, type QueueCandidate } from "@/components/add-to-queue-dialog";
-import { BunnyPlayer } from "@/components/bunny-player";
+import { NativePlayer } from "@/components/native-player";
 
 function generateScore(singerName: string): { score: number; stars: number; label: string } {
   const score = Math.floor(Math.random() * 21) + 80;
@@ -183,9 +183,6 @@ export default function TVPage() {
   const { session, joinSession, addToQueue, playSong, setMode, removeFromQueue, isHost, leaveSession, exitSession } = useSession();
   const { toast } = useToast();
   const { getFileUrl } = useLocalMusic();
-
-  const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
-  const isLibraryConfigured = libraryId && libraryId !== "CONFIGURE_LIBRARY_ID";
 
   const currentSongId = session?.currentSongId ? Number(session.currentSongId) : null;
   const { data: musica } = useGetMusica(currentSongId ?? 0, {
@@ -511,31 +508,13 @@ export default function TVPage() {
               </Button>
             </div>
           </div>
-        ) : isLibraryConfigured && currentSongId ? (
-          !musica?.bunnyGuid ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-            </div>
-          ) : (
-            <BunnyPlayer
-              key={`bunny-${currentSongId}`}
-              videoId={musica.bunnyGuid}
-              duration={musica?.duration ?? undefined}
-              onEnded={handleVideoEnd}
-            />
-          )
-        ) : localVideoUrl ? (
-          <video
-            key={`local-${videoKey}`}
-            src={localVideoUrl}
-            className="w-full h-full object-contain"
-            controls autoPlay
+        ) : currentSongId ? (
+          <NativePlayer
+            key={`native-${currentSongId}-${videoKey}`}
+            videoId={currentSongId}
+            duration={musica?.duration ?? undefined}
             onEnded={handleVideoEnd}
           />
-        ) : currentSongId ? (
-          <div className="text-center p-8">
-            <p className="text-muted-foreground">Carregando música...</p>
-          </div>
         ) : (
           <div className="text-center p-8 flex flex-col items-center justify-center h-full">
             <img src="/logo.jpeg" alt="Karaokê Bora Cantar" className="h-72 w-72 md:h-96 md:w-96 object-contain mx-auto mb-8 rounded-3xl ring-4 ring-primary/40 shadow-[0_0_120px_rgba(250,204,21,0.35)] animate-pulse" />

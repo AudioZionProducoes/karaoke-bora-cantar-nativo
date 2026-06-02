@@ -1,6 +1,6 @@
 import { useParams, Link, useLocation } from "wouter";
 import {
-  ArrowLeft, Play, Music, AlertCircle, FolderOpen,
+  ArrowLeft, Play, Music, AlertCircle,
   Star, RotateCcw, Trophy, Search, X, Mic2,
   Smartphone, AlertTriangle, ArrowRight
 } from "lucide-react";
@@ -8,12 +8,12 @@ import { CountdownTimer } from "@/components/countdown-timer";
 import { useGetMusica, getGetMusicaQueryKey, useSearchMusicas } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { useLocalMusic } from "@/contexts/local-music-context";
 import { useSession } from "@/hooks/use-session";
 import { useTemporaryAccess } from "@/contexts/temporary-access-context";
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import QRCodeLib from "react-qr-code";
+import { NativePlayer } from "@/components/native-player";
 
 function randomScore() {
   return Math.floor(Math.random() * 21) + 80;
@@ -56,7 +56,7 @@ function PersistentSearchBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useMemo(() => { setPage(1); }, [debouncedSearch]);
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
 
   const { data, isLoading } = useSearchMusicas({ q: debouncedSearch, page, limit: 8 }, {
     query: { enabled: focused && debouncedSearch.length > 0, queryKey: ["search-musicas", debouncedSearch, page] }
@@ -239,15 +239,8 @@ export default function Player() {
     query: { enabled: !!id, queryKey: getGetMusicaQueryKey(id) }
   });
 
-  const libraryId = import.meta.env.VITE_BUNNY_LIBRARY_ID || "670590";
-  const isLibraryConfigured = libraryId && libraryId !== "CONFIGURE_LIBRARY_ID";
-
-  const { folderName, selectFolder, getFileUrl } = useLocalMusic();
-  const localVideoUrl = musica ? getFileUrl(musica.id) : null;
-
   const [score, setScore] = useState<number | null>(null);
-  const [videoKey, setVideoKey] = useState(0);
-
+  const [replayKey, setReplayKey] = useState(0);
   // Session + QR Code for remote control
   const { createSession, joinSession } = useSession();
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -275,7 +268,7 @@ export default function Player() {
 
   const handleReplay = useCallback(() => {
     setScore(null);
-    setVideoKey((k) => k + 1);
+    setReplayKey((k) => k + 1);
   }, []);
 
   if (isLoading) {
@@ -336,13 +329,11 @@ export default function Player() {
         {/* Right: Timer + Score button */}
         <div className="flex items-center gap-2 shrink-0">
           <CountdownTimer />
-          {isLibraryConfigured && !score && (
-            <Button variant="ghost" size="sm"
-              className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs h-8 px-3"
-              onClick={() => setScore(randomScore())}>
-              <Trophy className="h-3.5 w-3.5 mr-1.5" />Pontuação
-            </Button>
-          )}
+          <Button variant="ghost" size="sm"
+            className="text-white hover:bg-white/10 hover:text-white backdrop-blur-sm rounded-full bg-black/20 border border-white/10 text-xs h-8 px-3"
+            onClick={() => setScore(randomScore())}>
+            <Trophy className="h-3.5 w-3.5 mr-1.5" />Pontuação
+          </Button>
         </div>
       </header>
 
@@ -350,70 +341,40 @@ export default function Player() {
 
       {/* Video — fills remaining height */}
       <div className="flex-1 relative min-h-0">
-        {isLibraryConfigured ? (
-          <iframe
-            src={`https://iframe.mediadelivery.net/embed/${libraryId}/${musica.id}?autoplay=true&loop=false&muted=false&preload=true&responsive=true`}
-            className="absolute inset-0 w-full h-full border-0 z-10"
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-            allowFullScreen
+        <NativePlayer
+          key={`native-${musica.id}-${replayKey}`}
+          videoId={musica.id}
+          duration={musica.duration ?? undefined}
+          onEnded={handleVideoEnd}
+        />
+
+        {score !== null && (
+          <ScoreScreen
+            score={score}
+            musica={musica.musica}
+            artista={musica.artista}
+            onReplay={handleReplay}
+            onBack={() => window.history.back()}
           />
-          ) : localVideoUrl ? (
-            <video
-              key={`${localVideoUrl}-${videoKey}`}
-              src={localVideoUrl}
-              className="w-full h-full object-contain"
-              controls autoPlay
-              onEnded={handleVideoEnd}
-            />
-          ) : folderName ? (
-            <div className="text-center p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 max-w-md">
-              <AlertCircle className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">Arquivo não encontrado</h2>
-              <p className="text-muted-foreground mb-2">
-                O arquivo <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded">{musica.id}.mp4</code> não existe na pasta <strong>{folderName}</strong>.
-              </p>
-            </div>
-          ) : (
-            <div className="text-center p-8 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 max-w-md">
-              <FolderOpen className="h-14 w-14 text-primary mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">Selecione a pasta de músicas</h2>
-              <p className="text-muted-foreground mb-6">
-                Para reproduzir <strong>{musica.musica}</strong>, selecione a pasta onde estão os arquivos MP4.
-                O player vai encontrar <code className="text-primary bg-primary/10 px-1 rounded">{musica.id}.mp4</code> automaticamente.
-              </p>
-              <Button onClick={selectFolder} className="bg-primary hover:bg-primary/90">
-                <FolderOpen className="h-4 w-4 mr-2" />Selecionar Pasta de Músicas
-              </Button>
-            </div>
-          )}
+        )}
 
-          {score !== null && (
-            <ScoreScreen
-              score={score}
-              musica={musica.musica}
-              artista={musica.artista}
-              onReplay={handleReplay}
-              onBack={() => window.history.back()}
-            />
-          )}
+        {/* Timer overlay — inside video area, bottom center, above watermark */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <CountdownTimer />
+        </div>
 
-          {/* Timer overlay — inside video area, bottom center, above watermark */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
-            <CountdownTimer />
+        {/* QR Code overlay — inside video area, bottom-right */}
+        {sessionId && remoteUrl && (
+          <div className="absolute bottom-4 right-4 z-30 bg-primary/80 backdrop-blur-sm border border-primary/50 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-primary/20">
+            <div className="bg-white rounded-md p-1">
+              <QRCodeLib value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#000000" />
+            </div>
+            <div className="text-[9px] text-center text-primary-foreground leading-tight max-w-[72px] font-bold">
+              <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-primary-foreground/80" />
+              Controle
+            </div>
           </div>
-
-          {/* QR Code overlay — inside video area, bottom-right */}
-          {sessionId && remoteUrl && (
-            <div className="absolute bottom-4 right-4 z-30 bg-primary/80 backdrop-blur-sm border border-primary/50 rounded-xl p-3 flex flex-col items-center gap-1 shadow-lg shadow-primary/20">
-              <div className="bg-white rounded-md p-1">
-                <QRCodeLib value={remoteUrl} size={56} bgColor="#ffffff" fgColor="#000000" />
-              </div>
-              <div className="text-[9px] text-center text-primary-foreground leading-tight max-w-[72px] font-bold">
-                <Smartphone className="h-2.5 w-2.5 mx-auto mb-0.5 text-primary-foreground/80" />
-                Controle
-              </div>
-            </div>
-          )}
+        )}
       </div>
     </div>
   );
